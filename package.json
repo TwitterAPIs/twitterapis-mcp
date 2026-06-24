@@ -1,0 +1,49 @@
+{
+  "name": "@twitterapis/mcp",
+  "version": "0.1.1",
+  "description": "Official MCP server for twitterapis.com, the Twitter/X read API (search, users, followers, tweets, threads, lists) as native tools for Claude, Cursor, and any MCP client.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TwitterAPIs/twitterapis-mcp.git"
+  },
+  "type": "module",
+  "bin": {
+    "twitterapis-mcp": "src/index.js"
+  },
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "check": "node --check src/index.js && node --check src/tools.js",
+    "test": "node test/tools.test.mjs && node test/smoke.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8 || ^4.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "twitter",
+    "x",
+    "twitter-api",
+    "x-api",
+    "claude",
+    "cursor",
+    "twitterapis"
+  ],
+  "author": "twitterapis.com",
+  "license": "MIT",
+  "homepage": "https://www.twitterapis.com/mcp",
+  "bugs": {
+    "url": "https://www.twitterapis.com/contact"
+  }
+}
