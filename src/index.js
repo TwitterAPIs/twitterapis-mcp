@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // @twitterapis/mcp, official MCP server for twitterapis.com
 //
-// Exposes the Twitter / X READ API as native MCP tools (search, users,
-// followers/following, tweets, threads, lists, mentions) for Claude, Cursor,
-// and any MCP client. Each tool is a thin, typed wrapper over a REST endpoint
-// at https://api.twitterapis.com. The server holds no state and forwards your
-// API key on every call. The tool catalog lives in ./tools.js.
+// Exposes the Twitter / X API as native MCP tools for Claude, Cursor, and any
+// MCP client: reads (search, users, followers/following, tweets, threads,
+// lists, mentions, likes, bookmarks, DMs, home timeline) plus write actions
+// (post/delete tweet, like, retweet, bookmark, follow, and their inverses).
+// Each tool is a thin, typed wrapper over a REST endpoint at
+// https://api.twitterapis.com. The server holds no state and forwards your API
+// key on every call. The tool catalog lives in ./tools.js.
 //
 // Config (env):
 //   TWITTERAPIS_KEY        required. Your key from https://www.twitterapis.com/signup
@@ -32,7 +34,10 @@ if (!API_KEY) {
 }
 
 // ── REST call ────────────────────────────────────────────────────────────────
-async function callEndpoint(path, args) {
+// Every endpoint (GET reads and POST writes alike) reads its params from the
+// query string, so the same buildQuery path serves both; only the HTTP method
+// differs per tool.
+async function callEndpoint(path, args, method = "GET") {
   const q = buildQuery(args);
   const url = `${BASE_URL}${path}${q ? `?${q}` : ""}`;
 
@@ -40,13 +45,13 @@ async function callEndpoint(path, args) {
   const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
   try {
     const res = await fetch(url, {
-      method: "GET",
+      method,
       headers: {
         // The API accepts either header; send both for maximum compatibility.
         Authorization: `Bearer ${API_KEY}`,
         "x-api-key": API_KEY,
         accept: "application/json",
-        "user-agent": "twitterapis-mcp/0.1.1",
+        "user-agent": "twitterapis-mcp/0.2.0",
       },
       signal: ctrl.signal,
     });
@@ -61,7 +66,9 @@ async function callEndpoint(path, args) {
               ? " (access forbidden. The resource may be private or your plan does not include this endpoint)"
               : res.status === 404
                 ? " (not found. The user, tweet, or list may have been deleted or the id is wrong)"
-                : res.status === 429
+                : res.status === 409
+                  ? " (no authenticated X session for this key. Write actions and account-only reads (likes, bookmarks, DMs, home timeline, follow, post) require linking an X account/session to your key first; see https://www.twitterapis.com/dashboard)"
+                  : res.status === 429
                   ? " (rate limited. Wait a few seconds and retry; reduce request frequency or increase TWITTERAPIS_TIMEOUT_MS if needed)"
                   : res.status >= 500
                     ? " (upstream API error. Retry in a moment; if persistent, check https://www.twitterapis.com/status)"
@@ -78,13 +85,22 @@ async function callEndpoint(path, args) {
 }
 
 // ── MCP server ───────────────────────────────────────────────────────────────
-const server = new McpServer({ name: "twitterapis", version: "0.1.1" });
+const server = new McpServer({ name: "twitterapis", version: "0.2.0" });
 
 for (const tool of TOOLS) {
+  const method = tool.method || "GET";
+  // Surface read/write/destructive intent so MCP clients can warn before a
+  // mutating call (default = read-only).
+  const annotations = {
+    title: tool.name,
+    readOnlyHint: !tool.write,
+    destructiveHint: Boolean(tool.destructive),
+    openWorldHint: true,
+  };
   server.registerTool(
     tool.name,
-    { description: tool.description, inputSchema: tool.shape },
-    async (args) => callEndpoint(tool.path, args),
+    { description: tool.description, inputSchema: tool.shape, annotations },
+    async (args) => callEndpoint(tool.path, args, method),
   );
 }
 

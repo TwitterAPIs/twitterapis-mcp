@@ -1,6 +1,6 @@
 # @twitterapis/mcp
 
-Official **Model Context Protocol** server for [twitterapis.com](https://www.twitterapis.com), the Twitter / X **read** API as native tools for Claude, Cursor, Windsurf, and any MCP client.
+Official **Model Context Protocol** server for [twitterapis.com](https://www.twitterapis.com), the Twitter / X API as native tools for Claude, Cursor, Windsurf, and any MCP client. Reads (search, profiles, timelines, followers, DMs) plus write actions (post, like, retweet, follow).
 
 Ask your agent to search tweets, pull a user's profile or timeline, list followers/following, fetch thread context, or enumerate list members and it calls the API directly. Every tool maps to a REST endpoint at `https://api.twitterapis.com`; the server holds no state and forwards your API key on each call.
 
@@ -87,7 +87,11 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-All 16 tools are read-only. User endpoints accept `username` (handle without @) **or** `user_id`; tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page.
+37 tools: 27 reads and 10 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page.
+
+Public reads (search, profiles, tweets, followers) work with just your API key. The **account-only** reads (likes, bookmarks, DMs, home timeline, followers-you-know) and **all write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark) are annotated `destructiveHint: true` so MCP clients can prompt before running them.
+
+### Reads
 
 | Tool | What it does |
 |---|---|
@@ -95,18 +99,40 @@ All 16 tools are read-only. User endpoints accept `username` (handle without @) 
 | `twitter_user_search` | Find user accounts by name or keyword |
 | `twitter_user_info` | Full profile by handle (bio, counts, verification, location) |
 | `twitter_user_info_by_id` | Full profile by numeric user id |
+| `twitter_user_about` | A user's structured About panel (category, professional labels, joined date) |
+| `twitter_user_affiliates` | Accounts affiliated with an organization profile |
+| `twitter_check_follow_relationship` | Follow relationship between two user ids (who follows whom) |
 | `twitter_user_tweets` | A user's recent original tweets (replies excluded) |
 | `twitter_user_tweets_and_replies` | A user's full timeline (tweets + replies) |
+| `twitter_user_tweets_complete` | A user's near-complete tweet history in one auto-paginated call |
+| `twitter_user_media` | Images and videos a user has posted |
+| `twitter_user_mentions` | Recent public tweets mentioning a user |
+| `twitter_user_likes` | Tweets a user has liked (public Likes tab) |
 | `twitter_user_followers` | Accounts that follow a user |
 | `twitter_user_following` | Accounts a user follows |
 | `twitter_user_verified_followers` | A user's verified followers only |
-| `twitter_user_media` | Images and videos a user has posted |
-| `twitter_user_mentions` | Recent public tweets mentioning a user |
+| `twitter_followers_you_know` | Followers of a target that your authenticated account also follows |
 | `twitter_tweet_detail` | Single tweet: text, author, metrics, media, quoted/reply context |
 | `twitter_tweet_replies` | Replies to a tweet |
 | `twitter_tweet_thread` | Full author thread (connected tweet chain by same author) |
 | `twitter_tweet_retweeters` | Accounts that retweeted a tweet |
 | `twitter_list_members` | Members of a Twitter/X List |
+| `twitter_home_timeline` | Your authenticated account's Home timeline _(session)_ |
+| `twitter_bookmarks` | Your authenticated account's bookmarks _(session)_ |
+| `twitter_bookmark_search` | Full-text search within your bookmarks _(session)_ |
+| `twitter_dm_list` | Your DM conversations (inbox), read-only _(session)_ |
+| `twitter_dm_conversation` | Messages in one DM conversation, read-only _(session)_ |
+
+### Write actions _(require a linked X session)_
+
+| Tool | What it does |
+|---|---|
+| `twitter_create_tweet` | Post a tweet; set `reply_to` to reply or `quote` to quote-tweet |
+| `twitter_delete_tweet` | Delete one of your tweets (irreversible) |
+| `twitter_favorite_tweet` / `twitter_unfavorite_tweet` | Like / unlike a tweet |
+| `twitter_retweet` / `twitter_unretweet` | Retweet / undo retweet |
+| `twitter_bookmark_tweet` / `twitter_unbookmark_tweet` | Bookmark / remove bookmark |
+| `twitter_follow_user` / `twitter_unfollow_user` | Follow / unfollow a user by id |
 
 ## Usage examples
 
