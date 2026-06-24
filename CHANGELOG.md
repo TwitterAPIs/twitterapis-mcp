@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.0 (2026-06-25)
+
+### Added (full API parity)
+
+- Grew the catalog from 16 to **37 tools**: 27 reads and 10 write actions.
+- New reads: `twitter_user_about`, `twitter_user_affiliates`, `twitter_check_follow_relationship`, `twitter_user_tweets_complete`, `twitter_user_likes`, `twitter_followers_you_know`, `twitter_home_timeline`, `twitter_bookmarks`, `twitter_bookmark_search`, `twitter_dm_list`, `twitter_dm_conversation`.
+- New write actions: `twitter_create_tweet` (with `reply_to` / `quote`), `twitter_delete_tweet`, `twitter_favorite_tweet` / `twitter_unfavorite_tweet`, `twitter_retweet` / `twitter_unretweet`, `twitter_bookmark_tweet` / `twitter_unbookmark_tweet`, `twitter_follow_user` / `twitter_unfollow_user`.
+- Tool annotations: every write is `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark) are `destructiveHint: true` so MCP clients can prompt before a mutating call.
+- Account-only reads and all writes act AS a linked X session; added an HTTP 409 error hint pointing users to link a session.
+
+### No breaking changes
+
+All 16 prior tool names, parameter names, and endpoint mappings are unchanged. Existing `npx @twitterapis/mcp@latest` invocations update automatically.
+
 ## 0.1.1 (2026-06-24)
 
 ### Improvements
