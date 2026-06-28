@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 (2026-06-29)
+
+### Added
+
+- **Per-call inline credentials** for multi-account use: the 16 session tools (all writes + account-only reads) accept optional `auth_token` + `ct0` (plus optional `proxy_url` / `user_agent`) to act AS that account for a single call, with no pre-registered session, so one API key can act as many accounts. Sent as `x-auth-token` / `x-ct0` / `x-proxy-url` / `x-user-agent` request headers, never in the URL or query string.
+- For write actions, set `proxy_url` to a residential proxy: X soft-blocks writes that egress from datacenter IPs.
+
 ## 0.2.0 (2026-06-25)
 
 ### Added (full API parity)
