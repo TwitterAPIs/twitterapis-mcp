@@ -42,6 +42,25 @@ const ACCOUNT = {
     "Optional. The @handle (without @) of the authenticated account to act AS, when your key manages more than one session. Omit to use your key's default session.",
   ),
 };
+// Per-call inline credentials. Pass an account's own X session cookies to act AS
+// that account for this one call, without pre-registering a session, so a single
+// API key can act as many accounts (e.g. polling several inboxes or posting from
+// a pool). Sent as request headers, never in the URL. Omit to use the key's
+// linked session.
+const INLINE = {
+  auth_token: z.string().optional().describe(
+    "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+  ),
+  ct0: z.string().optional().describe(
+    "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+  ),
+  proxy_url: z.string().optional().describe(
+    "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+  ),
+  user_agent: z.string().optional().describe(
+    "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+  ),
+};
 
 // ── Tool catalog. Reads are GET (default); writes set method:"POST". ─────────
 // write:true   -> action mutates account/Twitter state (annotated readOnlyHint:false)
@@ -223,6 +242,7 @@ export const TOOLS = [
         "Numeric user id of the target account to compute shared followers against.",
       ),
       ...PAGINATION,
+      ...INLINE,
     },
   },
   // ── Reads: a single tweet + its conversation ───────────────────────────────
@@ -272,14 +292,14 @@ export const TOOLS = [
     path: "/twitter/user/home_timeline",
     description:
       "Get YOUR authenticated account's Home timeline (the 'Following'/'For you' feed), most recent first. Requires an authenticated session behind your key. Returns tweets with author and metrics plus a cursor. Use this to read what your account would see when it opens X.",
-    shape: { ...PAGINATION },
+    shape: { ...PAGINATION, ...INLINE },
   },
   {
     name: "twitter_bookmarks",
     path: "/twitter/user/bookmarks",
     description:
       "List YOUR authenticated account's bookmarked tweets, most recent first. Requires an authenticated session behind your key. Returns each bookmarked tweet with author and metrics plus a cursor.",
-    shape: { ...PAGINATION },
+    shape: { ...PAGINATION, ...INLINE },
   },
   {
     name: "twitter_bookmark_search",
@@ -291,6 +311,7 @@ export const TOOLS = [
         "Search terms to match against your bookmarked tweets' text.",
       ),
       ...PAGINATION,
+      ...INLINE,
     },
   },
   {
@@ -298,7 +319,7 @@ export const TOOLS = [
     path: "/twitter/dm/list",
     description:
       "List YOUR authenticated account's Direct Message conversations (inbox), each with the participant and a conversation_id you can pass to twitter_dm_conversation. Requires an authenticated session behind your key. Read-only: this does not send DMs.",
-    shape: {},
+    shape: { ...INLINE },
   },
   {
     name: "twitter_dm_conversation",
@@ -309,6 +330,7 @@ export const TOOLS = [
       conversation_id: z.string().describe(
         "The conversation_id from a twitter_dm_list entry identifying which DM thread to read.",
       ),
+      ...INLINE,
     },
   },
 
@@ -333,7 +355,7 @@ export const TOOLS = [
       media_ids: z.string().optional().describe(
         "Optional. Comma-separated media id(s) from a prior media upload to attach (images/video).",
       ),
-      ...ACCOUNT,
+      ...ACCOUNT, ...INLINE,
     },
   },
   {
@@ -344,7 +366,7 @@ export const TOOLS = [
     destructive: true,
     description:
       "Delete a tweet AS your authenticated account. Irreversible: the tweet is permanently removed. You can only delete tweets your authenticated account authored. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...ACCOUNT },
+    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
   },
   // ── Writes: engagement (favorite / retweet / bookmark) + inverses ──────────
   {
@@ -354,7 +376,7 @@ export const TOOLS = [
     write: true,
     description:
       "Like (favorite) a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unfavorite_tweet.",
-    shape: { ...TWEET_REF, ...ACCOUNT },
+    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
   },
   {
     name: "twitter_unfavorite_tweet",
@@ -364,7 +386,7 @@ export const TOOLS = [
     destructive: true,
     description:
       "Remove a like (unfavorite) from a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...ACCOUNT },
+    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
   },
   {
     name: "twitter_retweet",
@@ -373,7 +395,7 @@ export const TOOLS = [
     write: true,
     description:
       "Retweet a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unretweet.",
-    shape: { ...TWEET_REF, ...ACCOUNT },
+    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
   },
   {
     name: "twitter_unretweet",
@@ -383,7 +405,7 @@ export const TOOLS = [
     destructive: true,
     description:
       "Undo a retweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...ACCOUNT },
+    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
   },
   {
     name: "twitter_bookmark_tweet",
@@ -392,7 +414,7 @@ export const TOOLS = [
     write: true,
     description:
       "Bookmark a tweet to YOUR authenticated account's private bookmarks. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unbookmark_tweet.",
-    shape: { ...TWEET_REF, ...ACCOUNT },
+    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
   },
   {
     name: "twitter_unbookmark_tweet",
@@ -402,7 +424,7 @@ export const TOOLS = [
     destructive: true,
     description:
       "Remove a tweet from YOUR authenticated account's bookmarks. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...ACCOUNT },
+    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
   },
   // ── Writes: follow graph ───────────────────────────────────────────────────
   {
@@ -416,7 +438,7 @@ export const TOOLS = [
       user_id: z.string().describe(
         "Numeric user id of the account to follow. Resolve a handle to a user_id first with twitter_user_info.",
       ),
-      ...ACCOUNT,
+      ...ACCOUNT, ...INLINE,
     },
   },
   {
@@ -431,7 +453,7 @@ export const TOOLS = [
       user_id: z.string().describe(
         "Numeric user id of the account to unfollow.",
       ),
-      ...ACCOUNT,
+      ...ACCOUNT, ...INLINE,
     },
   },
 ];

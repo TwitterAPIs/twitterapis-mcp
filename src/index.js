@@ -38,21 +38,35 @@ if (!API_KEY) {
 // query string, so the same buildQuery path serves both; only the HTTP method
 // differs per tool.
 async function callEndpoint(path, args, method = "GET") {
-  const q = buildQuery(args);
+  // Pull per-call inline credentials out of args so they travel as request
+  // headers, never the query string (the API reads x-auth-token / x-ct0; passing
+  // them as query params would leak them into URLs and access logs). When
+  // supplied, this one API key acts as that account; otherwise the key's linked
+  // session is used. Lets a single key act as many accounts.
+  const { auth_token, ct0, user_agent, proxy_url, ...rest } = args || {};
+  const q = buildQuery(rest);
   const url = `${BASE_URL}${path}${q ? `?${q}` : ""}`;
+
+  const headers = {
+    // The API accepts either header; send both for maximum compatibility.
+    Authorization: `Bearer ${API_KEY}`,
+    "x-api-key": API_KEY,
+    accept: "application/json",
+    "user-agent": "twitterapis-mcp/0.3.0",
+  };
+  if (auth_token && ct0) {
+    headers["x-auth-token"] = auth_token;
+    headers["x-ct0"] = ct0;
+    if (user_agent) headers["x-user-agent"] = user_agent;
+    if (proxy_url) headers["x-proxy-url"] = proxy_url;
+  }
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
   try {
     const res = await fetch(url, {
       method,
-      headers: {
-        // The API accepts either header; send both for maximum compatibility.
-        Authorization: `Bearer ${API_KEY}`,
-        "x-api-key": API_KEY,
-        accept: "application/json",
-        "user-agent": "twitterapis-mcp/0.2.0",
-      },
+      headers,
       signal: ctrl.signal,
     });
     const body = await res.text();
@@ -85,7 +99,7 @@ async function callEndpoint(path, args, method = "GET") {
 }
 
 // ── MCP server ───────────────────────────────────────────────────────────────
-const server = new McpServer({ name: "twitterapis", version: "0.2.0" });
+const server = new McpServer({ name: "twitterapis", version: "0.3.0" });
 
 for (const tool of TOOLS) {
   const method = tool.method || "GET";
