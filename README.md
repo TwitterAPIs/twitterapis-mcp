@@ -89,7 +89,7 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 37 tools: 27 reads and 10 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page.
 
-Public reads (search, profiles, tweets, followers) work with just your API key. The **account-only** reads (likes, bookmarks, DMs, home timeline, followers-you-know) and **all write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark) are annotated `destructiveHint: true` so MCP clients can prompt before running them.
+Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **all write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark) are annotated `destructiveHint: true` so MCP clients can prompt before running them.
 
 ### Reads
 
@@ -201,7 +201,7 @@ count: 50
 
 ## Pricing
 
-Calls are billed to your twitterapis.com account at the standard read rate ($0.0008/call, or $0.04 per 1,000 tweets (each call returns about 20 tweets)); your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing).
+Calls are billed to your twitterapis.com account, every price 20% below getxapi.com per endpoint. Almost every endpoint is $0.0008/call: all reads (search, profiles, tweets, followers, likes) plus the simple write actions (like, retweet, bookmark, follow and their undos, delete, media upload). At the read rate that works out to $0.04 per 1,000 tweets, since each call returns about 20 tweets. The premium endpoints cost a little more: tweet creation and DM reads (`twitter_dm_list`, `twitter_dm_conversation`) at $0.0016/call, profile updates (name, avatar, banner) at $0.0016/call, full tweet history (`twitter_user_tweets_complete`) at $0.0024/call, and a full tweet thread (`twitter_tweet_thread`) at $0.004/call. Your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing).
 
 ## Links
 
