@@ -1,0 +1,36 @@
+node_modules/
+.env
+.env.local
+*.log
+.DS_Store
+// gitignored: needs a workflow-scoped token to push; add via GitHub UI later
+.github/workflows/
+
+# --- FORKOFF scaffolding block (auto-appended 2026-07-01) ---
+AGENTS.md
+CLAUDE.md
+_INBOX/
+_archive/
+_assets/
+_audit-plans/
+_audit_runs/
+_backups/
+_quarantine/
+_research/
+_specs/
+_drafts/
+_data/
+_runs/
+_session_resumes/
+_session_state/
+_email_digests/
+_dev/
+_playground/
+_worktrees/
+_outreach/
+_skills-snapshot/
+_seeds/
+_logs/
+_tmp/
+_handoffs/
+_runbooks/
