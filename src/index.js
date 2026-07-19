@@ -16,8 +16,14 @@
 //
 // Run:  npx -y @twitterapis/mcp@latest   (stdio transport)
 
+import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
+// Single source of truth for the version. Previously this was a literal in two
+// places and drifted: the package shipped 0.5.0 while the MCP handshake and the
+// outbound user-agent both still advertised 0.3.0.
+const VERSION = createRequire(import.meta.url)("../package.json").version;
 import { TOOLS, buildQuery } from "./tools.js";
 
 const API_KEY = process.env.TWITTERAPIS_KEY;
@@ -52,7 +58,7 @@ async function callEndpoint(path, args, method = "GET") {
     Authorization: `Bearer ${API_KEY}`,
     "x-api-key": API_KEY,
     accept: "application/json",
-    "user-agent": "twitterapis-mcp/0.3.0",
+    "user-agent": `twitterapis-mcp/${VERSION}`,
   };
   if (auth_token && ct0) {
     headers["x-auth-token"] = auth_token;
@@ -99,7 +105,7 @@ async function callEndpoint(path, args, method = "GET") {
 }
 
 // ── MCP server ───────────────────────────────────────────────────────────────
-const server = new McpServer({ name: "twitterapis", version: "0.3.0" });
+const server = new McpServer({ name: "twitterapis", version: VERSION });
 
 for (const tool of TOOLS) {
   const method = tool.method || "GET";
