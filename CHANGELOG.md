@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0 (2026-07-20)
+
+### Fixed
+
+- **Removed three phantom parameters from the published tool schemas.** Eleven write tools (`twitter_create_tweet`, `twitter_delete_tweet`, `twitter_favorite_tweet` / `twitter_unfavorite_tweet`, `twitter_retweet` / `twitter_unretweet`, `twitter_bookmark_tweet` / `twitter_unbookmark_tweet`, `twitter_follow_user` / `twitter_unfollow_user`, `twitter_dm_send`) advertised an optional `account` parameter that the API never accepted, so agents that passed it were silently ignored. `twitter_tweet_replies` and `twitter_tweet_retweeters` advertised the full pagination shape when the endpoint only accepts `cursor`.
+- A fail-closed MCP-to-OpenAPI parity gate now runs on every `npm test`, so a tool schema can no longer drift from the live API contract unnoticed.
+- README: corrected the Links section (the REST base URL is `https://api.twitterapis.com`; removed a link to a status page that does not exist) and added an FAQ covering signup, read-vs-write scope, supported clients, billing, and data handling.
+
+### Breaking
+
+- If your client explicitly passed `account` to a write tool, or `count` to `twitter_tweet_replies` / `twitter_tweet_retweeters`, those keys are no longer part of the schema. They were never honoured by the API, so behaviour is unchanged; only the advertised schema is now accurate.
+
 ## 0.5.0 (2026-07-06)
 
 ### Added
