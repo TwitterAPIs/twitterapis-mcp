@@ -10,13 +10,16 @@
 import { z } from "zod";
 
 // ── Shared Zod input-schema fragments ───────────────────────────────────────
+const CURSOR = {
+  cursor: z.string().optional().describe(
+    "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+  ),
+};
 const PAGINATION = {
   count: z.number().int().min(1).max(200).optional().describe(
     "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
   ),
-  cursor: z.string().optional().describe(
-    "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
-  ),
+  ...CURSOR,
 };
 const USER_REF = {
   username: z.string().optional().describe(
@@ -32,14 +35,6 @@ const TWEET_REF = {
   ),
   url: z.string().optional().describe(
     'Full tweet URL, e.g. "https://x.com/elonmusk/status/1789012345678901234". Provide exactly one of id or url.',
-  ),
-};
-// Optional pooled-session selector, shared by every write action. A customer
-// key maps to a default authenticated session; pass account only to target a
-// specific handle in a multi-account pool.
-const ACCOUNT = {
-  account: z.string().optional().describe(
-    "Optional. The @handle (without @) of the authenticated account to act AS, when your key manages more than one session. Omit to use your key's default session.",
   ),
 };
 // Per-call inline credentials. Pass an account's own X session cookies to act AS
@@ -272,14 +267,14 @@ export const TOOLS = [
     path: "/twitter/tweet/replies",
     description:
       "Get replies to a specific tweet. Returns each reply tweet with author, text, and metrics. Paginate with cursor to load more. Use this to read the conversation under a tweet, gauge sentiment, or find notable responses.",
-    shape: { ...TWEET_REF, ...PAGINATION },
+    shape: { ...TWEET_REF, ...CURSOR },
   },
   {
     name: "twitter_tweet_thread",
     path: "/twitter/tweet/thread",
     description:
       "Get all tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread). Pass any tweet id/url from the thread and the API returns the full ordered sequence. Paginate with cursor for long threads. Does NOT return replies from other users, use twitter_tweet_replies for that.",
-    shape: { ...TWEET_REF, ...PAGINATION },
+    shape: { ...TWEET_REF, ...CURSOR },
   },
   {
     name: "twitter_tweet_retweeters",
@@ -361,7 +356,7 @@ export const TOOLS = [
       text: z.string().min(1).describe(
         "The Direct Message body text to send (non-empty).",
       ),
-      ...ACCOUNT, ...INLINE,
+      ...INLINE,
     },
   },
 
@@ -386,7 +381,7 @@ export const TOOLS = [
       media_ids: z.string().optional().describe(
         "Optional. Comma-separated media id(s) from a prior media upload to attach (images/video).",
       ),
-      ...ACCOUNT, ...INLINE,
+      ...INLINE,
     },
   },
   {
@@ -397,7 +392,7 @@ export const TOOLS = [
     destructive: true,
     description:
       "Delete a tweet AS your authenticated account. Irreversible: the tweet is permanently removed. You can only delete tweets your authenticated account authored. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
+    shape: { ...TWEET_REF, ...INLINE },
   },
   // ── Writes: engagement (favorite / retweet / bookmark) + inverses ──────────
   {
@@ -407,7 +402,7 @@ export const TOOLS = [
     write: true,
     description:
       "Like (favorite) a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unfavorite_tweet.",
-    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
+    shape: { ...TWEET_REF, ...INLINE },
   },
   {
     name: "twitter_unfavorite_tweet",
@@ -417,7 +412,7 @@ export const TOOLS = [
     destructive: true,
     description:
       "Remove a like (unfavorite) from a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
+    shape: { ...TWEET_REF, ...INLINE },
   },
   {
     name: "twitter_retweet",
@@ -426,7 +421,7 @@ export const TOOLS = [
     write: true,
     description:
       "Retweet a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unretweet.",
-    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
+    shape: { ...TWEET_REF, ...INLINE },
   },
   {
     name: "twitter_unretweet",
@@ -436,7 +431,7 @@ export const TOOLS = [
     destructive: true,
     description:
       "Undo a retweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
+    shape: { ...TWEET_REF, ...INLINE },
   },
   {
     name: "twitter_bookmark_tweet",
@@ -445,7 +440,7 @@ export const TOOLS = [
     write: true,
     description:
       "Bookmark a tweet to YOUR authenticated account's private bookmarks. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unbookmark_tweet.",
-    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
+    shape: { ...TWEET_REF, ...INLINE },
   },
   {
     name: "twitter_unbookmark_tweet",
@@ -455,7 +450,7 @@ export const TOOLS = [
     destructive: true,
     description:
       "Remove a tweet from YOUR authenticated account's bookmarks. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...ACCOUNT, ...INLINE },
+    shape: { ...TWEET_REF, ...INLINE },
   },
   // ── Writes: follow graph ───────────────────────────────────────────────────
   {
@@ -469,7 +464,7 @@ export const TOOLS = [
       user_id: z.string().describe(
         "Numeric user id of the account to follow. Resolve a handle to a user_id first with twitter_user_info.",
       ),
-      ...ACCOUNT, ...INLINE,
+      ...INLINE,
     },
   },
   {
@@ -484,7 +479,7 @@ export const TOOLS = [
       user_id: z.string().describe(
         "Numeric user id of the account to unfollow.",
       ),
-      ...ACCOUNT, ...INLINE,
+      ...INLINE,
     },
   },
 ];

@@ -659,6 +659,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -842,6 +854,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -1424,6 +1448,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -2130,6 +2166,18 @@
               "example": "stripe"
             },
             "example": "stripe"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
           }
         ]
       }
@@ -2315,6 +2363,18 @@
             "example": "nasa"
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -2323,6 +2383,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -2515,6 +2587,18 @@
             "example": "naval"
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -2523,6 +2607,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -2698,6 +2794,18 @@
             "example": "naval"
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -2706,6 +2814,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -2889,6 +3009,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -3062,6 +3194,18 @@
             "example": "stripe"
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -3069,6 +3213,28 @@
             "schema": {
               "type": "string",
               "description": "Pagination cursor from a previous response."
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "team",
+            "in": "query",
+            "required": false,
+            "description": "Affiliate team filter, when the organization exposes teams.",
+            "schema": {
+              "type": "string",
+              "description": "Affiliate team filter, when the organization exposes teams."
             }
           }
         ]
@@ -5211,6 +5377,18 @@
             "example": "naval"
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -5219,6 +5397,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -5393,6 +5583,18 @@
             "example": "naval"
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -5401,6 +5603,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -5576,6 +5790,18 @@
             "example": "naval"
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -5584,6 +5810,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -5759,6 +5997,18 @@
             "example": "naval"
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -5767,6 +6017,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -5941,6 +6203,18 @@
             "example": "naval"
           },
           {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric user ID; provide either username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric user ID; provide either username or user_id.",
+              "example": "44196397"
+            },
+            "example": "44196397"
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -5949,6 +6223,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
@@ -6130,6 +6416,18 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
