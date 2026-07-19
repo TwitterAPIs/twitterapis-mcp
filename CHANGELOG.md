@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- The publish firewall now runs on `npm publish` itself, via `prepublishOnly`, not only on a manual `npm test`. A release that skips the test step can no longer reach the registry unchecked. Verified: with a competitor reference reintroduced into the README, `npm publish` aborts before the tarball stage.
+- The firewall no longer carries its own list of banned terms. It delegates to the maintainer's isolation registry, which is the single place those rules live, so the gate and everything else that enforces them cannot drift apart. If the registry cannot be located, the gate fails rather than passing.
+
+Both changes are to release tooling. No runtime code changed, so installed packages behave identically.
+
 ## 0.6.1 (2026-07-20)
 
 ### Fixed
