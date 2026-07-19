@@ -6,7 +6,7 @@ node_modules/
 // gitignored: needs a workflow-scoped token to push; add via GitHub UI later
 .github/workflows/
 
-# --- FORKOFF scaffolding block (auto-appended 2026-07-01) ---
+# --- local tooling / scratch dirs (not part of the package) ---
 AGENTS.md
 CLAUDE.md
 _INBOX/
