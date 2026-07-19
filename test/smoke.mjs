@@ -2,6 +2,7 @@
 // handshake, calls tools/list, and asserts the full read-tool catalog is
 // advertised with valid schemas. No network/API call is made.
 import { spawn } from "node:child_process";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -42,7 +43,18 @@ setTimeout(() => {
   console.log(`initialize: ${initOk ? "ok" : "FAILED"} (${init?.result?.serverInfo?.name})`);
   console.log(`tools/list: ${tools.length} tools`);
   console.log("names:", tools.map((t) => t.name).join(", "));
-  const pass = initOk && tools.length >= 15 && schemasOk;
+
+  // Version-drift gate. The handshake version was hardcoded and silently drifted
+  // (package 0.5.0 was still announcing itself as 0.3.0 to every client), so
+  // assert the advertised version against package.json rather than trusting it.
+  const pkgVersion = createRequire(import.meta.url)("../package.json").version;
+  const advertised = init?.result?.serverInfo?.version;
+  const versionOk = advertised === pkgVersion;
+  console.log(
+    `version: advertised ${advertised} vs package.json ${pkgVersion} -> ${versionOk ? "match" : "DRIFT"}`,
+  );
+
+  const pass = initOk && versionOk && tools.length >= 15 && schemasOk;
   console.log(pass ? "SMOKE: PASS" : "SMOKE: FAIL");
   child.kill();
   process.exit(pass ? 0 : 1);
