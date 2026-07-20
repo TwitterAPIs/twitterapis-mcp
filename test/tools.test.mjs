@@ -63,5 +63,26 @@ check("buildQuery keeps tweet text for writes", buildQuery({ text: "gm world", r
 // keeps any non-empty stringified value (it is a dumb stringifier, not a validator).
 check("buildQuery stringifies numeric 0 as count=0", buildQuery({ count: 0 }) === "count=0");
 
+// twitter_user_tweets_complete is cursor-paged and truncating. These guard the
+// exact drift shipped in 0.5.0: no cursor arg, and a "default 800" that the
+// backend had already dropped to 200. Verified live 2026-07-20.
+// Every assertion below is crash-safe (optional chaining + "" fallbacks) so each
+// one fails by ASSERTION against the pre-fix catalog rather than throwing and
+// aborting the run before the later checks get to speak.
+const COMPLETE = TOOLS.find((t) => t.name === "twitter_user_tweets_complete");
+const C_DESC = COMPLETE?.description ?? "";
+const C_MAX = COMPLETE?.shape?.max?.description ?? "";
+check("tweets_complete exposes a cursor arg (resume path)", !!COMPLETE?.shape?.cursor);
+check("tweets_complete cursor is optional (omitted on first call)", COMPLETE?.shape?.cursor?.isOptional?.() === true);
+// NB: JSON.stringify on a zod schema does NOT expose .describe() text, so this
+// must read the description strings directly or it silently passes forever.
+check("tweets_complete no longer claims the removed 800 default", !/default 800/i.test(C_MAX + " " + C_DESC));
+check("tweets_complete documents the real 200 default", /default(?:s to)? 200\b/i.test(C_MAX));
+check("tweets_complete documents max as a minimum, not a cap", /minimum target/i.test(C_MAX));
+check("tweets_complete documents next_cursor as the completion signal", /next_cursor/i.test(C_DESC) && /not count/i.test(C_DESC));
+check("tweets_complete warns the response can be truncated", /truncat/i.test(C_DESC));
+check("tweets_complete documents flat per-call billing", /per CALL/i.test(C_DESC));
+check("no tool promises a full history in one call", !TOOLS.some((t) => /full back-catalogue in one call|near-complete/i.test(t.description || "")));
+
 console.log(`tools.test: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -150,7 +150,7 @@ export const TOOLS = [
     name: "twitter_user_tweets",
     path: "/twitter/user/tweets",
     description:
-      "Get a user's recent original tweets, excluding replies and retweets. Returns tweet text, id, timestamp, and engagement metrics. Paginate with cursor to go further back. Use this to analyse a user's own content, opinions, or posting cadence. For replies too, use twitter_user_tweets_and_replies; for the full back-catalogue in one call, use twitter_user_tweets_complete.",
+      "Get a user's recent original tweets, excluding replies and retweets. Returns tweet text, id, timestamp, and engagement metrics. Paginate with cursor to go further back. Use this to analyse a user's own content, opinions, or posting cadence. For replies too, use twitter_user_tweets_and_replies; to pull a back-catalogue in bulk with fewer round-trips, use twitter_user_tweets_complete (which is also cursor-paged, not one-shot).",
     shape: { ...USER_REF, ...PAGINATION },
   },
   {
@@ -164,13 +164,16 @@ export const TOOLS = [
     name: "twitter_user_tweets_complete",
     path: "/twitter/user/tweets/complete",
     description:
-      "Get a user's near-complete original-tweet history in a single call, auto-paginating server-side up to a cap (Twitter's ~3200-tweet per-user ceiling). Heavier than twitter_user_tweets; use when you want the whole back-catalogue at once rather than page-by-page. Returns a flat tweet array. Requires the numeric user_id (resolve a handle first with twitter_user_info).",
+      "Get a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages. Heavier than twitter_user_tweets; use it to pull a back-catalogue with fewer round-trips. Returns { count, tweets, next_cursor }. IMPORTANT, this does NOT guarantee the whole history in one call: next_cursor is the completion signal, NOT count. Non-null next_cursor means the history is TRUNCATED and more remains, so call this tool again with cursor set to that value, and repeat until next_cursor is null. Null means the history is genuinely exhausted. Each call is bounded by BOTH max and a server-side wall-clock budget, so a response can be truncated even when it returned fewer tweets than you asked for, which is why count must never be used to decide whether you are done. Requires the numeric user_id (resolve a handle first with twitter_user_info). Billed a flat $0.0024 per CALL regardless of how many tweets come back, so fewer, larger calls are cheaper than many small ones.",
     shape: {
       user_id: z.string().describe(
         "Numeric Twitter/X user id. Required: this endpoint does not accept a username. Resolve a handle to a user_id first with twitter_user_info.",
       ),
       max: z.number().int().min(1).max(3200).optional().describe(
-        "Maximum number of tweets to collect (default 800, hard ceiling 3200). Higher values take longer and cost more.",
+        "Target number of tweets to collect in this call (server default 200 if omitted). This is a MINIMUM TARGET, not a hard cap: pages arrive in whole chunks, so a response may contain up to one page (<=100) more than requested (live: max=10 returned 20, max=150 returned 161, omitted returned 201). Never assume count === max. Twitter's ~3200-per-user history ceiling still applies overall.",
+      ),
+      cursor: z.string().optional().describe(
+        "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped, and keep repeating while next_cursor is non-null.",
       ),
     },
   },
