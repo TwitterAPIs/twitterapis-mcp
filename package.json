@@ -24,6 +24,7 @@
     "start": "node src/index.js",
     "check": "node --check src/index.js && node --check src/tools.js",
     "test": "node test/tools.test.mjs && node test/smoke.mjs && node test/openapi-parity.mjs && node test/firewall.mjs && node scripts/__tests__/reconcile-mcp-publish-chain.test.mjs",
+    "prepublishOnly": "npm test",
     "check:openapi-parity": "node test/openapi-parity.mjs",
     "check:firewall": "node test/firewall.mjs",
     "check:publish-chain": "node scripts/reconcile-mcp-publish-chain.mjs"
