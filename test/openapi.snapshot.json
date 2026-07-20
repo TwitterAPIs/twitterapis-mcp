@@ -4259,7 +4259,7 @@
       "get": {
         "operationId": "user-tweets-complete",
         "summary": "Full Tweet History",
-        "description": "Collect a user's tweet history in a single call, auto-paginating server-side across upstream pages up to Twitter's ~3200-tweet ceiling. Unlike GET /user/tweets (one page per call, manage cursors yourself), this drives pagination for you and returns the full collected array. Uses the public account pool: no registered session required. Use max to cap the total fetched. Cost: $0.0024 per call.",
+        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` — pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
         "tags": [
           "User Reads"
         ],
@@ -4273,22 +4273,22 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "curl \"https://api.twitterapis.com/twitter/user/tweets/complete?user_id=44196397&max=800\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+            "source": "curl \"https://api.twitterapis.com/twitter/user/tweets/complete?user_id=44196397&max=200\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/tweets/complete\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"user_id\": \"44196397\", \"max\": 800},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/tweets/complete\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"user_id\": \"44196397\", \"max\": 200},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
           },
           {
             "lang": "js",
             "label": "JavaScript",
-            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/tweets/complete\");\nurl.search = new URLSearchParams({ user_id: \"44196397\", max: \"800\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/tweets/complete\");\nurl.search = new URLSearchParams({ user_id: \"44196397\", max: \"200\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
           }
         ],
         "responses": {
           "200": {
-            "description": "Auto-paginate a user's near-complete tweet history in one call, up to Twitter's ~3200 ceiling.",
+            "description": "Auto-paginate a large batch of a user's tweet history per call, resuming with a cursor up to Twitter's ~3200 ceiling.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4297,6 +4297,11 @@
                     "count": {
                       "type": "integer",
                       "description": "Number of tweets returned in the flat array."
+                    },
+                    "next_cursor": {
+                      "type": "object",
+                      "description": "Non-null means MORE HISTORY REMAINS and this call was truncated (by max, or by the server-side time budget): call again with cursor set to this value. Null means the history is genuinely exhausted. A client that ignores this field will silently receive only part of the history.",
+                      "additionalProperties": true
                     },
                     "tweets": {
                       "type": "array",
@@ -4308,7 +4313,8 @@
                   }
                 },
                 "example": {
-                  "count": 1,
+                  "count": 201,
+                  "next_cursor": "DAAHCgABHNqVL6L__zsLAAIAAAAT",
                   "tweets": [
                     {
                       "id": "2071092912000246106",
@@ -4434,13 +4440,25 @@
             "name": "max",
             "in": "query",
             "required": false,
-            "description": "Maximum tweets to collect. Defaults to 800; hard ceiling 3200. Higher values fetch more upstream pages and cost more.",
+            "description": "Target number of tweets to collect in this call. Defaults to 200. This is a MINIMUM target, not a hard cap: pages arrive in whole chunks, so a response may contain up to one page (<=100) more than requested. Twitter's ~3200-per-user history ceiling still applies overall.",
             "schema": {
               "type": "integer",
-              "description": "Maximum tweets to collect. Defaults to 800; hard ceiling 3200. Higher values fetch more upstream pages and cost more.",
-              "example": "800"
+              "description": "Target number of tweets to collect in this call. Defaults to 200. This is a MINIMUM target, not a hard cap: pages arrive in whole chunks, so a response may contain up to one page (<=100) more than requested. Twitter's ~3200-per-user history ceiling still applies overall.",
+              "example": "200"
             },
-            "example": "800"
+            "example": "200"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped.",
+            "schema": {
+              "type": "string",
+              "description": "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped.",
+              "example": "DAAHCgABHNqVL6L__zs"
+            },
+            "example": "DAAHCgABHNqVL6L__zs"
           }
         ]
       }

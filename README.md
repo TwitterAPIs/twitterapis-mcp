@@ -108,7 +108,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_check_follow_relationship` | Follow relationship between two user ids (who follows whom) |
 | `twitter_user_tweets` | A user's recent original tweets (replies excluded) |
 | `twitter_user_tweets_and_replies` | A user's full timeline (tweets + replies) |
-| `twitter_user_tweets_complete` | A user's near-complete tweet history in one auto-paginated call |
+| `twitter_user_tweets_complete` | A large batch of a user's tweet history per call (see [paging note](#paging-twitter_user_tweets_complete)) |
 | `twitter_user_media` | Images and videos a user has posted |
 | `twitter_user_mentions` | Recent public tweets mentioning a user |
 | `twitter_user_likes` | Tweets a user has liked (public Likes tab) |
@@ -179,6 +179,22 @@ url: "https://x.com/karpathy/status/1849....."
 
 First call, `twitter_user_followers`: `{ username: "openai", count: 100 }`
 Second call, pass back the `cursor` from the first response: `{ username: "openai", count: 100, cursor: "<cursor from response>" }`
+
+### Paging `twitter_user_tweets_complete`
+
+> "Pull @elonmusk's whole tweet history"
+
+`twitter_user_tweets_complete` auto-paginates server-side and returns a large batch per call, but it does **not** guarantee the full history in one call. Read the result like this:
+
+- **`next_cursor` is the completion signal, not `count`.** Non-null means the history is truncated and more remains. Null means it is genuinely exhausted.
+- **`max` is a minimum target, not a cap.** Pages arrive in whole chunks, so a response may hold up to one page (<=100) more than requested. Live behaviour: `max=10` returned 20, `max=50` returned 60, `max=150` returned 161, and omitting `max` (server default **200**) returned 201. Never assume `count === max`.
+- **Each call also has a server-side wall-clock budget**, so a response can be truncated even when it returned fewer tweets than requested. That is the second reason `count` cannot tell you whether you are done.
+- **Billing is a flat $0.0024 per call**, regardless of how many tweets come back, so fewer large calls cost less than many small ones.
+
+To resume, pass the `next_cursor` straight back in as `cursor` and repeat until it comes back null:
+
+First call, `twitter_user_tweets_complete`: `{ user_id: "44196397", max: 800 }`
+Then, while `next_cursor` is non-null: `{ user_id: "44196397", max: 800, cursor: "<next_cursor from previous response>" }`
 
 ### Monitor brand mentions
 
