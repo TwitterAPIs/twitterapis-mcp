@@ -91,9 +91,9 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-40 tools: 29 reads and 11 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page.
+47 tools: 33 reads and 14 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`).
 
-Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **all write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark) are annotated `destructiveHint: true` so MCP clients can prompt before running them.
+Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **all write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark) are annotated `destructiveHint: true` so MCP clients can prompt before running them.
 
 ### Reads
 
@@ -103,7 +103,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_user_search` | Find user accounts by name or keyword |
 | `twitter_user_info` | Full profile by handle (bio, counts, verification, location) |
 | `twitter_user_info_by_id` | Full profile by numeric user id |
-| `twitter_user_about` | A user's structured About panel (category, professional labels, joined date) |
+| `twitter_user_about` | A user's structured About object (category, professional/business labels, verification + identity-verification flags, joined date, and X's 'About this account' transparency panel) |
 | `twitter_user_affiliates` | Accounts affiliated with an organization profile |
 | `twitter_check_follow_relationship` | Follow relationship between two user ids (who follows whom) |
 | `twitter_user_tweets` | A user's recent original tweets (replies excluded) |
@@ -128,6 +128,10 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_bookmark_search` | Full-text search within your bookmarks _(session)_ |
 | `twitter_dm_list` | Your DM conversations (inbox), read-only _(session)_ |
 | `twitter_dm_conversation` | Messages in one DM conversation, read-only _(session)_ |
+| `twitter_trends` | Current top trends for a location (by `country` or `woeid`) |
+| `twitter_trends_locations` | Every location X has trends for, each with its WOEID |
+| `twitter_account_me` | Your twitterapis.com account: credits, usage, email (free) |
+| `twitter_account_payments` | Your twitterapis.com payment history (free) |
 
 ### Write actions _(require a linked X session)_
 
@@ -140,6 +144,16 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_bookmark_tweet` / `twitter_unbookmark_tweet` | Bookmark / remove bookmark |
 | `twitter_follow_user` / `twitter_unfollow_user` | Follow / unfollow a user by id |
 | `twitter_dm_send` | Send a Direct Message to a user by their numeric `recipient_id` |
+| `twitter_media_upload` | Upload a base64 image, returns a `media_id` for `twitter_create_tweet` |
+
+### Session setup
+
+Link an X account to your key once, so the account-only reads and write actions act as it (or pass per-call `auth_token`/`ct0` instead).
+
+| Tool | What it does |
+|---|---|
+| `twitter_customer_session` | Register your x.com session cookies (`auth_token` + `ct0`) against your key |
+| `twitter_user_login` | Log in with `username` + `password` (+ `totp_secret` for 2FA); stores the session against your key. Returns a confirmation, never the cookies |
 
 ## Usage examples
 
@@ -221,7 +235,7 @@ Calls are billed to your twitterapis.com account. Almost every endpoint is $0.00
 
 **Do I need an X (Twitter) developer account?** No. Get an API key at [twitterapis.com/signup](https://www.twitterapis.com/signup); there is no application or approval step.
 
-**Is it read-only?** No. 29 read tools work with just your API key; 11 write actions (post, like, retweet, follow, DM) act as a linked X account or per-call inline credentials.
+**Is it read-only?** No. 33 read tools work with just your API key; 14 write actions (post, like, retweet, follow, DM, media upload) act as a linked X account or per-call inline credentials.
 
 **Which clients are supported?** Claude Desktop, Cursor, Windsurf, and VS Code (Copilot agent mode), or any Model Context Protocol client.
 

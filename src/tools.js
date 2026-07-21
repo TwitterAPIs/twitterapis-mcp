@@ -115,7 +115,7 @@ export const TOOLS = [
     name: "twitter_user_about",
     path: "/twitter/user/user_about",
     description:
-      "Get a user's 'About' panel: the structured profile facts X surfaces beyond the bio, such as account category, professional/business labels, joined date, and location when present. Provide a username or a user_id. Use this to enrich a profile beyond what twitter_user_info returns.",
+      "Get a user's full 'About' object: the structured profile facts X surfaces beyond the bio, including account category and professional/business labels, verification and identity-verification flags, joined date, location and linked website, follower/following counts, and X's 'About this account' transparency panel (the account's country, how the account was created, and its username-change history). Provide a username or a user_id. Use this to enrich a profile beyond what twitter_user_info returns.",
     shape: { ...USER_REF },
   },
   {
@@ -273,8 +273,12 @@ export const TOOLS = [
     name: "twitter_tweet_thread",
     path: "/twitter/tweet/thread",
     description:
-      "Get all tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread). Pass any tweet id/url from the thread and the API returns the full ordered sequence. Paginate with cursor for long threads. Does NOT return replies from other users, use twitter_tweet_replies for that.",
-    shape: { ...TWEET_REF, ...CURSOR },
+      "Get all tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread). Pass any tweet id/url from the thread and the API returns the full ordered sequence in a single call. Does NOT return replies from other users, use twitter_tweet_replies for that. Accepts either the tweet id or its full URL.",
+    // No cursor: /twitter/tweet/thread returns the whole ordered thread in one
+    // response and takes no pagination param (openapi lists only id/url). The
+    // previous ...CURSOR advertised a cursor the endpoint ignores and drove a
+    // false "paginate with cursor" claim; removed to match the real contract.
+    shape: { ...TWEET_REF },
   },
   {
     name: "twitter_tweet_retweeters",
@@ -294,6 +298,46 @@ export const TOOLS = [
       ),
       ...PAGINATION,
     },
+  },
+  // ── Reads: trends ──────────────────────────────────────────────────────────
+  {
+    name: "twitter_trends",
+    path: "/twitter/trends",
+    description:
+      "Get the current top trends for a location. With no location parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Returns the resolved location, the as_of / created_at timestamps, and the ranked trends list. Use count to truncate the list. A location X will not serve returns a 400.",
+    shape: {
+      country: z.string().optional().describe(
+        "Country name or ISO code to get trends for, e.g. 'US' or 'Japan'. Resolved against the trends locations list. Omit for Worldwide.",
+      ),
+      woeid: z.string().optional().describe(
+        "Numeric WOEID from twitter_trends_locations. Takes precedence over country when both are supplied.",
+      ),
+      count: z.number().int().min(1).optional().describe(
+        "Truncate the returned trends list to at most this many. Omit to return X's full list for the location.",
+      ),
+    },
+  },
+  {
+    name: "twitter_trends_locations",
+    path: "/twitter/trends/locations",
+    description:
+      "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place.",
+    shape: {},
+  },
+  // ── Reads: your twitterapis.com account (billing; not Twitter data) ─────────
+  {
+    name: "twitter_account_me",
+    path: "/account/me",
+    description:
+      "Get YOUR twitterapis.com account details: email, name, credits remaining, credits used, total requests made, and account creation date. Authenticated by your API key. This is an account read, not Twitter data, and is free (it does not spend credits).",
+    shape: {},
+  },
+  {
+    name: "twitter_account_payments",
+    path: "/account/payments",
+    description:
+      "Get YOUR twitterapis.com payment history: the list of top-ups and charges on your account. Authenticated by your API key. This is an account read, not Twitter data, and is free (it does not spend credits).",
+    shape: {},
   },
   // ── Reads: authenticated-account surfaces (require a session behind your key) ─
   {
@@ -478,6 +522,76 @@ export const TOOLS = [
     shape: {
       user_id: z.string().describe(
         "Numeric user id of the account to unfollow.",
+      ),
+      ...INLINE,
+    },
+  },
+  // ── Session bootstrap + media: link an X account to your key, then act as it ─
+  // Once a session is linked (via twitter_customer_session or twitter_user_login)
+  // the authenticated-account reads and the write actions run AS that account.
+  // These three send a JSON request body (jsonBody:true), so the fields travel
+  // in the body, not the query string, matching the backend routes that read
+  // c.req.json().
+  {
+    name: "twitter_customer_session",
+    path: "/twitter/customer/session",
+    method: "POST",
+    write: true,
+    jsonBody: true,
+    description:
+      "Register YOUR OWN X account session against your API key, so the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes) and the write tools (twitter_create_tweet, twitter_dm_send, twitter_follow_user, twitter_favorite_tweet, twitter_retweet, twitter_media_upload) act as your account. Provide your x.com session cookies auth_token and ct0 (copy them from a logged-in browser); optionally a user_agent and a residential proxy_url. The cookies are stored server-side against your key and are never returned. Returns ok, the resolved username, and whether the session validated live. Prefer twitter_user_login if you would rather pass a username/password than raw cookies. Most tools also accept auth_token/ct0 per-call without registering.",
+    shape: {
+      auth_token: z.string().describe(
+        "Your x.com auth_token cookie value, from a logged-in browser session. Stored server-side against your key; never returned.",
+      ),
+      ct0: z.string().describe(
+        "Your x.com ct0 (CSRF) cookie value, from the same browser session. Paired with auth_token.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. Browser User-Agent to send with this session's requests. Defaults to a current Chrome UA.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. HTTP or SOCKS proxy URL to route this session's traffic through, e.g. 'http://user:pass@host:port'.",
+      ),
+    },
+  },
+  {
+    name: "twitter_user_login",
+    path: "/twitter/user/user_login",
+    method: "POST",
+    write: true,
+    jsonBody: true,
+    // CONTRACT NOTE (maintainers): the published openapi documents an
+    // {auth_token, ct0, twid} response for this endpoint. That is WRONG. The
+    // live handler (backend routes/user-login.ts) returns {ok, username,
+    // message} and stores the minted session server-side; it never returns the
+    // cookies. The description below documents the REAL contract, not the
+    // openapi's. Fixing the openapi response schema is a docs/website change.
+    description:
+      "Log in to X with a username and password (plus totp_secret if the account has 2FA) and store the resulting session against your API key, so the authenticated-account reads and the write tools then act as that account. On success returns { ok, username, message }; it does NOT return the session cookies (auth_token/ct0 are minted and kept server-side, never sent back). Typical failures: bad_credentials (401), two_factor_required (400, add totp_secret), captcha_required (422), acid_challenge (409, confirm the login from the account then retry). This handles real account credentials; never log or echo the values you pass.",
+    shape: {
+      username: z.string().describe(
+        "The X account username/handle (without the leading @). Some accounts also accept the login email here.",
+      ),
+      password: z.string().describe(
+        "The X account password.",
+      ),
+      totp_secret: z.string().optional().describe(
+        "The account's base32 two-factor (TOTP) secret. Required only when the account has 2FA enabled.",
+      ),
+    },
+  },
+  {
+    name: "twitter_media_upload",
+    path: "/twitter/media/upload",
+    method: "POST",
+    write: true,
+    jsonBody: true,
+    description:
+      "Upload an image to X and get a media_id to attach to a tweet via twitter_create_tweet's media_ids. Provide media_data as base64-encoded image bytes. Acts as your registered account session (register first with twitter_customer_session or twitter_user_login, or pass auth_token/ct0 for this call). Returns ok and the media_id. Only base64 image data is supported over this tool's JSON transport.",
+    shape: {
+      media_data: z.string().describe(
+        "Base64-encoded image bytes to upload. Sent in the JSON request body.",
       ),
       ...INLINE,
     },

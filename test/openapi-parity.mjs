@@ -21,14 +21,11 @@ const SNAPSHOT = resolve(HERE, "openapi.snapshot.json");
 // openapi paths omit the /twitter prefix the MCP tool paths carry.
 const norm = (p) => p.replace(/^\/twitter/, "");
 
-// Endpoints that intentionally have NO MCP tool (auth/session bootstrap + the
-// media-upload write helper). Keep this list tight — anything here is EXCLUDED
-// from the "every endpoint has a tool" coverage check, so review additions.
-const NO_TOOL_ALLOWLIST = new Set([
-  "/customer/session",
-  "/user/user_login",
-  "/media/upload",
-]);
+// Every public openapi endpoint now has a first-class MCP tool (customer/session,
+// user_login and media/upload used to be walled here; they are now real tools), so
+// nothing is excluded from the "every endpoint has a tool" coverage check. Keep
+// this empty: any path added here is EXCLUDED from that check and needs a reason.
+const NO_TOOL_ALLOWLIST = new Set([]);
 
 // Tool args that map to request HEADERS or are universal pagination, so they are
 // NOT expected to appear as openapi query/body params.

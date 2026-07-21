@@ -17,6 +17,10 @@
   ],
   "tags": [
     {
+      "name": "Account",
+      "description": "Your API account: credit balance, usage totals, and payment history. Served from the API root (https://api.twitterapis.com/account/*), not under /twitter, because billing owns their authentication. Free."
+    },
+    {
       "name": "Account Session",
       "description": "Bring your own X session cookies (recommended), or mint a session from a username and password, so write actions and private-data reads act as your account. Free."
     },
@@ -45,11 +49,337 @@
       "description": "Read the members of any public Twitter/X List."
     },
     {
+      "name": "Trends",
+      "description": "Read what is trending on Twitter/X right now, worldwide or for a single country, plus the full set of locations trends are available for."
+    },
+    {
       "name": "Write Actions",
       "description": "Act on behalf of an authenticated account: like, retweet, bookmark, and follow, each with its undo. Billed at $0.0008 per call, the same as a standard read."
     }
   ],
   "paths": {
+    "/account/me": {
+      "get": {
+        "operationId": "account-me",
+        "summary": "Account Info",
+        "description": "Returns the account behind your API key: remaining credits, credits consumed, total requests served, and when the account was created. Use it to show a balance in your own dashboard or to alert before you run out of credits. This call is free and is not metered. Cost: Free per call.",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/account/me\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/account/me\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/account/me\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Your credit balance, lifetime usage, and account details for the API key making the call.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "email": {
+                      "type": "string",
+                      "description": "Email address on the account."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Account holder name."
+                    },
+                    "credits_remaining": {
+                      "type": "object",
+                      "description": "Credits currently available, in USD.",
+                      "additionalProperties": true
+                    },
+                    "credits_used": {
+                      "type": "object",
+                      "description": "Total credits consumed to date, in USD.",
+                      "additionalProperties": true
+                    },
+                    "total_requests": {
+                      "type": "object",
+                      "description": "Total number of API requests served for this account.",
+                      "additionalProperties": true
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "ISO 8601 timestamp of when the account was created."
+                    }
+                  }
+                },
+                "example": {
+                  "email": "you@example.com",
+                  "name": "Your Name",
+                  "credits_remaining": 946.4048,
+                  "credits_used": 454.1516,
+                  "total_requests": 622007,
+                  "created_at": "2026-01-14T09:22:31.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      },
+      "servers": [
+        {
+          "url": "https://api.twitterapis.com"
+        }
+      ]
+    },
+    "/account/payments": {
+      "get": {
+        "operationId": "account-payments",
+        "summary": "Payment History",
+        "description": "Returns the payment history for the account behind your API key, ordered newest first. Each entry records what was paid, how many credits it added, and whether the payment completed. Use it to reconcile top-ups against your own billing records. This call is free. Cost: Free per call.",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/account/payments\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/account/payments\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/account/payments\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Every credit top-up on your account, newest first, with amount, credits added, and status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "payments": {
+                      "type": "object",
+                      "description": "Payment records, newest first. Empty when the account has never topped up.",
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "example": {
+                  "payments": [
+                    {
+                      "amount": 100,
+                      "credits_added": 100,
+                      "status": "completed",
+                      "created_at": "2026-06-02T14:08:55.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      },
+      "servers": [
+        {
+          "url": "https://api.twitterapis.com"
+        }
+      ]
+    },
     "/customer/session": {
       "post": {
         "operationId": "customer-session",
@@ -510,6 +840,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -664,10 +998,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "description": "Accepted but not honoured on this endpoint: the upstream page is fixed at roughly 20 results and raising count does not return more. Use cursor to read further.",
             "schema": {
               "type": "integer",
-              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "description": "Accepted but not honoured on this endpoint: the upstream page is fixed at roughly 20 results and raising count does not return more. Use cursor to read further.",
               "example": "20"
             },
             "example": "20"
@@ -728,6 +1062,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -1111,6 +1449,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -1311,6 +1653,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -1468,7 +1814,7 @@
       "get": {
         "operationId": "tweet-thread",
         "summary": "Tweet Thread",
-        "description": "Given a tweet ID anywhere in a thread, return the ordered list of tweets that make up the author's connected thread. Saves you from manually walking the reply chain. Cost: $0.0040 per call.",
+        "description": "Given the first tweet of a thread, return the ordered list of tweets that make up the author's connected thread. The endpoint reads forward from the tweet you pass and does not walk backwards, so pass the thread's first tweet, which is the conversation_id carried on every tweet in that thread. Passing a later tweet returns only the tail of the thread. Cost: $0.0040 per call.",
         "tags": [
           "Tweet Details"
         ],
@@ -1497,7 +1843,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Reconstruct a full thread from any tweet in it.",
+            "description": "Reconstruct a thread forward from its first tweet.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1512,11 +1858,7 @@
                     },
                     "count": {
                       "type": "integer",
-                      "description": "Number of items returned in this page."
-                    },
-                    "next_cursor": {
-                      "type": "string",
-                      "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                      "description": "Number of tweets in the thread. The whole thread is returned in one call, so there is no cursor and no second page."
                     }
                   }
                 },
@@ -1653,16 +1995,6 @@
               "example": "https://x.com/naval/status/1759123456789012345"
             },
             "example": "https://x.com/naval/status/1759123456789012345"
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "description": "Pagination cursor for very long threads.",
-            "schema": {
-              "type": "string",
-              "description": "Pagination cursor for very long threads."
-            }
           }
         ]
       }
@@ -1998,7 +2330,7 @@
       "get": {
         "operationId": "user-user-about",
         "summary": "User About",
-        "description": "Read a profile's full About object: identity, bio, location, linked website, verification flags, professional account type and categories, follower and following counts, and account creation date. Cost: $0.0008 per call.",
+        "description": "Read a profile's full About object: identity, bio, location, linked website, avatar, verification and identity-verification flags, professional account type and categories, follower and following counts, the account creation date, and X's \"About this account\" transparency panel (account country, how the account was created, and username-change history). Cost: $0.0008 per call.",
         "tags": [
           "User Reads"
         ],
@@ -2039,7 +2371,7 @@
                           "$ref": "#/components/schemas/About"
                         }
                       ],
-                      "description": "The profile's full About object: identity, bio, location, linked website, verification flags, professional account type and categories, follower and following counts, and account creation date."
+                      "description": "The profile's full About object: identity, bio, location, linked website, avatar, verification and identity-verification flags, professional account type and categories, follower and following counts, the account creation date, and X's \"About this account\" transparency panel (account country, how the account was created, and username-change history)."
                     }
                   }
                 },
@@ -2056,14 +2388,23 @@
                     "verified_type": "Business",
                     "professional_type": "Business",
                     "professional_categories": [
-                      {
-                        "id": 354,
-                        "name": "Software Company"
-                      }
+                      "Software Company"
                     ],
                     "followers_count": 312000,
                     "following_count": 412,
-                    "created_at": "Tue Feb 12 18:02:11 +0000 2008"
+                    "created_at": "Tue Feb 12 18:02:11 +0000 2008",
+                    "profile_image_url": "https://pbs.twimg.com/profile_images/1841086032213626880/example_normal.jpg",
+                    "is_identity_verified": false,
+                    "verified_since": null,
+                    "account_based_in": "United States",
+                    "created_via": "United States App Store",
+                    "username_changes": {
+                      "count": 0,
+                      "last_changed_at": null
+                    },
+                    "created_country_accurate": true,
+                    "location_accurate": true,
+                    "learn_more_url": "https://help.twitter.com/managing-your-account/about-twitter-verified-accounts"
                   }
                 }
               }
@@ -2159,10 +2500,10 @@
             "name": "username",
             "in": "query",
             "required": true,
-            "description": "Handle without the leading @.",
+            "description": "Handle without the leading @. Required: unlike the other user reads, this endpoint cannot be called with user_id alone.",
             "schema": {
               "type": "string",
-              "description": "Handle without the leading @.",
+              "description": "Handle without the leading @. Required: unlike the other user reads, this endpoint cannot be called with user_id alone.",
               "example": "stripe"
             },
             "example": "stripe"
@@ -2171,10 +2512,10 @@
             "name": "user_id",
             "in": "query",
             "required": false,
-            "description": "Numeric user ID; provide either username or user_id.",
+            "description": "Numeric user ID. Not currently a substitute for username on this endpoint: a user_id-only request fails upstream. Resolve the ID to a handle with GET /user/info_by_id and pass username.",
             "schema": {
               "type": "string",
-              "description": "Numeric user ID; provide either username or user_id.",
+              "description": "Numeric user ID. Not currently a substitute for username on this endpoint: a user_id-only request fails upstream. Resolve the ID to a handle with GET /user/info_by_id and pass username.",
               "example": "44196397"
             },
             "example": "44196397"
@@ -2186,7 +2527,7 @@
       "get": {
         "operationId": "user-media",
         "summary": "User Media",
-        "description": "Fetch the media tweets posted by a user, cursor-paginated. Returns the tweet objects that contain attached photos or video, with media URLs included. Cost: $0.0008 per call.",
+        "description": "Fetch the media tweets posted by a user, cursor-paginated. Returns the tweet objects from the account's Media tab, with media URLs included under extended_entities.media. The tab occasionally surfaces a link-or-card tweet with no attachment, so guard on extended_entities before reading it. Cost: $0.0008 per call.",
         "tags": [
           "User Reads"
         ],
@@ -2235,6 +2576,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -2403,7 +2748,7 @@
       "get": {
         "operationId": "user-tweets",
         "summary": "User Tweets",
-        "description": "Page through a user's public timeline, cursor-paginated at roughly 20 tweets per call. Returns original tweets and retweets; use User Tweets and Replies to also include replies. Cost: $0.0008 per call.",
+        "description": "Page through a user's public timeline, cursor-paginated at roughly 20 tweets per call. The page mirrors the account's timeline as X returns it, so it contains original tweets, retweets, and the account's own replies. Each tweet carries is_retweet and is_reply, so filter client-side if you want original posts only. Cost: $0.0008 per call.",
         "tags": [
           "User Reads"
         ],
@@ -2447,7 +2792,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Fetch a user's timeline (original tweets and retweets).",
+            "description": "Fetch a user's public timeline (original tweets, retweets, and their own replies).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2467,6 +2812,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -2612,10 +2961,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "description": "Accepted but not honoured on this endpoint: the upstream timeline page is fixed at roughly 20 tweets and raising count does not return more. Use cursor to read further back.",
             "schema": {
               "type": "integer",
-              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "description": "Accepted but not honoured on this endpoint: the upstream timeline page is fixed at roughly 20 tweets and raising count does not return more. Use cursor to read further back.",
               "example": "20"
             },
             "example": "20"
@@ -2627,7 +2976,7 @@
       "get": {
         "operationId": "user-tweets-and-replies",
         "summary": "User Tweets and Replies",
-        "description": "Like User Tweets, but the page also includes the replies the user posted to other accounts. Use this to capture a complete picture of a user's public activity. Cost: $0.0008 per call.",
+        "description": "Page through a user's public timeline including the replies the account posted. This endpoint resolves to the same upstream timeline as GET /user/tweets and returns the same tweets in the same order, so treat it as an alias kept for compatibility rather than a wider result set. Each tweet carries is_retweet and is_reply for client-side filtering. Cost: $0.0008 per call.",
         "tags": [
           "User Reads"
         ],
@@ -2656,7 +3005,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Fetch a user's timeline including their replies.",
+            "description": "Fetch a user's timeline including their replies (same upstream timeline as User Tweets).",
             "content": {
               "application/json": {
                 "schema": {
@@ -2676,6 +3025,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -2819,10 +3172,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "description": "Accepted but not honoured on this endpoint: the upstream timeline page is fixed at roughly 20 tweets and raising count does not return more. Use cursor to read further back.",
             "schema": {
               "type": "integer",
-              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "description": "Accepted but not honoured on this endpoint: the upstream timeline page is fixed at roughly 20 tweets and raising count does not return more. Use cursor to read further back.",
               "example": "20"
             },
             "example": "20"
@@ -2883,6 +3236,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -3014,10 +3371,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "description": "Accepted but not honoured on this endpoint: the upstream page is fixed at roughly 20 results and raising count does not return more. Use cursor to read further.",
             "schema": {
               "type": "integer",
-              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "description": "Accepted but not honoured on this endpoint: the upstream page is fixed at roughly 20 results and raising count does not return more. Use cursor to read further.",
               "example": "20"
             },
             "example": "20"
@@ -3078,6 +3435,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -3485,6 +3846,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -3689,6 +4054,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -3901,6 +4270,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -4113,6 +4486,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -4259,7 +4636,7 @@
       "get": {
         "operationId": "user-tweets-complete",
         "summary": "Full Tweet History",
-        "description": "Collect a user's tweet history in a single call, auto-paginating server-side across upstream pages up to Twitter's ~3200-tweet ceiling. Unlike GET /user/tweets (one page per call, manage cursors yourself), this drives pagination for you and returns the full collected array. Uses the public account pool: no registered session required. Use max to cap the total fetched. Cost: $0.0024 per call.",
+        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` — pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
         "tags": [
           "User Reads"
         ],
@@ -4273,22 +4650,22 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "curl \"https://api.twitterapis.com/twitter/user/tweets/complete?user_id=44196397&max=800\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+            "source": "curl \"https://api.twitterapis.com/twitter/user/tweets/complete?user_id=44196397&max=200\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/tweets/complete\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"user_id\": \"44196397\", \"max\": 800},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/tweets/complete\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"user_id\": \"44196397\", \"max\": 200},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
           },
           {
             "lang": "js",
             "label": "JavaScript",
-            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/tweets/complete\");\nurl.search = new URLSearchParams({ user_id: \"44196397\", max: \"800\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/tweets/complete\");\nurl.search = new URLSearchParams({ user_id: \"44196397\", max: \"200\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
           }
         ],
         "responses": {
           "200": {
-            "description": "Auto-paginate a user's near-complete tweet history in one call, up to Twitter's ~3200 ceiling.",
+            "description": "Auto-paginate a large batch of a user's tweet history per call, resuming with a cursor up to Twitter's ~3200 ceiling.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4297,6 +4674,15 @@
                     "count": {
                       "type": "integer",
                       "description": "Number of tweets returned in the flat array."
+                    },
+                    "next_cursor": {
+                      "type": "object",
+                      "description": "Non-null means MORE HISTORY REMAINS and this call was truncated (by max, or by the server-side time budget): call again with cursor set to this value. Null means the history is genuinely exhausted. A client that ignores this field will silently receive only part of the history.",
+                      "additionalProperties": true
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when more history remains: this page returned tweets and next_cursor is non-null. False once the history is exhausted. Equivalent to testing next_cursor, provided as a convenience loop-stop flag."
                     },
                     "tweets": {
                       "type": "array",
@@ -4308,7 +4694,8 @@
                   }
                 },
                 "example": {
-                  "count": 1,
+                  "count": 201,
+                  "next_cursor": "DAAHCgABHNqVL6L__zsLAAIAAAAT",
                   "tweets": [
                     {
                       "id": "2071092912000246106",
@@ -4434,13 +4821,25 @@
             "name": "max",
             "in": "query",
             "required": false,
-            "description": "Maximum tweets to collect. Defaults to 800; hard ceiling 3200. Higher values fetch more upstream pages and cost more.",
+            "description": "Target number of tweets to collect in this call. Defaults to 200. This is a MINIMUM target, not a hard cap: pages arrive in whole chunks, so a response may contain up to one page (<=100) more than requested. Twitter's ~3200-per-user history ceiling still applies overall.",
             "schema": {
               "type": "integer",
-              "description": "Maximum tweets to collect. Defaults to 800; hard ceiling 3200. Higher values fetch more upstream pages and cost more.",
-              "example": "800"
+              "description": "Target number of tweets to collect in this call. Defaults to 200. This is a MINIMUM target, not a hard cap: pages arrive in whole chunks, so a response may contain up to one page (<=100) more than requested. Twitter's ~3200-per-user history ceiling still applies overall.",
+              "example": "200"
             },
-            "example": "800"
+            "example": "200"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped.",
+            "schema": {
+              "type": "string",
+              "description": "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped.",
+              "example": "DAAHCgABHNqVL6L__zs"
+            },
+            "example": "DAAHCgABHNqVL6L__zs"
           }
         ]
       }
@@ -5046,6 +5445,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -5260,6 +5663,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -5466,6 +5873,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -5672,6 +6083,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -5879,6 +6294,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -6086,6 +6505,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -6292,6 +6715,10 @@
                     "next_cursor": {
                       "type": "string",
                       "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
                     }
                   }
                 },
@@ -6430,6 +6857,402 @@
             "example": "20"
           }
         ]
+      }
+    },
+    "/trends": {
+      "get": {
+        "operationId": "trends",
+        "summary": "Trends",
+        "description": "Fetch the current top trends for one location. Ask for it by country name, ISO code, or numeric WOEID; with no location parameter you get Worldwide. X returns roughly 50 trends per location, ranked. Cost: $0.0008 per call.",
+        "tags": [
+          "Trends"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/trends?country=US\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/trends\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"country\": \"US\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/trends\");\nurl.search = new URLSearchParams({ country: \"US\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read the current trending topics for a location.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "location": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/TrendServedLocation"
+                        }
+                      ],
+                      "description": "The location X actually served, as { name, woeid }, echoed back so you know what you got."
+                    },
+                    "as_of": {
+                      "type": "string",
+                      "description": "ISO 8601 timestamp of when X computed this trend list."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "ISO 8601 timestamp X reports for the trend window."
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of trends in this response, after any count truncation."
+                    },
+                    "trends": {
+                      "type": "array",
+                      "description": "Ranked trend objects: name, url, query, promoted_content, tweet_volume, is_hashtag, rank.",
+                      "items": {
+                        "$ref": "#/components/schemas/Trend"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "location": {
+                    "name": "United States",
+                    "woeid": 23424977
+                  },
+                  "as_of": "2026-07-20T06:15:13Z",
+                  "created_at": "2026-07-18T15:25:54Z",
+                  "count": 2,
+                  "trends": [
+                    {
+                      "name": "Spain",
+                      "url": "http://twitter.com/search?q=Spain",
+                      "query": "Spain",
+                      "promoted_content": null,
+                      "tweet_volume": null,
+                      "is_hashtag": false,
+                      "rank": 1
+                    },
+                    {
+                      "name": "#HOTD",
+                      "url": "http://twitter.com/search?q=%23HOTD",
+                      "query": "%23HOTD",
+                      "promoted_content": null,
+                      "tweet_volume": null,
+                      "is_hashtag": true,
+                      "rank": 2
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Country name or ISO code, e.g. \"US\" or \"Japan\". Resolved against the trends locations list, country-level entries only.",
+            "schema": {
+              "type": "string",
+              "description": "Country name or ISO code, e.g. \"US\" or \"Japan\". Resolved against the trends locations list, country-level entries only.",
+              "example": "US"
+            },
+            "example": "US"
+          },
+          {
+            "name": "woeid",
+            "in": "query",
+            "required": false,
+            "description": "Numeric WOEID from /twitter/trends/locations. Takes precedence over country when both are sent.",
+            "schema": {
+              "type": "integer",
+              "description": "Numeric WOEID from /twitter/trends/locations. Takes precedence over country when both are sent.",
+              "example": "23424977"
+            },
+            "example": "23424977"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Truncate the returned list to this many trends. X has no count of its own; it always returns its full set (about 50).",
+            "schema": {
+              "type": "integer",
+              "description": "Truncate the returned list to this many trends. X has no count of its own; it always returns its full set (about 50).",
+              "example": "10"
+            },
+            "example": "10"
+          }
+        ]
+      }
+    },
+    "/trends/locations": {
+      "get": {
+        "operationId": "trends-locations",
+        "summary": "Trend Locations",
+        "description": "Fetch the full set of locations X serves trends for, each with the WOEID to pass back to the Trends endpoint. Takes no parameters and returns the complete list. Cost: $0.0008 per call.",
+        "tags": [
+          "Trends"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/trends/locations\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/trends/locations\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/trends/locations\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List every location Twitter/X has trends available for.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of locations returned."
+                    },
+                    "locations": {
+                      "type": "array",
+                      "description": "Location objects: name, woeid, country, countryCode, parentid, placeType, url.",
+                      "items": {
+                        "$ref": "#/components/schemas/TrendLocation"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "count": 467,
+                  "locations": [
+                    {
+                      "name": "Worldwide",
+                      "woeid": 1,
+                      "country": "",
+                      "countryCode": null,
+                      "parentid": 0,
+                      "placeType": {
+                        "code": 19,
+                        "name": "Supername"
+                      },
+                      "url": "http://where.yahooapis.com/v1/place/1"
+                    },
+                    {
+                      "name": "United States",
+                      "woeid": 23424977,
+                      "country": "United States",
+                      "countryCode": "US",
+                      "parentid": 1,
+                      "placeType": {
+                        "code": 12,
+                        "name": "Country"
+                      },
+                      "url": "http://where.yahooapis.com/v1/place/23424977"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/media/upload": {
@@ -8655,6 +9478,14 @@
             ],
             "description": "The original tweet, present only when is_retweet is true."
           },
+          "quoted_tweet": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Tweet"
+              }
+            ],
+            "description": "The quoted tweet embedded one level deep, present only when is_quote is true. The nested tweet omits its own retweeted_tweet/quoted_tweet so nesting is bounded to one level."
+          },
           "extended_entities": {
             "type": "object",
             "description": "Media attached to the tweet, in the standard Twitter shape. Present only when the tweet has media; omitted for text-only tweets.",
@@ -8873,36 +9704,154 @@
                 "description": "Link the badge points to."
               }
             }
+          },
+          "pinned_tweet_ids": {
+            "type": "array",
+            "description": "Numeric IDs (as strings) of the account's pinned tweet(s); empty array when the account has none pinned or when a trimmed user object omits the block.",
+            "items": {
+              "type": "string",
+              "description": "A pinned tweet ID as a string."
+            }
+          },
+          "protected": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether the account is protected (locked); null on a trimmed user object that carries no protected flag."
+          },
+          "type": {
+            "type": "string",
+            "nullable": true,
+            "description": "The user result __typename, for example \"User\" or \"UserUnavailable\"; null when absent."
+          }
+        }
+      },
+      "Trend": {
+        "type": "object",
+        "description": "A single trending topic from X's trends list.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The trend text, for example a hashtag or phrase."
+          },
+          "url": {
+            "type": "string",
+            "description": "x.com search URL for the trend."
+          },
+          "query": {
+            "type": "string",
+            "description": "URL-encoded search query for the trend."
+          },
+          "promoted_content": {
+            "nullable": true,
+            "description": "Promotion metadata when the trend is a promoted/paid placement; null for organic trends."
+          },
+          "tweet_volume": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Approximate number of tweets in the trend over the trailing window; null when X does not report a volume."
+          },
+          "is_hashtag": {
+            "type": "boolean",
+            "description": "Whether the trend is a hashtag (its name starts with #). Derived from the trend name when X sends no literal flag."
+          },
+          "rank": {
+            "type": "integer",
+            "description": "1-based position of the trend in X's trending-rank order, assigned before any count truncation."
+          }
+        }
+      },
+      "TrendServedLocation": {
+        "type": "object",
+        "description": "The location a trends response was actually served for, echoed back in the trends envelope so the caller knows which place the trends belong to.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Human-readable location name, for example \"Worldwide\" or \"United States\"."
+          },
+          "woeid": {
+            "type": "integer",
+            "description": "The Yahoo! Where On Earth ID for the location; pass it back as the woeid parameter to re-request the same place."
+          }
+        }
+      },
+      "TrendLocation": {
+        "type": "object",
+        "description": "A place trends are available for, from the trends/locations directory. Pass its woeid to the trends endpoint to read that location's trends.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Human-readable location name, for example \"Worldwide\", \"United States\", or a city name."
+          },
+          "woeid": {
+            "type": "integer",
+            "description": "The Yahoo! Where On Earth ID for the location; pass it as the woeid parameter to the trends endpoint."
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name the location belongs to; empty string for supernames like Worldwide."
+          },
+          "countryCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO country code for the location; null for supernames like Worldwide and for locations X reports no code for."
+          },
+          "parentid": {
+            "type": "integer",
+            "description": "WOEID of the parent location (0 for the top-level Worldwide supername)."
+          },
+          "placeType": {
+            "type": "object",
+            "description": "The location's place-type classification.",
+            "properties": {
+              "code": {
+                "type": "integer",
+                "description": "Numeric place-type code (for example 19 for a supername, 12 for a country, 7 for a town)."
+              },
+              "name": {
+                "type": "string",
+                "description": "Human-readable place-type name, for example \"Supername\", \"Country\", or \"Town\"."
+              }
+            }
+          },
+          "url": {
+            "type": "string",
+            "description": "The where.yahooapis.com reference URL X returns for the location."
           }
         }
       },
       "About": {
         "type": "object",
-        "description": "A profile's full About object.",
+        "description": "A profile's full About object: identity, bio, location, linked website, verification and identity-verification flags, the professional account type and categories, follower/following counts, avatar, the account-creation date, and the \"About this account\" transparency panel (account country, how the account was created, username-change history).",
         "properties": {
           "id": {
             "type": "string",
+            "nullable": true,
             "description": "Numeric user ID as a string."
           },
           "username": {
             "type": "string",
+            "nullable": true,
             "description": "Handle without the leading @."
           },
           "name": {
             "type": "string",
+            "nullable": true,
             "description": "Display name."
           },
           "description": {
             "type": "string",
+            "nullable": true,
             "description": "Profile bio text."
           },
           "location": {
             "type": "string",
+            "nullable": true,
             "description": "Self-reported location."
           },
           "url": {
             "type": "string",
-            "description": "Linked website URL."
+            "nullable": true,
+            "description": "Linked website URL, when set."
           },
           "is_blue_verified": {
             "type": "boolean",
@@ -8910,44 +9859,96 @@
           },
           "verified": {
             "type": "boolean",
-            "description": "Whether the account is verified."
+            "description": "Whether the account is legacy-verified."
           },
           "verified_type": {
             "type": "string",
-            "description": "Verification type, for example Business or Government, when applicable."
+            "nullable": true,
+            "description": "Verification type, for example Business or Government, when applicable; null otherwise."
           },
           "professional_type": {
             "type": "string",
-            "description": "Professional account type, when the account publishes one."
+            "nullable": true,
+            "description": "Professional account type, for example \"Creator\" or \"Business\", when the account publishes one; null otherwise."
           },
           "professional_categories": {
             "type": "array",
-            "description": "Professional category entries the account has published (populated only for Professional/Business accounts; empty otherwise).",
+            "description": "Professional category names the account has published (populated only for Professional/Business accounts; empty array otherwise).",
             "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "integer",
-                  "description": "Numeric category ID."
-                },
-                "name": {
-                  "type": "string",
-                  "description": "Human-readable category name, for example \"Entrepreneur\"."
-                }
-              }
+              "type": "string",
+              "description": "A human-readable category name, for example \"Software Company\"."
             }
           },
           "followers_count": {
             "type": "integer",
+            "nullable": true,
             "description": "Follower count."
           },
           "following_count": {
             "type": "integer",
+            "nullable": true,
             "description": "Following count."
           },
           "created_at": {
             "type": "string",
+            "nullable": true,
             "description": "Account creation timestamp in Twitter date format."
+          },
+          "profile_image_url": {
+            "type": "string",
+            "nullable": true,
+            "description": "Avatar image URL."
+          },
+          "is_identity_verified": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether the account has completed X's identity verification. Null when the profile carries no verification_info block (an honest \"not available\", never a fabricated value)."
+          },
+          "verified_since": {
+            "type": "string",
+            "nullable": true,
+            "description": "Timestamp the account was verified, as the raw epoch-milliseconds string X emits; null when not available."
+          },
+          "account_based_in": {
+            "type": "string",
+            "nullable": true,
+            "description": "Country the account is based in, from X's \"About this account\" transparency panel; null when the panel is unavailable."
+          },
+          "created_via": {
+            "type": "string",
+            "nullable": true,
+            "description": "How the account was created, from X's \"About this account\" transparency panel, for example \"United States App Store\". X names this field `source` upstream; it is surfaced here as created_via (the \"connected via / created via\" concept). Null when the panel is unavailable."
+          },
+          "username_changes": {
+            "type": "object",
+            "nullable": true,
+            "description": "Username-change history from X's \"About this account\" transparency panel; null when the panel is unavailable.",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "description": "Number of times the account has changed its username."
+              },
+              "last_changed_at": {
+                "type": "string",
+                "nullable": true,
+                "description": "When the username was last changed, as the raw epoch-milliseconds string X emits; null when the account has never changed its username (count is 0)."
+              }
+            }
+          },
+          "created_country_accurate": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether X considers account_based_in an accurate reflection of the account's country of origin; null when the transparency panel is unavailable."
+          },
+          "location_accurate": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether X considers the self-reported location accurate; null when the transparency panel is unavailable."
+          },
+          "learn_more_url": {
+            "type": "string",
+            "nullable": true,
+            "description": "X help-center link explaining the \"About this account\" transparency data; null when the panel is unavailable."
           }
         }
       },

@@ -2,12 +2,24 @@
 
 ## Unreleased
 
+### Added
+
+- **Seven new tools, closing the gap between the MCP surface and the endpoints the API serves.** Reads: `twitter_trends` (top trends for a location, by `country` or `woeid`), `twitter_trends_locations` (every location X publishes trends for, each with its WOEID), and `twitter_account_me` / `twitter_account_payments` (your twitterapis.com account details and payment history; both free, and served on the un-prefixed `/account/*` path). Session and write: `twitter_customer_session` (register your x.com cookies against your key), `twitter_user_login` (log in with username/password, plus `totp_secret` for 2FA), and `twitter_media_upload` (upload a base64 image, returns a `media_id` for `twitter_create_tweet`). The catalog is now 47 tools: 33 reads and 14 write actions.
+- **A JSON-request-body transport for the three endpoints whose handler reads one.** `twitter_customer_session`, `twitter_user_login`, and `twitter_media_upload` set `jsonBody: true`, so their arguments are sent in the JSON body rather than the query string, matching the routes that read `c.req.json()`. For these tools the credential fields are the body payload and are not diverted into `x-*` headers.
+- `twitter_user_login` documents its REAL response contract, `{ ok, username, message }`. The account cookies it mints are stored server-side against your key and are never returned to the caller. (The published OpenAPI still describes an `{ auth_token, ct0, twid }` response for this endpoint, which the live handler does not send; a code comment on the tool flags the mismatch for maintainers.)
+
+### Fixed
+
+- **`twitter_tweet_thread` no longer advertises a `cursor` it ignores.** `/twitter/tweet/thread` returns the whole ordered thread in a single response and accepts only `id`/`url`, so the tool's `cursor` argument and its "paginate with cursor" wording were removed to match the contract (the live `openapi.json` had already dropped `cursor` here).
+- **`twitter_user_about` description refreshed** to cover the fields the endpoint returns today: verification and identity-verification flags, linked website, and X's "About this account" transparency panel (account country, how the account was created, and username-change history).
+- **`test/openapi.snapshot.json` regenerated from the live `openapi.json`**, bringing the vendored offline copy back in sync. It had drifted on 23 endpoints' fields, and now also carries the four new paths and the `Trend` component schemas.
+
 ### Changed
 
 - The publish firewall now runs on `npm publish` itself, via `prepublishOnly`, not only on a manual `npm test`. A release that skips the test step can no longer reach the registry unchecked. Verified: with a competitor reference reintroduced into the README, `npm publish` aborts before the tarball stage.
 - The firewall no longer carries its own list of banned terms. It delegates to the maintainer's isolation registry, which is the single place those rules live, so the gate and everything else that enforces them cannot drift apart. If the registry cannot be located, the gate fails rather than passing.
 
-Both changes are to release tooling. No runtime code changed, so installed packages behave identically.
+The two firewall changes above are release tooling only.
 
 ## 0.6.1 (2026-07-20)
 
