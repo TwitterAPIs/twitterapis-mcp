@@ -40,18 +40,13 @@ if (!API_KEY) {
 }
 
 // ── REST call ────────────────────────────────────────────────────────────────
-// Every endpoint (GET reads and POST writes alike) reads its params from the
-// query string, so the same buildQuery path serves both; only the HTTP method
-// differs per tool.
-async function callEndpoint(path, args, method = "GET") {
-  // Pull per-call inline credentials out of args so they travel as request
-  // headers, never the query string (the API reads x-auth-token / x-ct0; passing
-  // them as query params would leak them into URLs and access logs). When
-  // supplied, this one API key acts as that account; otherwise the key's linked
-  // session is used. Lets a single key act as many accounts.
-  const { auth_token, ct0, user_agent, proxy_url, ...rest } = args || {};
-  const q = buildQuery(rest);
-  const url = `${BASE_URL}${path}${q ? `?${q}` : ""}`;
+// Most endpoints (GET reads and the simple POST writes alike) read their params
+// from the query string, so the same buildQuery path serves both and only the
+// HTTP method differs. A few POST endpoints (customer/session, user_login,
+// media/upload) instead read a JSON request body; those tools set jsonBody:true
+// and callEndpoint sends the args in the body rather than the query string.
+async function callEndpoint(path, args, method = "GET", jsonBody = false) {
+  const all = args || {};
 
   const headers = {
     // The API accepts either header; send both for maximum compatibility.
@@ -60,11 +55,33 @@ async function callEndpoint(path, args, method = "GET") {
     accept: "application/json",
     "user-agent": `twitterapis-mcp/${VERSION}`,
   };
-  if (auth_token && ct0) {
-    headers["x-auth-token"] = auth_token;
-    headers["x-ct0"] = ct0;
-    if (user_agent) headers["x-user-agent"] = user_agent;
-    if (proxy_url) headers["x-proxy-url"] = proxy_url;
+
+  let url;
+  let reqBody;
+  if (jsonBody) {
+    // Endpoints whose handler reads a JSON request body (customer/session,
+    // user_login, media/upload). Send every arg in the body: for customer/session
+    // and user_login the credentials ARE the payload the handler reads from the
+    // body, so they must NOT be diverted into x-* headers the way per-call inline
+    // creds are on the query-string tools.
+    url = `${BASE_URL}${path}`;
+    headers["content-type"] = "application/json";
+    reqBody = JSON.stringify(all);
+  } else {
+    // Pull per-call inline credentials out of args so they travel as request
+    // headers, never the query string (the API reads x-auth-token / x-ct0; passing
+    // them as query params would leak them into URLs and access logs). When
+    // supplied, this one API key acts as that account; otherwise the key's linked
+    // session is used. Lets a single key act as many accounts.
+    const { auth_token, ct0, user_agent, proxy_url, ...rest } = all;
+    const q = buildQuery(rest);
+    url = `${BASE_URL}${path}${q ? `?${q}` : ""}`;
+    if (auth_token && ct0) {
+      headers["x-auth-token"] = auth_token;
+      headers["x-ct0"] = ct0;
+      if (user_agent) headers["x-user-agent"] = user_agent;
+      if (proxy_url) headers["x-proxy-url"] = proxy_url;
+    }
   }
 
   const ctrl = new AbortController();
@@ -73,6 +90,7 @@ async function callEndpoint(path, args, method = "GET") {
     const res = await fetch(url, {
       method,
       headers,
+      body: reqBody,
       signal: ctrl.signal,
     });
     const body = await res.text();
@@ -120,7 +138,7 @@ for (const tool of TOOLS) {
   server.registerTool(
     tool.name,
     { description: tool.description, inputSchema: tool.shape, annotations },
-    async (args) => callEndpoint(tool.path, args, method),
+    async (args) => callEndpoint(tool.path, args, method, Boolean(tool.jsonBody)),
   );
 }
 

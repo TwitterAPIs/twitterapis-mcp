@@ -8,13 +8,13 @@ const reads = TOOLS.filter((t) => !t.write);
 const writes = TOOLS.filter((t) => t.write);
 
 // Catalog shape (full parity: reads + writes)
-check("40 tools", TOOLS.length === 40);
-check("29 reads", reads.length === 29);
-check("11 writes", writes.length === 11);
+check("47 tools", TOOLS.length === 47);
+check("33 reads", reads.length === 33);
+check("14 writes", writes.length === 14);
 check("names unique", new Set(TOOLS.map((t) => t.name)).size === TOOLS.length);
 check("paths unique", new Set(TOOLS.map((t) => t.path)).size === TOOLS.length);
 check("all names twitter_*", TOOLS.every((t) => /^twitter_[a-z0-9_]+$/.test(t.name)));
-check("all paths /twitter/*", TOOLS.every((t) => t.path.startsWith("/twitter/")));
+check("all paths /twitter/* or /account/*", TOOLS.every((t) => t.path.startsWith("/twitter/") || t.path.startsWith("/account/")));
 check("all have a real description", TOOLS.every((t) => typeof t.description === "string" && t.description.length > 20));
 check("all have an object shape", TOOLS.every((t) => t.shape && typeof t.shape === "object" && !Array.isArray(t.shape)));
 
@@ -23,12 +23,21 @@ check("reads have no POST method", reads.every((t) => !t.method || t.method === 
 check("writes are POST", writes.every((t) => t.method === "POST"));
 check("only writes carry write:true", TOOLS.every((t) => Boolean(t.write) === (t.method === "POST")));
 
-// Excluded endpoints must NOT be in the catalog: media/upload (its base64 body
-// does not fit the query-string transport, and create_tweet already takes
-// pre-uploaded media_ids) and the session-management paths (not data tools).
-// dm/send was previously walled and is now live, so it IS included (below).
-const EXCLUDED = ["/twitter/media/upload", "/twitter/user/user_login", "/twitter/customer/session"];
-check("no walled/excluded paths", !TOOLS.some((t) => EXCLUDED.includes(t.path)));
+// Previously-walled endpoints are now first-class tools: media/upload (base64
+// image in a JSON body), customer/session and user_login (session bootstrap, JSON
+// body). Each reads a JSON request body, so it sets jsonBody:true and is a POST
+// write. dm/send is also live (below).
+const JSON_BODY_WRITES = ["twitter_media_upload", "twitter_customer_session", "twitter_user_login"];
+check("json-body writes present: POST + write + jsonBody", JSON_BODY_WRITES.every((n) => {
+  const t = TOOLS.find((x) => x.name === n);
+  return t && t.method === "POST" && t.write === true && t.jsonBody === true;
+}));
+check("only the json-body tools set jsonBody", TOOLS.every((t) => !t.jsonBody || JSON_BODY_WRITES.includes(t.name)));
+// New read tools (account/billing + trends) are read-only; account reads live on
+// the un-prefixed /account/* path (billing proxy), not under /twitter/.
+const NEW_READS = ["twitter_trends", "twitter_trends_locations", "twitter_account_me", "twitter_account_payments"];
+check("new read tools present and read-only", NEW_READS.every((n) => { const t = TOOLS.find((x) => x.name === n); return t && !t.write; }));
+check("account tools use /account/* path", ["twitter_account_me", "twitter_account_payments"].every((n) => TOOLS.find((t) => t.name === n)?.path.startsWith("/account/")));
 check("dm_send present and is a write", TOOLS.find((t) => t.name === "twitter_dm_send")?.method === "POST" && TOOLS.find((t) => t.name === "twitter_dm_send")?.write === true);
 
 // The destructive (reversing) writes are flagged for client warnings.
