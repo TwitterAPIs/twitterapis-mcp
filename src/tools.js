@@ -112,6 +112,17 @@ export const TOOLS = [
     },
   },
   {
+    name: "twitter_users_by_ids",
+    path: "/twitter/users/by_ids",
+    description:
+      "Resolve up to 100 numeric user ids into full profiles in ONE call. Same user object as twitter_user_info_by_id, returned as a list. Use this whenever you hold several ids and would otherwise loop twitter_user_info_by_id, for example hydrating the authors of a batch of tweets. Ids that no longer resolve (suspended or deleted accounts) are omitted rather than returned as nulls; compare the requested and resolved counts in the response, or diff the returned ids against the ones you sent, to see which were dropped. Sending more than 100 ids is rejected rather than truncated, so a short list always means those accounts are gone, never that the request was clipped.",
+    shape: {
+      user_ids: z.string().describe(
+        "Comma-separated numeric Twitter/X user ids, up to 100 (e.g. '44196397,745273'). Duplicates are collapsed and billed once.",
+      ),
+    },
+  },
+  {
     name: "twitter_user_about",
     path: "/twitter/user/user_about",
     description:
