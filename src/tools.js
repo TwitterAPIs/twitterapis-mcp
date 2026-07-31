@@ -607,6 +607,18 @@ export const TOOLS = [
       ...INLINE,
     },
   },
+  {
+    name: "twitter_media_status",
+    path: "/twitter/media/status",
+    description:
+      "Check whether an uploaded media_id has finished processing on X, before you attach it to a tweet. Video, GIF and large uploads are processed ASYNCHRONOUSLY: twitter_media_upload returns a media_id immediately, but attaching it via twitter_create_tweet FAILS until X reports state 'succeeded'. Poll this until then. Returns media_id, state ('pending', 'in_progress', 'succeeded' or 'failed'), check_after_secs (how long X asks you to wait before polling again, honour it rather than tight-looping), progress_percent, and an error object when state is 'failed'. Reads through YOUR OWN registered account session, the same one that performed the upload, so register first with twitter_customer_session or twitter_user_login, or pass auth_token/ct0 for this call. This is a READ: no daily write cap applies.",
+    shape: {
+      media_id: z.string().describe(
+        "Numeric media id returned by twitter_media_upload, e.g. '1234567890123456789'.",
+      ),
+      ...INLINE,
+    },
+  },
 ];
 
 // Pure query-string builder: drops undefined/null/empty values, URL-encodes the rest.
