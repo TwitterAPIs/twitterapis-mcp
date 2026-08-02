@@ -22,8 +22,11 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "check": "node --check src/index.js && node --check src/tools.js",
-    "test": "node test/tools.test.mjs && node test/smoke.mjs && node test/openapi-parity.mjs && node test/firewall.mjs && node test/registry-manifests.mjs",
+    "check": "node --check src/index.js && node --check src/tools.js && node --check src/query.js",
+    "build": "node scripts/gen-tools.mjs --write",
+    "build:check": "node scripts/gen-tools.mjs --check",
+    "openapi:refresh": "node scripts/openapi-refresh.mjs",
+    "test": "node scripts/gen-tools.mjs --check && node test/catalog-identity.mjs && node test/tools.test.mjs && node test/smoke.mjs && node test/openapi-parity.mjs && node test/readme-parity.mjs && node test/firewall.mjs && node test/registry-manifests.mjs",
     "prepublishOnly": "npm test",
     "check:openapi-parity": "node test/openapi-parity.mjs",
     "check:firewall": "node test/firewall.mjs",

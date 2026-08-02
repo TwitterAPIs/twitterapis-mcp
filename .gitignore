@@ -1,4 +1,8 @@
 node_modules/
+# and as a bare entry too: a git worktree is set up with node_modules as a
+# SYMLINK, which the trailing-slash rule above does not match, so without this
+# line the symlink shows as untracked and can be committed into the package.
+node_modules
 .env
 .env.local
 *.log

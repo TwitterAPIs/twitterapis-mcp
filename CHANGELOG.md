@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- **`src/tools.js` is now generated at build time instead of maintained by hand.** The catalog is built from two committed inputs: `test/openapi.snapshot.json`, a vendored copy of the published OpenAPI spec, which supplies the structure (which endpoints exist, which parameters each takes, whether a parameter is required, its type); and a new hand-authored `scripts/tools.overrides.mjs`, which supplies everything the spec cannot express, namely the tool and argument descriptions a model reads to decide how to call a tool, the cross-field rules such as "provide exactly one of `username` or `user_id`", the per-call credential arguments that travel as `x-*` request headers and therefore appear in no spec, and the write / destructive / JSON-body flags. Generating the descriptions from the spec instead would have replaced tuned prose (about 307 characters per tool, with routing between sibling tools) with endpoint documentation written for a human reading the docs site (29 to 64 characters, no routing), which is a downgrade to the only text an agent actually reads. **All 51 tools are byte-identical to 0.6.3** across names, REST paths, HTTP methods, flags, argument names and ordering, required-ness, types, bounds, enum members, and every description; `test/catalog-identity.mjs` pins that against a frozen fingerprint of the 0.6.3 catalog and fails on any difference. No behaviour change for any client.
+- The spec is **vendored, not fetched**. Nothing is downloaded at install time or at server boot, so the published package stays a fixed, reviewable artifact rather than one whose tool surface depends on a hostname still answering. `npm run openapi:refresh` re-vendors it as a deliberate, reviewed step and prints the route diff; `npm run build` regenerates the catalog; `npm test` regenerates it in memory and fails if the committed file was hand-edited or left stale.
+- The query-string builder moved to `src/query.js` and is re-exported from `src/tools.js`, so the generated file contains catalog data and no logic. Import paths are unchanged.
+
+### Fixed
+
+- **The vendored spec was four endpoints behind the API**, missing `/users/by_ids`, `/user/blocking`, `/user/muting`, and `/media/status`, the four tools added after the snapshot was last refreshed. The parity check only noticed because it prefers the live spec over the vendored copy, so on any run without network access it reported four tools pointing at endpoints that "do not exist" and exited non-zero. Re-vendored; the offline path now passes.
+- **The README was missing four of the 51 tools** (`twitter_users_by_ids`, `twitter_blocking`, `twitter_muting`, `twitter_media_status`) and still said "47 tools: 33 reads". Since the README ships inside the package and is its page on npm, those four were callable but documented nowhere. Rows added, counts corrected, and a new `test/readme-parity.mjs` compares the README against the catalog itself, so a tool can no longer ship without a row or a correct count.
+- The changelog section describing the seven tools added in 0.6.2 was still headed "Unreleased" twelve days after it shipped. Retitled.
+
 ## 0.6.3 (2026-08-02)
 
 ### Added

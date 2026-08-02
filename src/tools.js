@@ -1,67 +1,28 @@
-// Tool catalog + pure query-builder for @twitterapis/mcp.
-// Kept separate from the server wiring (index.js) so it can be unit-tested
-// without spawning the stdio transport.
+// GENERATED FILE. DO NOT EDIT BY HAND.
 //
-// Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool
-// arg names map 1:1 to endpoint query params (every endpoint, including the
-// POST write actions, reads its params from the query string). A tool with
+// Built by scripts/gen-tools.mjs from:
+//   test/openapi.snapshot.json    the vendored REST contract (structure)
+//   scripts/tools.overrides.mjs   the hand-authored agent-facing layer (prose)
+//
+// Edit one of those two, then run `npm run build`. `npm test` regenerates this
+// file in memory and fails if it does not match what is committed, so a hand edit
+// here is caught rather than shipped.
+//
+// Catalog: 51 tools (37 reads, 14 writes).
+//
+// Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
+// names map 1:1 to endpoint query params (every endpoint, including the POST
+// write actions, reads its params from the query string), except the per-call
+// inline credentials, which travel as x-* request headers, and the three
+// jsonBody tools, whose fields travel in a JSON request body. A tool with
 // `method: "POST"` is a write that acts on behalf of the authenticated account
 // behind your API key; reads are GET and default when `method` is omitted.
+//
+// write:true       -> action mutates account/Twitter state (readOnlyHint:false)
+// destructive:true -> action removes/reverses state (delete, un-follow/like/RT/bookmark)
 import { z } from "zod";
 
-// ── Shared Zod input-schema fragments ───────────────────────────────────────
-const CURSOR = {
-  cursor: z.string().optional().describe(
-    "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
-  ),
-};
-const PAGINATION = {
-  count: z.number().int().min(1).max(200).optional().describe(
-    "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
-  ),
-  ...CURSOR,
-};
-const USER_REF = {
-  username: z.string().optional().describe(
-    'Twitter/X handle WITHOUT the leading @ (e.g. "elonmusk", "openai"). Provide exactly one of username or user_id.',
-  ),
-  user_id: z.string().optional().describe(
-    'Numeric Twitter/X user id (e.g. "44196397"). Provide exactly one of username or user_id.',
-  ),
-};
-const TWEET_REF = {
-  id: z.string().optional().describe(
-    'Tweet/post numeric id (e.g. "1789012345678901234"). Provide exactly one of id or url.',
-  ),
-  url: z.string().optional().describe(
-    'Full tweet URL, e.g. "https://x.com/elonmusk/status/1789012345678901234". Provide exactly one of id or url.',
-  ),
-};
-// Per-call inline credentials. Pass an account's own X session cookies to act AS
-// that account for this one call, without pre-registering a session, so a single
-// API key can act as many accounts (e.g. polling several inboxes or posting from
-// a pool). Sent as request headers, never in the URL. Omit to use the key's
-// linked session.
-const INLINE = {
-  auth_token: z.string().optional().describe(
-    "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
-  ),
-  ct0: z.string().optional().describe(
-    "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
-  ),
-  proxy_url: z.string().optional().describe(
-    "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
-  ),
-  user_agent: z.string().optional().describe(
-    "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
-  ),
-};
-
-// ── Tool catalog. Reads are GET (default); writes set method:"POST". ─────────
-// write:true   -> action mutates account/Twitter state (annotated readOnlyHint:false)
-// destructive:true -> action removes/reverses state (delete, un-follow/like/RT/bookmark)
 export const TOOLS = [
-  // ── Reads: search + discovery ──────────────────────────────────────────────
   {
     name: "twitter_advanced_search",
     path: "/twitter/tweet/advanced_search",
@@ -71,10 +32,15 @@ export const TOOLS = [
       query: z.string().describe(
         "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'.",
       ),
-      product: z.enum(["Top", "Latest", "Media", "People"]).optional().describe(
+      product: z.enum(["Top","Latest","Media","People"]).optional().describe(
         "Result ranking mode. 'Latest' = reverse-chronological (best for monitoring). 'Top' = engagement-ranked (best for finding popular tweets, default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts.",
       ),
-      ...PAGINATION,
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
     },
   },
   {
@@ -86,7 +52,12 @@ export const TOOLS = [
       query: z.string().describe(
         "Name, keyword, or topic to search accounts for. Examples: 'OpenAI', 'AI researcher', 'tech founder'.",
       ),
-      ...PAGINATION,
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
     },
   },
   {
@@ -127,7 +98,14 @@ export const TOOLS = [
     path: "/twitter/user/user_about",
     description:
       "Get a user's full 'About' object: the structured profile facts X surfaces beyond the bio, including account category and professional/business labels, verification and identity-verification flags, joined date, location and linked website, follower/following counts, and X's 'About this account' transparency panel (the account's country, how the account was created, and its username-change history). Provide a username or a user_id. Use this to enrich a profile beyond what twitter_user_info returns.",
-    shape: { ...USER_REF },
+    shape: {
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+    },
   },
   {
     name: "twitter_user_affiliates",
@@ -135,11 +113,21 @@ export const TOOLS = [
     description:
       "List the affiliated accounts of an organization profile (the smaller accounts X displays under a company's 'Affiliated' badge, e.g. employees or sub-brands). Provide a username or user_id. Returns profile data per affiliate plus a pagination cursor. Returns empty for accounts with no affiliations.",
     shape: {
-      ...USER_REF,
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
       team: z.string().optional().describe(
         "Optional team/sub-group name to filter affiliates by, when the org exposes named teams.",
       ),
-      ...PAGINATION,
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
     },
   },
   {
@@ -156,20 +144,45 @@ export const TOOLS = [
       ),
     },
   },
-  // ── Reads: a user's tweets / timeline ──────────────────────────────────────
   {
     name: "twitter_user_tweets",
     path: "/twitter/user/tweets",
     description:
       "Get a user's recent original tweets, excluding replies and retweets. Returns tweet text, id, timestamp, and engagement metrics. Paginate with cursor to go further back. Use this to analyse a user's own content, opinions, or posting cadence. For replies too, use twitter_user_tweets_and_replies; for the full back-catalogue in one call, use twitter_user_tweets_complete.",
-    shape: { ...USER_REF, ...PAGINATION },
+    shape: {
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_user_tweets_and_replies",
     path: "/twitter/user/tweets_and_replies",
     description:
       "Get a user's full activity timeline: their original tweets AND replies to others. Useful for understanding how someone engages with a community, not just what they post. Paginate with cursor. To see only original tweets, use twitter_user_tweets.",
-    shape: { ...USER_REF, ...PAGINATION },
+    shape: {
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_user_tweets_complete",
@@ -190,7 +203,20 @@ export const TOOLS = [
     path: "/twitter/user/media",
     description:
       "Get the images and videos a user has posted. Returns media-containing tweets with URLs to the media files, dimensions, and type (photo/video/animated_gif). Paginate with cursor. Use this to pull a user's visual content history.",
-    shape: { ...USER_REF, ...PAGINATION },
+    shape: {
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_user_mentions",
@@ -201,7 +227,12 @@ export const TOOLS = [
       username: z.string().describe(
         "Twitter/X handle WITHOUT the leading @ of the user to find mentions for (e.g. 'openai' to find tweets mentioning @openai).",
       ),
-      ...PAGINATION,
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
     },
   },
   {
@@ -213,44 +244,113 @@ export const TOOLS = [
       user_id: z.string().describe(
         "Numeric Twitter/X user id (e.g. '44196397'). Required: this endpoint does not accept a username. Resolve a handle to a user_id first with twitter_user_info.",
       ),
-      ...PAGINATION,
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
     },
   },
-  // ── Reads: followers / following graph ─────────────────────────────────────
   {
     name: "twitter_user_followers",
     path: "/twitter/user/followers",
     description:
       "List the accounts that follow a given user. Returns profile data for each follower (username, display name, bio, follower count). Paginate with cursor for large audiences. Useful for audience analysis, finding who follows a brand or influencer.",
-    shape: { ...USER_REF, ...PAGINATION },
+    shape: {
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_user_following",
     path: "/twitter/user/following",
     description:
       "List the accounts that a given user follows. Returns profile data for each account followed. Paginate with cursor. Useful for mapping a user's information sources, influencer networks, or competitor monitoring lists.",
-    shape: { ...USER_REF, ...PAGINATION },
+    shape: {
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_user_followers_v2",
     path: "/twitter/user/followers_v2",
     description:
       "List a user's followers using the v2 response shape (richer profile fields and more reliable cursoring for large audiences). Same inputs as twitter_user_followers; prefer this when you need the fuller v2 payload or are paging deep follower lists.",
-    shape: { ...USER_REF, ...PAGINATION },
+    shape: {
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_user_following_v2",
     path: "/twitter/user/following_v2",
     description:
       "List the accounts a user follows using the v2 response shape (richer profile fields and more reliable cursoring). Same inputs as twitter_user_following; prefer this when you need the fuller v2 payload or are paging deep following lists.",
-    shape: { ...USER_REF, ...PAGINATION },
+    shape: {
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_user_verified_followers",
     path: "/twitter/user/verified_followers",
     description:
       "List a user's followers who have a verified account (checkmark). Filters the follower list to verified accounts only, useful for identifying notable or institutional followers. Paginate with cursor.",
-    shape: { ...USER_REF, ...PAGINATION },
+    shape: {
+      username: z.string().optional().describe(
+        "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_followers_you_know",
@@ -261,42 +361,90 @@ export const TOOLS = [
       user_id: z.string().describe(
         "Numeric user id of the target account to compute shared followers against.",
       ),
-      ...PAGINATION,
-      ...INLINE,
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
     },
   },
-  // ── Reads: a single tweet + its conversation ───────────────────────────────
   {
     name: "twitter_tweet_detail",
     path: "/twitter/tweet/detail",
     description:
       "Get the full detail of a single tweet: text, author profile, post timestamp, like/retweet/reply/quote counts, attached media, referenced quoted tweet, and parent reply context. Use this to inspect a specific tweet before fetching its replies or thread. Accepts either the tweet id or its full URL.",
-    shape: { ...TWEET_REF },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+    },
   },
   {
     name: "twitter_tweet_replies",
     path: "/twitter/tweet/replies",
     description:
       "Get replies to a specific tweet. Returns each reply tweet with author, text, and metrics. Paginate with cursor to load more. Use this to read the conversation under a tweet, gauge sentiment, or find notable responses.",
-    shape: { ...TWEET_REF, ...CURSOR },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_tweet_thread",
     path: "/twitter/tweet/thread",
     description:
       "Get all tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread). Pass any tweet id/url from the thread and the API returns the full ordered sequence in a single call. Does NOT return replies from other users, use twitter_tweet_replies for that. Accepts either the tweet id or its full URL.",
-    // No cursor: /twitter/tweet/thread returns the whole ordered thread in one
-    // response and takes no pagination param (openapi lists only id/url). The
-    // previous ...CURSOR advertised a cursor the endpoint ignores and drove a
-    // false "paginate with cursor" claim; removed to match the real contract.
-    shape: { ...TWEET_REF },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+    },
   },
   {
     name: "twitter_tweet_retweeters",
     path: "/twitter/tweet/retweeters",
     description:
       "List the accounts that retweeted a specific tweet. Returns profile data for each retweeter. Paginate with cursor. Useful for finding who amplified a piece of content or mapping a tweet's distribution network.",
-    shape: { ...TWEET_REF, ...PAGINATION },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
   },
   {
     name: "twitter_list_members",
@@ -307,10 +455,14 @@ export const TOOLS = [
       list_id: z.string().describe(
         "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>.",
       ),
-      ...PAGINATION,
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
     },
   },
-  // ── Reads: trends ──────────────────────────────────────────────────────────
   {
     name: "twitter_trends",
     path: "/twitter/trends",
@@ -335,7 +487,6 @@ export const TOOLS = [
       "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place.",
     shape: {},
   },
-  // ── Reads: your twitterapis.com account (billing; not Twitter data) ─────────
   {
     name: "twitter_account_me",
     path: "/account/me",
@@ -350,34 +501,109 @@ export const TOOLS = [
       "Get YOUR twitterapis.com payment history: the list of top-ups and charges on your account. Authenticated by your API key. This is an account read, not Twitter data, and is free (it does not spend credits).",
     shape: {},
   },
-  // ── Reads: authenticated-account surfaces (require a session behind your key) ─
   {
     name: "twitter_home_timeline",
     path: "/twitter/user/home_timeline",
     description:
       "Get YOUR authenticated account's Home timeline (the 'Following'/'For you' feed), most recent first. Requires an authenticated session behind your key. Returns tweets with author and metrics plus a cursor. Use this to read what your account would see when it opens X.",
-    shape: { ...PAGINATION, ...INLINE },
+    shape: {
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_bookmarks",
     path: "/twitter/user/bookmarks",
     description:
       "List YOUR authenticated account's bookmarked tweets, most recent first. Requires an authenticated session behind your key. Returns each bookmarked tweet with author and metrics plus a cursor.",
-    shape: { ...PAGINATION, ...INLINE },
+    shape: {
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_blocking",
     path: "/twitter/user/blocking",
     description:
       "List the accounts YOUR authenticated account has BLOCKED, as full user objects, cursor-paginated. Requires an authenticated session behind your key. There is no user_id argument: X provides no way to read another account's block list, so this reads yours only. An empty users array is a real answer meaning you block nobody, never a silent failure, because the endpoint returns an error status rather than an empty page when it cannot read the list.",
-    shape: { ...PAGINATION, ...INLINE },
+    shape: {
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_muting",
     path: "/twitter/user/muting",
     description:
       "List the accounts YOUR authenticated account has MUTED, as full user objects, cursor-paginated. Muting hides an account's posts from your timeline without blocking it, so this is a different list from twitter_blocking and an account can appear in one and not the other. Requires an authenticated session behind your key. There is no user_id argument: X provides no way to read another account's mute list. An empty users array means you mute nobody, never a silent failure.",
-    shape: { ...PAGINATION, ...INLINE },
+    shape: {
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_bookmark_search",
@@ -388,8 +614,24 @@ export const TOOLS = [
       query: z.string().describe(
         "Search terms to match against your bookmarked tweets' text.",
       ),
-      ...PAGINATION,
-      ...INLINE,
+      count: z.number().int().min(1).max(200).optional().describe(
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
     },
   },
   {
@@ -397,7 +639,20 @@ export const TOOLS = [
     path: "/twitter/dm/list",
     description:
       "List YOUR authenticated account's Direct Message conversations (inbox), each with the participant and a conversation_id you can pass to twitter_dm_conversation. Requires an authenticated session behind your key. Read-only: this does not send DMs.",
-    shape: { ...INLINE },
+    shape: {
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_dm_conversation",
@@ -408,7 +663,18 @@ export const TOOLS = [
       conversation_id: z.string().describe(
         "The conversation_id from a twitter_dm_list entry identifying which DM thread to read.",
       ),
-      ...INLINE,
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
     },
   },
   {
@@ -425,11 +691,20 @@ export const TOOLS = [
       text: z.string().min(1).describe(
         "The Direct Message body text to send (non-empty).",
       ),
-      ...INLINE,
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
     },
   },
-
-  // ── Writes: tweet authoring ────────────────────────────────────────────────
   {
     name: "twitter_create_tweet",
     path: "/twitter/tweet/create",
@@ -450,7 +725,18 @@ export const TOOLS = [
       media_ids: z.string().optional().describe(
         "Optional. Comma-separated media id(s) from a prior media upload to attach (images/video).",
       ),
-      ...INLINE,
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
     },
   },
   {
@@ -461,9 +747,27 @@ export const TOOLS = [
     destructive: true,
     description:
       "Delete a tweet AS your authenticated account. Irreversible: the tweet is permanently removed. You can only delete tweets your authenticated account authored. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...INLINE },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
-  // ── Writes: engagement (favorite / retweet / bookmark) + inverses ──────────
   {
     name: "twitter_favorite_tweet",
     path: "/twitter/tweet/favorite",
@@ -471,7 +775,26 @@ export const TOOLS = [
     write: true,
     description:
       "Like (favorite) a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unfavorite_tweet.",
-    shape: { ...TWEET_REF, ...INLINE },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_unfavorite_tweet",
@@ -481,7 +804,26 @@ export const TOOLS = [
     destructive: true,
     description:
       "Remove a like (unfavorite) from a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...INLINE },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_retweet",
@@ -490,7 +832,26 @@ export const TOOLS = [
     write: true,
     description:
       "Retweet a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unretweet.",
-    shape: { ...TWEET_REF, ...INLINE },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_unretweet",
@@ -500,7 +861,26 @@ export const TOOLS = [
     destructive: true,
     description:
       "Undo a retweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...INLINE },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_bookmark_tweet",
@@ -509,7 +889,26 @@ export const TOOLS = [
     write: true,
     description:
       "Bookmark a tweet to YOUR authenticated account's private bookmarks. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unbookmark_tweet.",
-    shape: { ...TWEET_REF, ...INLINE },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
   {
     name: "twitter_unbookmark_tweet",
@@ -519,9 +918,27 @@ export const TOOLS = [
     destructive: true,
     description:
       "Remove a tweet from YOUR authenticated account's bookmarks. Provide the tweet id or url. Requires write capability behind your key.",
-    shape: { ...TWEET_REF, ...INLINE },
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
   },
-  // ── Writes: follow graph ───────────────────────────────────────────────────
   {
     name: "twitter_follow_user",
     path: "/twitter/user/follow",
@@ -533,7 +950,18 @@ export const TOOLS = [
       user_id: z.string().describe(
         "Numeric user id of the account to follow. Resolve a handle to a user_id first with twitter_user_info.",
       ),
-      ...INLINE,
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
     },
   },
   {
@@ -548,15 +976,20 @@ export const TOOLS = [
       user_id: z.string().describe(
         "Numeric user id of the account to unfollow.",
       ),
-      ...INLINE,
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
     },
   },
-  // ── Session bootstrap + media: link an X account to your key, then act as it ─
-  // Once a session is linked (via twitter_customer_session or twitter_user_login)
-  // the authenticated-account reads and the write actions run AS that account.
-  // These three send a JSON request body (jsonBody:true), so the fields travel
-  // in the body, not the query string, matching the backend routes that read
-  // c.req.json().
   {
     name: "twitter_customer_session",
     path: "/twitter/customer/session",
@@ -586,12 +1019,6 @@ export const TOOLS = [
     method: "POST",
     write: true,
     jsonBody: true,
-    // CONTRACT NOTE (maintainers): the published openapi documents an
-    // {auth_token, ct0, twid} response for this endpoint. That is WRONG. The
-    // live handler (backend routes/user-login.ts) returns {ok, username,
-    // message} and stores the minted session server-side; it never returns the
-    // cookies. The description below documents the REAL contract, not the
-    // openapi's. Fixing the openapi response schema is a docs/website change.
     description:
       "Log in to X with a username and password (plus totp_secret if the account has 2FA) and store the resulting session against your API key, so the authenticated-account reads and the write tools then act as that account. On success returns { ok, username, message }; it does NOT return the session cookies (auth_token/ct0 are minted and kept server-side, never sent back). Typical failures: bad_credentials (401), two_factor_required (400, add totp_secret), captcha_required (422), acid_challenge (409, confirm the login from the account then retry). This handles real account credentials; never log or echo the values you pass.",
     shape: {
@@ -618,7 +1045,18 @@ export const TOOLS = [
       media_data: z.string().describe(
         "Base64-encoded image bytes to upload. Sent in the JSON request body.",
       ),
-      ...INLINE,
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
     },
   },
   {
@@ -630,16 +1068,22 @@ export const TOOLS = [
       media_id: z.string().describe(
         "Numeric media id returned by twitter_media_upload, e.g. '1234567890123456789'.",
       ),
-      ...INLINE,
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
     },
   },
 ];
 
-// Pure query-string builder: drops undefined/null/empty values, URL-encodes the rest.
-export function buildQuery(args) {
-  const qs = new URLSearchParams();
-  for (const [k, v] of Object.entries(args || {})) {
-    if (v !== undefined && v !== null && String(v).length > 0) qs.set(k, String(v));
-  }
-  return qs.toString();
-}
+// The query-string builder is hand-written logic, not catalog data, so it lives
+// in its own module and is re-exported here to keep this file's one import path.
+export { buildQuery } from "./query.js";
