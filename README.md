@@ -91,7 +91,7 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-47 tools: 33 reads and 14 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`).
+51 tools: 37 reads and 14 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`).
 
 Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **all write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark) are annotated `destructiveHint: true` so MCP clients can prompt before running them.
 
@@ -103,6 +103,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_user_search` | Find user accounts by name or keyword |
 | `twitter_user_info` | Full profile by handle (bio, counts, verification, location) |
 | `twitter_user_info_by_id` | Full profile by numeric user id |
+| `twitter_users_by_ids` | Up to 100 numeric user ids resolved to full profiles in one call |
 | `twitter_user_about` | A user's structured About object (category, professional/business labels, verification + identity-verification flags, joined date, and X's 'About this account' transparency panel) |
 | `twitter_user_affiliates` | Accounts affiliated with an organization profile |
 | `twitter_check_follow_relationship` | Follow relationship between two user ids (who follows whom) |
@@ -125,6 +126,8 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_list_members` | Members of a Twitter/X List |
 | `twitter_home_timeline` | Your authenticated account's Home timeline _(session)_ |
 | `twitter_bookmarks` | Your authenticated account's bookmarks _(session)_ |
+| `twitter_blocking` | Accounts your authenticated account has blocked (your own list only) _(session)_ |
+| `twitter_muting` | Accounts your authenticated account has muted (your own list only) _(session)_ |
 | `twitter_bookmark_search` | Full-text search within your bookmarks _(session)_ |
 | `twitter_dm_list` | Your DM conversations (inbox), read-only _(session)_ |
 | `twitter_dm_conversation` | Messages in one DM conversation, read-only _(session)_ |
@@ -132,6 +135,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_trends_locations` | Every location X has trends for, each with its WOEID |
 | `twitter_account_me` | Your twitterapis.com account: credits, usage, email (free) |
 | `twitter_account_payments` | Your twitterapis.com payment history (free) |
+| `twitter_media_status` | Processing state of an uploaded `media_id`; poll until `succeeded` before attaching video or GIF _(session)_ |
 
 ### Write actions _(require a linked X session)_
 
@@ -235,13 +239,30 @@ Calls are billed to your twitterapis.com account. Almost every endpoint is $0.00
 
 **Do I need an X (Twitter) developer account?** No. Get an API key at [twitterapis.com/signup](https://www.twitterapis.com/signup); there is no application or approval step.
 
-**Is it read-only?** No. 33 read tools work with just your API key; 14 write actions (post, like, retweet, follow, DM, media upload) act as a linked X account or per-call inline credentials.
+**Is it read-only?** No. 37 read tools work with just your API key; 14 write actions (post, like, retweet, follow, DM, media upload) act as a linked X account or per-call inline credentials.
 
 **Which clients are supported?** Claude Desktop, Cursor, Windsurf, and VS Code (Copilot agent mode), or any Model Context Protocol client.
 
 **How is it billed?** Per request. New keys start with $0.50 in free credits, no card required. See [pricing](https://www.twitterapis.com/pricing).
 
 **Does it store my key or data?** No. The server holds no state and forwards your API key on each call.
+
+## Maintainers
+
+`src/tools.js` is **generated**. Do not edit it. The catalog is built at build time from two committed inputs:
+
+- `test/openapi.snapshot.json`, a vendored copy of the published OpenAPI spec, which supplies the structure: which endpoints exist, which parameters each accepts, whether a parameter is required, and its type.
+- `scripts/tools.overrides.mjs`, hand-authored, which supplies everything the spec cannot express: the tool and argument descriptions a model reads to decide how to call a tool, the cross-field rules ("provide exactly one of `username` or `user_id`"), the per-call credential arguments that travel as `x-*` headers, and the write / destructive / JSON-body flags.
+
+The spec is vendored on purpose. Nothing is fetched at install time or at server boot, so the published package is a fixed artifact rather than one that depends on a hostname still answering.
+
+```bash
+npm run openapi:refresh   # re-vendor the spec, prints the route diff
+npm run build             # regenerate src/tools.js
+npm test                  # gates, incl. "src/tools.js matches the generator"
+```
+
+`npm test` fails if `src/tools.js` was hand-edited or left stale, if the catalog and the live spec disagree, or if the tool list and this README disagree.
 
 ## License
 

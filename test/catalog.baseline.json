@@ -1,0 +1,2116 @@
+{
+  "toolCount": 51,
+  "order": [
+    "twitter_advanced_search",
+    "twitter_user_search",
+    "twitter_user_info",
+    "twitter_user_info_by_id",
+    "twitter_users_by_ids",
+    "twitter_user_about",
+    "twitter_user_affiliates",
+    "twitter_check_follow_relationship",
+    "twitter_user_tweets",
+    "twitter_user_tweets_and_replies",
+    "twitter_user_tweets_complete",
+    "twitter_user_media",
+    "twitter_user_mentions",
+    "twitter_user_likes",
+    "twitter_user_followers",
+    "twitter_user_following",
+    "twitter_user_followers_v2",
+    "twitter_user_following_v2",
+    "twitter_user_verified_followers",
+    "twitter_followers_you_know",
+    "twitter_tweet_detail",
+    "twitter_tweet_replies",
+    "twitter_tweet_thread",
+    "twitter_tweet_retweeters",
+    "twitter_list_members",
+    "twitter_trends",
+    "twitter_trends_locations",
+    "twitter_account_me",
+    "twitter_account_payments",
+    "twitter_home_timeline",
+    "twitter_bookmarks",
+    "twitter_blocking",
+    "twitter_muting",
+    "twitter_bookmark_search",
+    "twitter_dm_list",
+    "twitter_dm_conversation",
+    "twitter_dm_send",
+    "twitter_create_tweet",
+    "twitter_delete_tweet",
+    "twitter_favorite_tweet",
+    "twitter_unfavorite_tweet",
+    "twitter_retweet",
+    "twitter_unretweet",
+    "twitter_bookmark_tweet",
+    "twitter_unbookmark_tweet",
+    "twitter_follow_user",
+    "twitter_unfollow_user",
+    "twitter_customer_session",
+    "twitter_user_login",
+    "twitter_media_upload",
+    "twitter_media_status"
+  ],
+  "tools": {
+    "twitter_advanced_search": {
+      "name": "twitter_advanced_search",
+      "path": "/twitter/tweet/advanced_search",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Search recent tweets using X's advanced-search operators. Supports from:, to:, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, -filter:replies, lang:en, and free-text. Returns tweet text, author info, engagement metrics, and a pagination cursor. Use product='Latest' for chronological results; 'Top' (default) for engagement-ranked. Example queries: 'AI agents min_faves:100', 'from:openai filter:links since:2024-01-01', '#buildinpublic -filter:replies lang:en'.",
+      "args": [
+        "query",
+        "product",
+        "count",
+        "cursor"
+      ],
+      "required": [
+        "query"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'."
+          },
+          "product": {
+            "description": "Result ranking mode. 'Latest' = reverse-chronological (best for monitoring). 'Top' = engagement-ranked (best for finding popular tweets, default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts.",
+            "type": "string",
+            "enum": [
+              "Top",
+              "Latest",
+              "Media",
+              "People"
+            ]
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    "twitter_user_search": {
+      "name": "twitter_user_search",
+      "path": "/twitter/user/search",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Search for Twitter/X user accounts by name, keyword, or topic. Returns matching profiles (username, display name, bio, follower count, verification status) with a pagination cursor. Use this to discover accounts in a niche, find brand handles, or locate a person when you only know their name.",
+      "args": [
+        "query",
+        "count",
+        "cursor"
+      ],
+      "required": [
+        "query"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Name, keyword, or topic to search accounts for. Examples: 'OpenAI', 'AI researcher', 'tech founder'."
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    "twitter_user_info": {
+      "name": "twitter_user_info",
+      "path": "/twitter/user/info",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get a user's complete public profile by their @handle: display name, bio, follower count, following count, verification status, location, website, account creation date, and pinned tweet. Use this before fetching tweets or followers to confirm the account exists and resolve the numeric user_id.",
+      "args": [
+        "username"
+      ],
+      "required": [
+        "username"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama')."
+          }
+        },
+        "required": [
+          "username"
+        ]
+      }
+    },
+    "twitter_user_info_by_id": {
+      "name": "twitter_user_info_by_id",
+      "path": "/twitter/user/info_by_id",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get a user's complete public profile by their numeric user id. Identical response to twitter_user_info. Use this when you already have a user_id from a previous API response and want to avoid a handle lookup.",
+      "args": [
+        "user_id"
+      ],
+      "required": [
+        "user_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Numeric Twitter/X user id (e.g. '44196397' for @elonmusk). Found in responses from other tools as user_id or author_id."
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    "twitter_users_by_ids": {
+      "name": "twitter_users_by_ids",
+      "path": "/twitter/users/by_ids",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Resolve up to 100 numeric user ids into full profiles in ONE call. Same user object as twitter_user_info_by_id, returned as a list. Use this whenever you hold several ids and would otherwise loop twitter_user_info_by_id, for example hydrating the authors of a batch of tweets. Ids that no longer resolve (suspended or deleted accounts) are omitted rather than returned as nulls; compare the requested and resolved counts in the response, or diff the returned ids against the ones you sent, to see which were dropped. Sending more than 100 ids is rejected rather than truncated, so a short list always means those accounts are gone, never that the request was clipped.",
+      "args": [
+        "user_ids"
+      ],
+      "required": [
+        "user_ids"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_ids": {
+            "type": "string",
+            "description": "Comma-separated numeric Twitter/X user ids, up to 100 (e.g. '44196397,745273'). Duplicates are collapsed and billed once."
+          }
+        },
+        "required": [
+          "user_ids"
+        ]
+      }
+    },
+    "twitter_user_about": {
+      "name": "twitter_user_about",
+      "path": "/twitter/user/user_about",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get a user's full 'About' object: the structured profile facts X surfaces beyond the bio, including account category and professional/business labels, verification and identity-verification flags, joined date, location and linked website, follower/following counts, and X's 'About this account' transparency panel (the account's country, how the account was created, and its username-change history). Provide a username or a user_id. Use this to enrich a profile beyond what twitter_user_info returns.",
+      "args": [
+        "username",
+        "user_id"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_user_affiliates": {
+      "name": "twitter_user_affiliates",
+      "path": "/twitter/user/affiliates",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List the affiliated accounts of an organization profile (the smaller accounts X displays under a company's 'Affiliated' badge, e.g. employees or sub-brands). Provide a username or user_id. Returns profile data per affiliate plus a pagination cursor. Returns empty for accounts with no affiliations.",
+      "args": [
+        "username",
+        "user_id",
+        "team",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "team": {
+            "description": "Optional team/sub-group name to filter affiliates by, when the org exposes named teams.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_check_follow_relationship": {
+      "name": "twitter_check_follow_relationship",
+      "path": "/twitter/user/check_follow_relationship",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Check the follow relationship between two accounts by numeric user id: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Both ids are required. Use this to verify a follow before/after a follow action, or to detect mutuals.",
+      "args": [
+        "source_user_id",
+        "target_user_id"
+      ],
+      "required": [
+        "source_user_id",
+        "target_user_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_user_id": {
+            "type": "string",
+            "description": "Numeric user id of the SOURCE account (the 'is this account following...' subject)."
+          },
+          "target_user_id": {
+            "type": "string",
+            "description": "Numeric user id of the TARGET account (the '...the target?' object)."
+          }
+        },
+        "required": [
+          "source_user_id",
+          "target_user_id"
+        ]
+      }
+    },
+    "twitter_user_tweets": {
+      "name": "twitter_user_tweets",
+      "path": "/twitter/user/tweets",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get a user's recent original tweets, excluding replies and retweets. Returns tweet text, id, timestamp, and engagement metrics. Paginate with cursor to go further back. Use this to analyse a user's own content, opinions, or posting cadence. For replies too, use twitter_user_tweets_and_replies; for the full back-catalogue in one call, use twitter_user_tweets_complete.",
+      "args": [
+        "username",
+        "user_id",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_user_tweets_and_replies": {
+      "name": "twitter_user_tweets_and_replies",
+      "path": "/twitter/user/tweets_and_replies",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get a user's full activity timeline: their original tweets AND replies to others. Useful for understanding how someone engages with a community, not just what they post. Paginate with cursor. To see only original tweets, use twitter_user_tweets.",
+      "args": [
+        "username",
+        "user_id",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_user_tweets_complete": {
+      "name": "twitter_user_tweets_complete",
+      "path": "/twitter/user/tweets/complete",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get a user's near-complete original-tweet history in a single call, auto-paginating server-side up to a cap (Twitter's ~3200-tweet per-user ceiling). Heavier than twitter_user_tweets; use when you want the whole back-catalogue at once rather than page-by-page. Returns a flat tweet array. Requires the numeric user_id (resolve a handle first with twitter_user_info).",
+      "args": [
+        "user_id",
+        "max"
+      ],
+      "required": [
+        "user_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Numeric Twitter/X user id. Required: this endpoint does not accept a username. Resolve a handle to a user_id first with twitter_user_info."
+          },
+          "max": {
+            "description": "Maximum number of tweets to collect (default 800, hard ceiling 3200). Higher values take longer and cost more.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3200
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    "twitter_user_media": {
+      "name": "twitter_user_media",
+      "path": "/twitter/user/media",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get the images and videos a user has posted. Returns media-containing tweets with URLs to the media files, dimensions, and type (photo/video/animated_gif). Paginate with cursor. Use this to pull a user's visual content history.",
+      "args": [
+        "username",
+        "user_id",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_user_mentions": {
+      "name": "twitter_user_mentions",
+      "path": "/twitter/user/mentions",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get recent public tweets that mention (@ tag) a user. Searches for tweets directed at the username using the to: operator. Returns matching tweets with author info and metrics. Paginate with cursor. Use this to monitor brand mentions, replies directed at an account, or public conversations about a person.",
+      "args": [
+        "username",
+        "count",
+        "cursor"
+      ],
+      "required": [
+        "username"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Twitter/X handle WITHOUT the leading @ of the user to find mentions for (e.g. 'openai' to find tweets mentioning @openai)."
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username"
+        ]
+      }
+    },
+    "twitter_user_likes": {
+      "name": "twitter_user_likes",
+      "path": "/twitter/user/likes",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get the tweets a user has liked (their public Likes tab), most recent first. Returns each liked tweet with author and metrics, plus a pagination cursor. Use this to infer interests or find content a user has endorsed. Returns empty if the account hides its likes. Requires the numeric user_id (resolve a handle first with twitter_user_info).",
+      "args": [
+        "user_id",
+        "count",
+        "cursor"
+      ],
+      "required": [
+        "user_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Numeric Twitter/X user id (e.g. '44196397'). Required: this endpoint does not accept a username. Resolve a handle to a user_id first with twitter_user_info."
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    "twitter_user_followers": {
+      "name": "twitter_user_followers",
+      "path": "/twitter/user/followers",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List the accounts that follow a given user. Returns profile data for each follower (username, display name, bio, follower count). Paginate with cursor for large audiences. Useful for audience analysis, finding who follows a brand or influencer.",
+      "args": [
+        "username",
+        "user_id",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_user_following": {
+      "name": "twitter_user_following",
+      "path": "/twitter/user/following",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List the accounts that a given user follows. Returns profile data for each account followed. Paginate with cursor. Useful for mapping a user's information sources, influencer networks, or competitor monitoring lists.",
+      "args": [
+        "username",
+        "user_id",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_user_followers_v2": {
+      "name": "twitter_user_followers_v2",
+      "path": "/twitter/user/followers_v2",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List a user's followers using the v2 response shape (richer profile fields and more reliable cursoring for large audiences). Same inputs as twitter_user_followers; prefer this when you need the fuller v2 payload or are paging deep follower lists.",
+      "args": [
+        "username",
+        "user_id",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_user_following_v2": {
+      "name": "twitter_user_following_v2",
+      "path": "/twitter/user/following_v2",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List the accounts a user follows using the v2 response shape (richer profile fields and more reliable cursoring). Same inputs as twitter_user_following; prefer this when you need the fuller v2 payload or are paging deep following lists.",
+      "args": [
+        "username",
+        "user_id",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_user_verified_followers": {
+      "name": "twitter_user_verified_followers",
+      "path": "/twitter/user/verified_followers",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List a user's followers who have a verified account (checkmark). Filters the follower list to verified accounts only, useful for identifying notable or institutional followers. Paginate with cursor.",
+      "args": [
+        "username",
+        "user_id",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "description": "Twitter/X handle WITHOUT the leading @ (e.g. \"elonmusk\", \"openai\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "user_id": {
+            "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_followers_you_know": {
+      "name": "twitter_followers_you_know",
+      "path": "/twitter/user/followers_you_know",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List the 'Followers you know' for a target user id: the followers of that account that YOUR authenticated account also follows (mutual-connection overlap). Requires an authenticated session behind your key. Returns profile data per overlap account plus a cursor.",
+      "args": [
+        "user_id",
+        "count",
+        "cursor",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "user_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Numeric user id of the target account to compute shared followers against."
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    "twitter_tweet_detail": {
+      "name": "twitter_tweet_detail",
+      "path": "/twitter/tweet/detail",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get the full detail of a single tweet: text, author profile, post timestamp, like/retweet/reply/quote counts, attached media, referenced quoted tweet, and parent reply context. Use this to inspect a specific tweet before fetching its replies or thread. Accepts either the tweet id or its full URL.",
+      "args": [
+        "id",
+        "url"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_tweet_replies": {
+      "name": "twitter_tweet_replies",
+      "path": "/twitter/tweet/replies",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get replies to a specific tweet. Returns each reply tweet with author, text, and metrics. Paginate with cursor to load more. Use this to read the conversation under a tweet, gauge sentiment, or find notable responses.",
+      "args": [
+        "id",
+        "url",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_tweet_thread": {
+      "name": "twitter_tweet_thread",
+      "path": "/twitter/tweet/thread",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get all tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread). Pass any tweet id/url from the thread and the API returns the full ordered sequence in a single call. Does NOT return replies from other users, use twitter_tweet_replies for that. Accepts either the tweet id or its full URL.",
+      "args": [
+        "id",
+        "url"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_tweet_retweeters": {
+      "name": "twitter_tweet_retweeters",
+      "path": "/twitter/tweet/retweeters",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List the accounts that retweeted a specific tweet. Returns profile data for each retweeter. Paginate with cursor. Useful for finding who amplified a piece of content or mapping a tweet's distribution network.",
+      "args": [
+        "id",
+        "url",
+        "count",
+        "cursor"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_list_members": {
+      "name": "twitter_list_members",
+      "path": "/twitter/list/members",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List the members of a Twitter/X List by its numeric list id. Returns profile data for each member. Paginate with cursor. Use this to enumerate curated account sets, including competitor lists, industry watchlists, or media outlet lists. The list_id appears in the X.com list URL (x.com/i/lists/<list_id>).",
+      "args": [
+        "list_id",
+        "count",
+        "cursor"
+      ],
+      "required": [
+        "list_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "description": "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>."
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "list_id"
+        ]
+      }
+    },
+    "twitter_trends": {
+      "name": "twitter_trends",
+      "path": "/twitter/trends",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get the current top trends for a location. With no location parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Returns the resolved location, the as_of / created_at timestamps, and the ranked trends list. Use count to truncate the list. A location X will not serve returns a 400.",
+      "args": [
+        "country",
+        "woeid",
+        "count"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "description": "Country name or ISO code to get trends for, e.g. 'US' or 'Japan'. Resolved against the trends locations list. Omit for Worldwide.",
+            "type": "string"
+          },
+          "woeid": {
+            "description": "Numeric WOEID from twitter_trends_locations. Takes precedence over country when both are supplied.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Truncate the returned trends list to at most this many. Omit to return X's full list for the location.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      }
+    },
+    "twitter_trends_locations": {
+      "name": "twitter_trends_locations",
+      "path": "/twitter/trends/locations",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place.",
+      "args": [],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "twitter_account_me": {
+      "name": "twitter_account_me",
+      "path": "/account/me",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get YOUR twitterapis.com account details: email, name, credits remaining, credits used, total requests made, and account creation date. Authenticated by your API key. This is an account read, not Twitter data, and is free (it does not spend credits).",
+      "args": [],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "twitter_account_payments": {
+      "name": "twitter_account_payments",
+      "path": "/account/payments",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get YOUR twitterapis.com payment history: the list of top-ups and charges on your account. Authenticated by your API key. This is an account read, not Twitter data, and is free (it does not spend credits).",
+      "args": [],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "twitter_home_timeline": {
+      "name": "twitter_home_timeline",
+      "path": "/twitter/user/home_timeline",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get YOUR authenticated account's Home timeline (the 'Following'/'For you' feed), most recent first. Requires an authenticated session behind your key. Returns tweets with author and metrics plus a cursor. Use this to read what your account would see when it opens X.",
+      "args": [
+        "count",
+        "cursor",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_bookmarks": {
+      "name": "twitter_bookmarks",
+      "path": "/twitter/user/bookmarks",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List YOUR authenticated account's bookmarked tweets, most recent first. Requires an authenticated session behind your key. Returns each bookmarked tweet with author and metrics plus a cursor.",
+      "args": [
+        "count",
+        "cursor",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_blocking": {
+      "name": "twitter_blocking",
+      "path": "/twitter/user/blocking",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List the accounts YOUR authenticated account has BLOCKED, as full user objects, cursor-paginated. Requires an authenticated session behind your key. There is no user_id argument: X provides no way to read another account's block list, so this reads yours only. An empty users array is a real answer meaning you block nobody, never a silent failure, because the endpoint returns an error status rather than an empty page when it cannot read the list.",
+      "args": [
+        "count",
+        "cursor",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_muting": {
+      "name": "twitter_muting",
+      "path": "/twitter/user/muting",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List the accounts YOUR authenticated account has MUTED, as full user objects, cursor-paginated. Muting hides an account's posts from your timeline without blocking it, so this is a different list from twitter_blocking and an account can appear in one and not the other. Requires an authenticated session behind your key. There is no user_id argument: X provides no way to read another account's mute list. An empty users array means you mute nobody, never a silent failure.",
+      "args": [
+        "count",
+        "cursor",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_bookmark_search": {
+      "name": "twitter_bookmark_search",
+      "path": "/twitter/user/bookmark_search",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Full-text search within YOUR authenticated account's bookmarks. Requires an authenticated session behind your key. Returns matching bookmarked tweets plus a cursor. Use this to retrieve a previously bookmarked tweet by keyword.",
+      "args": [
+        "query",
+        "count",
+        "cursor",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "query"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search terms to match against your bookmarked tweets' text."
+          },
+          "count": {
+            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    "twitter_dm_list": {
+      "name": "twitter_dm_list",
+      "path": "/twitter/dm/list",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List YOUR authenticated account's Direct Message conversations (inbox), each with the participant and a conversation_id you can pass to twitter_dm_conversation. Requires an authenticated session behind your key. Read-only: this does not send DMs.",
+      "args": [
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_dm_conversation": {
+      "name": "twitter_dm_conversation",
+      "path": "/twitter/dm/conversation",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get the messages in one Direct Message conversation by its conversation_id (from twitter_dm_list). Requires an authenticated session behind your key. Returns each message with sender id, time, and text. Read-only: this does not send DMs.",
+      "args": [
+        "conversation_id",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "conversation_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "description": "The conversation_id from a twitter_dm_list entry identifying which DM thread to read."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "conversation_id"
+        ]
+      }
+    },
+    "twitter_dm_send": {
+      "name": "twitter_dm_send",
+      "path": "/twitter/dm/send",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Send a Direct Message AS your authenticated account. Provide the recipient's numeric user id (recipient_id, resolve a @handle with twitter_user_info first) and the message text. Requires an authenticated session with write capability behind your key; X soft-blocks writes from datacenter IPs, so route through a residential proxy_url for reliability. Returns message_id and conversation_id. Delivers a real DM and is not silently reversible.",
+      "args": [
+        "recipient_id",
+        "text",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "recipient_id",
+        "text"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "recipient_id": {
+            "type": "string",
+            "description": "Numeric Twitter/X user id of the recipient (e.g. '44196397'). Resolve a @handle to its id with twitter_user_info first. The recipient must allow DMs from you."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The Direct Message body text to send (non-empty)."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "recipient_id",
+          "text"
+        ]
+      }
+    },
+    "twitter_create_tweet": {
+      "name": "twitter_create_tweet",
+      "path": "/twitter/tweet/create",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Post a new tweet AS your authenticated account. Set reply_to to post a reply, or quote to post a quote-tweet. This publishes publicly and is not silently reversible (use twitter_delete_tweet to remove it). Requires an authenticated session with write capability behind your key. Returns the new tweet_id and url.",
+      "args": [
+        "text",
+        "reply_to",
+        "quote",
+        "media_ids",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "text"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The tweet body text (1 to 280 characters, or longer if the account has extended limits)."
+          },
+          "reply_to": {
+            "description": "Optional. Numeric id of the tweet to reply to. When set, this tweet is posted as a reply in that conversation.",
+            "type": "string"
+          },
+          "quote": {
+            "description": "Optional. Numeric id of the tweet to quote. When set, this tweet quote-tweets that tweet.",
+            "type": "string"
+          },
+          "media_ids": {
+            "description": "Optional. Comma-separated media id(s) from a prior media upload to attach (images/video).",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    },
+    "twitter_delete_tweet": {
+      "name": "twitter_delete_tweet",
+      "path": "/twitter/tweet/delete",
+      "method": "POST",
+      "write": true,
+      "destructive": true,
+      "jsonBody": false,
+      "description": "Delete a tweet AS your authenticated account. Irreversible: the tweet is permanently removed. You can only delete tweets your authenticated account authored. Provide the tweet id or url. Requires write capability behind your key.",
+      "args": [
+        "id",
+        "url",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_favorite_tweet": {
+      "name": "twitter_favorite_tweet",
+      "path": "/twitter/tweet/favorite",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Like (favorite) a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unfavorite_tweet.",
+      "args": [
+        "id",
+        "url",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_unfavorite_tweet": {
+      "name": "twitter_unfavorite_tweet",
+      "path": "/twitter/tweet/unfavorite",
+      "method": "POST",
+      "write": true,
+      "destructive": true,
+      "jsonBody": false,
+      "description": "Remove a like (unfavorite) from a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key.",
+      "args": [
+        "id",
+        "url",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_retweet": {
+      "name": "twitter_retweet",
+      "path": "/twitter/tweet/retweet",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Retweet a tweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unretweet.",
+      "args": [
+        "id",
+        "url",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_unretweet": {
+      "name": "twitter_unretweet",
+      "path": "/twitter/tweet/unretweet",
+      "method": "POST",
+      "write": true,
+      "destructive": true,
+      "jsonBody": false,
+      "description": "Undo a retweet AS your authenticated account. Provide the tweet id or url. Requires write capability behind your key.",
+      "args": [
+        "id",
+        "url",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_bookmark_tweet": {
+      "name": "twitter_bookmark_tweet",
+      "path": "/twitter/tweet/bookmark",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Bookmark a tweet to YOUR authenticated account's private bookmarks. Provide the tweet id or url. Requires write capability behind your key. Reverse with twitter_unbookmark_tweet.",
+      "args": [
+        "id",
+        "url",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_unbookmark_tweet": {
+      "name": "twitter_unbookmark_tweet",
+      "path": "/twitter/tweet/unbookmark",
+      "method": "POST",
+      "write": true,
+      "destructive": true,
+      "jsonBody": false,
+      "description": "Remove a tweet from YOUR authenticated account's bookmarks. Provide the tweet id or url. Requires write capability behind your key.",
+      "args": [
+        "id",
+        "url",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_follow_user": {
+      "name": "twitter_follow_user",
+      "path": "/twitter/user/follow",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Follow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key. Reverse with twitter_unfollow_user.",
+      "args": [
+        "user_id",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "user_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Numeric user id of the account to follow. Resolve a handle to a user_id first with twitter_user_info."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    "twitter_unfollow_user": {
+      "name": "twitter_unfollow_user",
+      "path": "/twitter/user/unfollow",
+      "method": "POST",
+      "write": true,
+      "destructive": true,
+      "jsonBody": false,
+      "description": "Unfollow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key.",
+      "args": [
+        "user_id",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "user_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Numeric user id of the account to unfollow."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    "twitter_customer_session": {
+      "name": "twitter_customer_session",
+      "path": "/twitter/customer/session",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": true,
+      "description": "Register YOUR OWN X account session against your API key, so the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes) and the write tools (twitter_create_tweet, twitter_dm_send, twitter_follow_user, twitter_favorite_tweet, twitter_retweet, twitter_media_upload) act as your account. Provide your x.com session cookies auth_token and ct0 (copy them from a logged-in browser); optionally a user_agent and a residential proxy_url. The cookies are stored server-side against your key and are never returned. Returns ok, the resolved username, and whether the session validated live. Prefer twitter_user_login if you would rather pass a username/password than raw cookies. Most tools also accept auth_token/ct0 per-call without registering.",
+      "args": [
+        "auth_token",
+        "ct0",
+        "user_agent",
+        "proxy_url"
+      ],
+      "required": [
+        "auth_token",
+        "ct0"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "auth_token": {
+            "type": "string",
+            "description": "Your x.com auth_token cookie value, from a logged-in browser session. Stored server-side against your key; never returned."
+          },
+          "ct0": {
+            "type": "string",
+            "description": "Your x.com ct0 (CSRF) cookie value, from the same browser session. Paired with auth_token."
+          },
+          "user_agent": {
+            "description": "Optional. Browser User-Agent to send with this session's requests. Defaults to a current Chrome UA.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. HTTP or SOCKS proxy URL to route this session's traffic through, e.g. 'http://user:pass@host:port'.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "auth_token",
+          "ct0"
+        ]
+      }
+    },
+    "twitter_user_login": {
+      "name": "twitter_user_login",
+      "path": "/twitter/user/user_login",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": true,
+      "description": "Log in to X with a username and password (plus totp_secret if the account has 2FA) and store the resulting session against your API key, so the authenticated-account reads and the write tools then act as that account. On success returns { ok, username, message }; it does NOT return the session cookies (auth_token/ct0 are minted and kept server-side, never sent back). Typical failures: bad_credentials (401), two_factor_required (400, add totp_secret), captcha_required (422), acid_challenge (409, confirm the login from the account then retry). This handles real account credentials; never log or echo the values you pass.",
+      "args": [
+        "username",
+        "password",
+        "totp_secret"
+      ],
+      "required": [
+        "username",
+        "password"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "The X account username/handle (without the leading @). Some accounts also accept the login email here."
+          },
+          "password": {
+            "type": "string",
+            "description": "The X account password."
+          },
+          "totp_secret": {
+            "description": "The account's base32 two-factor (TOTP) secret. Required only when the account has 2FA enabled.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      }
+    },
+    "twitter_media_upload": {
+      "name": "twitter_media_upload",
+      "path": "/twitter/media/upload",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": true,
+      "description": "Upload an image to X and get a media_id to attach to a tweet via twitter_create_tweet's media_ids. Provide media_data as base64-encoded image bytes. Acts as your registered account session (register first with twitter_customer_session or twitter_user_login, or pass auth_token/ct0 for this call). Returns ok and the media_id. Only base64 image data is supported over this tool's JSON transport.",
+      "args": [
+        "media_data",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "media_data"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "media_data": {
+            "type": "string",
+            "description": "Base64-encoded image bytes to upload. Sent in the JSON request body."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "media_data"
+        ]
+      }
+    },
+    "twitter_media_status": {
+      "name": "twitter_media_status",
+      "path": "/twitter/media/status",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Check whether an uploaded media_id has finished processing on X, before you attach it to a tweet. Video, GIF and large uploads are processed ASYNCHRONOUSLY: twitter_media_upload returns a media_id immediately, but attaching it via twitter_create_tweet FAILS until X reports state 'succeeded'. Poll this until then. Returns media_id, state ('pending', 'in_progress', 'succeeded' or 'failed'), check_after_secs (how long X asks you to wait before polling again, honour it rather than tight-looping), progress_percent, and an error object when state is 'failed'. Reads through YOUR OWN registered account session, the same one that performed the upload, so register first with twitter_customer_session or twitter_user_login, or pass auth_token/ct0 for this call. This is a READ: no daily write cap applies.",
+      "args": [
+        "media_id",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "media_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "media_id": {
+            "type": "string",
+            "description": "Numeric media id returned by twitter_media_upload, e.g. '1234567890123456789'."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "media_id"
+        ]
+      }
+    }
+  }
+}

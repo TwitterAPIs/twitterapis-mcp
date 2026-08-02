@@ -6,8 +6,16 @@
 // openapi<->live-API contract is enforced separately by the live-contract gate.
 //
 // Run: node test/openapi-parity.mjs   (wired into `npm test`)
-// Source of truth: https://docs.twitterapis.com/openapi.json (falls back to a
-// vendored copy at test/openapi.snapshot.json if the network is unavailable).
+// Source of truth: https://docs.twitterapis.com/openapi.json (falls back to the
+// vendored copy at test/openapi.snapshot.json when the network is unavailable).
+//
+// This gate reads the LIVE spec, which is what makes it different from the build
+// check. `npm run build:check` proves the catalog matches the VENDORED snapshot;
+// this proves the catalog matches what the API publishes RIGHT NOW, so a route
+// added or retired upstream shows up here as a failure whose fix is
+// `npm run openapi:refresh` followed by `npm run build`. Because the two read
+// different copies, the pair also catches a stale snapshot, which a single gate
+// reading either copy alone cannot see.
 
 import { TOOLS } from "../src/tools.js";
 import { readFileSync, existsSync } from "node:fs";
@@ -15,7 +23,9 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const OPENAPI_URL = "https://docs.twitterapis.com/openapi.json";
+// Overridable so the offline fallback path is testable. The default is the real
+// published spec; nothing reads this variable in normal use.
+const OPENAPI_URL = process.env.OPENAPI_URL || "https://docs.twitterapis.com/openapi.json";
 const SNAPSHOT = resolve(HERE, "openapi.snapshot.json");
 
 // openapi paths omit the /twitter prefix the MCP tool paths carry.

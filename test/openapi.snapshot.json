@@ -2326,6 +2326,181 @@
         ]
       }
     },
+    "/users/by_ids": {
+      "get": {
+        "operationId": "users-by-ids",
+        "summary": "Users by IDs",
+        "description": "Resolve many numeric user IDs into full user objects in a single request. Send up to 100 comma-separated IDs. Unresolvable IDs (suspended or deleted) are omitted rather than returned as nulls, and the response reports how many were requested and how many resolved. Cost: $0.0008 per call.",
+        "tags": [
+          "User Reads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/users/by_ids?user_ids=745273,44196397\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/users/by_ids\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"user_ids\": \"745273,44196397\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/users/by_ids\");\nurl.search = new URLSearchParams({ user_ids: \"745273,44196397\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fetch up to 100 full profiles in one call.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "description": "The resolved user objects. Omits IDs that could not be resolved.",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "requested": {
+                      "type": "object",
+                      "description": "How many unique IDs were looked up.",
+                      "additionalProperties": true
+                    },
+                    "resolved": {
+                      "type": "object",
+                      "description": "How many of them returned a user. Lower than requested when accounts are suspended or deleted.",
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "example": {
+                  "users": [
+                    {
+                      "id": "745273",
+                      "username": "naval",
+                      "name": "Naval",
+                      "followers_count": 2100000,
+                      "verified": true
+                    }
+                  ],
+                  "requested": 2,
+                  "resolved": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_ids",
+            "in": "query",
+            "required": true,
+            "description": "Comma-separated numeric user IDs, up to 100. Duplicates are collapsed.",
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated numeric user IDs, up to 100. Duplicates are collapsed.",
+              "example": "745273,44196397"
+            },
+            "example": "745273,44196397"
+          }
+        ]
+      }
+    },
     "/user/user_about": {
       "get": {
         "operationId": "user-user-about",
@@ -4515,6 +4690,416 @@
                       "quote_count": 11,
                       "bookmark_count": 24,
                       "view_count": 130944
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Items per page. Defaults to 20; capped at 100.",
+            "schema": {
+              "type": "integer",
+              "description": "Items per page. Defaults to 20; capped at 100.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor."
+            }
+          }
+        ]
+      }
+    },
+    "/user/blocking": {
+      "get": {
+        "operationId": "user-blocking",
+        "summary": "Blocked Accounts",
+        "description": "Return the accounts blocked by the account behind your registered session, as full user objects, cursor-paginated. This reads your OWN block list. There is no user_id parameter because X exposes no way to read another account's blocks, so the endpoint does not pretend to offer one. Requires a registered session or per-call inline credentials. Cost: $0.0008 per call.",
+        "tags": [
+          "User Reads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/user/blocking?count=20\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/blocking\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"count\": 20},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/blocking\");\nurl.search = new URLSearchParams({ count: \"20\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/user/blocking?cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.users | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.users[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/user/blocking\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"users\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/user/blocking\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.users ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List the accounts your registered account has blocked.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "description": "Accounts you have blocked, for this page.",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of items returned in this page."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    }
+                  }
+                },
+                "example": {
+                  "count": 1,
+                  "next_cursor": "1353384573435056128|2071116068906074107",
+                  "users": [
+                    {
+                      "id": "1353384573435056128",
+                      "username": "cryptorover",
+                      "name": "Crypto Rover",
+                      "verified": true,
+                      "followers_count": 812443,
+                      "description": "Daily crypto analysis.",
+                      "created_at": "Sun Jan 24 16:50:08 +0000 2021",
+                      "profile_image_url": "https://pbs.twimg.com/profile_images/1891433835675475969/J-TloTb6_normal.png"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Items per page. Defaults to 20; capped at 100.",
+            "schema": {
+              "type": "integer",
+              "description": "Items per page. Defaults to 20; capped at 100.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor."
+            }
+          }
+        ]
+      }
+    },
+    "/user/muting": {
+      "get": {
+        "operationId": "user-muting",
+        "summary": "Muted Accounts",
+        "description": "Return the accounts muted by the account behind your registered session, as full user objects, cursor-paginated. Muting hides someone's posts from your timeline without blocking them, so this list is distinct from GET /user/blocking. This reads your OWN mute list; X exposes no way to read another account's, so there is no user_id parameter. Requires a registered session or per-call inline credentials. Cost: $0.0008 per call.",
+        "tags": [
+          "User Reads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/user/muting?count=20\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/muting\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"count\": 20},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/muting\");\nurl.search = new URLSearchParams({ count: \"20\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/user/muting?cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.users | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.users[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/user/muting\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"users\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/user/muting\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.users ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List the accounts your registered account has muted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "description": "Accounts you have muted, for this page.",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of items returned in this page."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    }
+                  }
+                },
+                "example": {
+                  "count": 1,
+                  "next_cursor": "1353384573435056128|2071116068906074107",
+                  "users": [
+                    {
+                      "id": "1353384573435056128",
+                      "username": "cryptorover",
+                      "name": "Crypto Rover",
+                      "verified": true,
+                      "followers_count": 812443,
+                      "description": "Daily crypto analysis.",
+                      "created_at": "Sun Jan 24 16:50:08 +0000 2021",
+                      "profile_image_url": "https://pbs.twimg.com/profile_images/1891433835675475969/J-TloTb6_normal.png"
                     }
                   ]
                 }
@@ -7129,7 +7714,7 @@
                     },
                     "locations": {
                       "type": "array",
-                      "description": "Location objects: name, woeid, country, countryCode, parentid, placeType, url.",
+                      "description": "Location objects: name, woeid, country, country_code, parentid, place_type, url. The deprecated camelCase countryCode/placeType are still returned alongside for a migration window; prefer the snake_case country_code/place_type.",
                       "items": {
                         "$ref": "#/components/schemas/TrendLocation"
                       }
@@ -7143,8 +7728,13 @@
                       "name": "Worldwide",
                       "woeid": 1,
                       "country": "",
+                      "country_code": null,
                       "countryCode": null,
                       "parentid": 0,
+                      "place_type": {
+                        "code": 19,
+                        "name": "Supername"
+                      },
                       "placeType": {
                         "code": 19,
                         "name": "Supername"
@@ -7155,8 +7745,13 @@
                       "name": "United States",
                       "woeid": 23424977,
                       "country": "United States",
+                      "country_code": "US",
                       "countryCode": "US",
                       "parentid": 1,
+                      "place_type": {
+                        "code": 12,
+                        "name": "Country"
+                      },
                       "placeType": {
                         "code": 12,
                         "name": "Country"
@@ -7430,6 +8025,177 @@
             }
           }
         }
+      }
+    },
+    "/media/status": {
+      "get": {
+        "operationId": "media-status",
+        "summary": "Media Status",
+        "description": "Return the async processing state of a media_id from Upload Media, so a caller can verify readiness before attaching a video, GIF, or large-media id to a tweet. Runs as your own logged-in account. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/media/status?media_id=1899999999999999999\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/media/status\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"media_id\": \"1899999999999999999\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/media/status\");\nurl.search = new URLSearchParams({ media_id: \"1899999999999999999\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Check the async processing state of an uploaded media_id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "media_id": {
+                      "type": "string",
+                      "description": "Echo of the media_id you queried."
+                    },
+                    "state": {
+                      "type": "string",
+                      "description": "Processing state: pending, in_progress, succeeded, or failed."
+                    },
+                    "check_after_secs": {
+                      "type": "integer",
+                      "description": "Seconds to wait before polling again while the state is pending or in_progress; 0 once processing has finished."
+                    },
+                    "progress_percent": {
+                      "type": "integer",
+                      "description": "Percentage of processing completed, from 0 to 100."
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Failure reason, present only when state is failed; omitted otherwise."
+                    }
+                  }
+                },
+                "example": {
+                  "media_id": "1899999999999999999",
+                  "state": "succeeded",
+                  "check_after_secs": 0,
+                  "progress_percent": 100
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "media_id",
+            "in": "query",
+            "required": true,
+            "description": "Numeric media ID (as a string) returned by media/upload.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric media ID (as a string) returned by media/upload.",
+              "example": "1899999999999999999"
+            },
+            "example": "1899999999999999999"
+          }
+        ]
       }
     },
     "/tweet/favorite": {
@@ -9086,15 +9852,18 @@
                   },
                   "media_ids": {
                     "type": "string",
-                    "description": "Up to 4 media IDs from media/upload, as a comma-separated string or JSON array. Omit for a text-only tweet."
+                    "description": "Up to 4 media IDs from media/upload, as a comma-separated string or JSON array. Omit for a text-only tweet.",
+                    "example": "1899999999999999999"
                   },
                   "reply_to": {
                     "type": "string",
-                    "description": "Numeric ID of the tweet to reply to. Omit for a top-level tweet."
+                    "description": "ID of the tweet to reply to (send it as a string; X IDs are 19 digits). Omit for a top-level tweet.",
+                    "example": "2080297101888733302"
                   },
                   "quote": {
                     "type": "string",
-                    "description": "Numeric ID of the tweet to quote."
+                    "description": "ID of the tweet to quote (send it as a string; X IDs are 19 digits).",
+                    "example": "1900000000000000000"
                   }
                 },
                 "required": [
@@ -9793,7 +10562,12 @@
           "countryCode": {
             "type": "string",
             "nullable": true,
-            "description": "ISO country code for the location; null for supernames like Worldwide and for locations X reports no code for."
+            "description": "DEPRECATED camelCase alias of country_code, kept for a deprecation window. Prefer country_code (snake_case is our canonical convention). ISO country code for the location; null for supernames like Worldwide and for locations X reports no code for."
+          },
+          "country_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO country code for the location; null for supernames like Worldwide and for locations X reports no code for. Canonical snake_case field (carries the same value as the deprecated camelCase countryCode)."
           },
           "parentid": {
             "type": "integer",
@@ -9801,7 +10575,21 @@
           },
           "placeType": {
             "type": "object",
-            "description": "The location's place-type classification.",
+            "description": "DEPRECATED camelCase alias of place_type, kept for a deprecation window. Prefer place_type. The location's place-type classification.",
+            "properties": {
+              "code": {
+                "type": "integer",
+                "description": "Numeric place-type code (for example 19 for a supername, 12 for a country, 7 for a town)."
+              },
+              "name": {
+                "type": "string",
+                "description": "Human-readable place-type name, for example \"Supername\", \"Country\", or \"Town\"."
+              }
+            }
+          },
+          "place_type": {
+            "type": "object",
+            "description": "The location's place-type classification. Canonical snake_case field (carries the same value as the deprecated camelCase placeType).",
             "properties": {
               "code": {
                 "type": "integer",
