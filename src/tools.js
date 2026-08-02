@@ -366,6 +366,20 @@ export const TOOLS = [
     shape: { ...PAGINATION, ...INLINE },
   },
   {
+    name: "twitter_blocking",
+    path: "/twitter/user/blocking",
+    description:
+      "List the accounts YOUR authenticated account has BLOCKED, as full user objects, cursor-paginated. Requires an authenticated session behind your key. There is no user_id argument: X provides no way to read another account's block list, so this reads yours only. An empty users array is a real answer meaning you block nobody, never a silent failure, because the endpoint returns an error status rather than an empty page when it cannot read the list.",
+    shape: { ...PAGINATION, ...INLINE },
+  },
+  {
+    name: "twitter_muting",
+    path: "/twitter/user/muting",
+    description:
+      "List the accounts YOUR authenticated account has MUTED, as full user objects, cursor-paginated. Muting hides an account's posts from your timeline without blocking it, so this is a different list from twitter_blocking and an account can appear in one and not the other. Requires an authenticated session behind your key. There is no user_id argument: X provides no way to read another account's mute list. An empty users array means you mute nobody, never a silent failure.",
+    shape: { ...PAGINATION, ...INLINE },
+  },
+  {
     name: "twitter_bookmark_search",
     path: "/twitter/user/bookmark_search",
     description:

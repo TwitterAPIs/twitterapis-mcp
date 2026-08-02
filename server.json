@@ -1,0 +1,43 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.TwitterAPIs/twitterapis-mcp",
+  "title": "TwitterAPIs",
+  "description": "Official MCP server for twitterapis.com: read and write Twitter/X data. Search, user profiles, followers and following, tweets and threads, trends, bookmarks, DMs, and write actions. Pay per call, no monthly minimum.",
+  "version": "0.6.3",
+  "websiteUrl": "https://www.twitterapis.com/mcp",
+  "repository": {
+    "url": "https://github.com/TwitterAPIs/twitterapis-mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@twitterapis/mcp",
+      "version": "0.6.3",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "TWITTERAPIS_KEY",
+          "description": "Your twitterapis.com API key. Create one at https://www.twitterapis.com/dashboard. Required: every tool call authenticates with it.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "TWITTERAPIS_BASE_URL",
+          "description": "Override the API base URL. Defaults to https://api.twitterapis.com. Only set this if you were given a different endpoint.",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "https://api.twitterapis.com"
+        },
+        {
+          "name": "TWITTERAPIS_TIMEOUT_MS",
+          "description": "Per-request timeout in milliseconds. Raise it if you page through large follower lists on a slow link.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}
