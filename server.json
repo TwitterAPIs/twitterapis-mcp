@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.TwitterAPIs/twitterapis-mcp",
   "title": "TwitterAPIs",
-  "description": "Official MCP server for twitterapis.com: read and write Twitter/X data. Search, user profiles, followers and following, tweets and threads, trends, bookmarks, DMs, and write actions. Pay per call, no monthly minimum.",
-  "version": "0.6.3",
+  "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
+  "version": "0.6.4",
   "websiteUrl": "https://www.twitterapis.com/mcp",
   "repository": {
     "url": "https://github.com/TwitterAPIs/twitterapis-mcp",
@@ -13,7 +13,7 @@
     {
       "registryType": "npm",
       "identifier": "@twitterapis/mcp",
-      "version": "0.6.3",
+      "version": "0.6.4",
       "transport": {
         "type": "stdio"
       },

@@ -1,6 +1,16 @@
 # Changelog
 
-## Unreleased
+## 0.6.4 (2026-08-02)
+
+### Added
+
+- **`mcpName` in `package.json`, which is what the official MCP Registry checks to prove we own this npm package.** It must equal the `name` in `server.json`, and the registry reads it from the tarball on npm rather than from the repo, so 0.6.3 could not be published no matter what the repo said. This is the entire reason 0.6.4 exists as a release; there is no behaviour change and no tool change.
+- The README now carries a Directory listings table recording, per directory, whether the server is actually listed and what that directory requires today. A descriptor file in the repo is not a listing, and the two had drifted apart.
+
+### Fixed
+
+- **The 0.6.3 registry descriptors were schema-invalid and would never have listed.** The official registry caps `description` at 100 characters; ours was 216, and the publish endpoint rejected it with HTTP 422. `test/registry-manifests.mjs` reported all three descriptors clean throughout, because it only checked that `description` was a non-empty string. Running the old gate against the 0.6.3 commit still passes while the registry still rejects that same file, which is the clearest statement of what was wrong with it. The gate now pins `description` and `title` at 100 and `name` at 200, the values read off the live schema, and asserts `package.json` `mcpName` equals `server.json` `name`. All four checks were red-tested against mutations before this shipped.
+- **`smithery.yaml` was documented as the thing that gets us onto Smithery, and it is not.** Smithery retired the repo-linked build path, and the filename now appears nowhere in their documentation index. The file is kept, since a few third-party crawlers still read the old convention and it costs nothing, but its header no longer claims to be a submission. Smithery listing needs an account and either a hosted Streamable HTTP endpoint or an MCPB bundle.
 
 ### Changed
 

@@ -36,6 +36,38 @@ for (const k of ["name", "description", "version"]) {
   check(typeof server[k] === "string" && server[k].length > 0, `server.json: missing required field "${k}"`);
 }
 
+// LENGTH BOUNDS. Read off the live schema, not from memory:
+// static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json gives
+// description maxLength 100, title maxLength 100, name maxLength 200.
+//
+// This block exists because the version above it did not have it, and the
+// omission cost a listing. The 0.6.3 descriptors passed this gate green while
+// the registry rejected them with HTTP 422 "expected length <= 100": the
+// description was 205 characters. A present-but-invalid manifest reads as done
+// and does nothing, which is the worse half of not having one at all. Checking
+// that a string is non-empty is not checking that the registry will take it.
+const MAX = { description: 100, title: 100, name: 200 };
+for (const [field, limit] of Object.entries(MAX)) {
+  const v = server[field];
+  if (typeof v !== "string") continue;
+  check(
+    v.length <= limit,
+    `server.json: ${field} is ${v.length} chars, the official registry rejects anything over ${limit}`,
+  );
+}
+
+// PACKAGE OWNERSHIP MARKER. The registry fetches the npm package named in
+// packages[] and refuses to publish unless its package.json carries mcpName
+// equal to server.json name. It is verified against the PUBLISHED tarball, so
+// getting it wrong is not caught until the release is already on npm and the
+// only fix is another version. Pinned here, at the same place the version drift
+// is pinned, because it is the same class of bug: one fact in two files.
+check(
+  pkg.mcpName === server.name,
+  `package.json mcpName ${JSON.stringify(pkg.mcpName)} != server.json name ${JSON.stringify(server.name)}; ` +
+    `the official registry verifies this against the published tarball and rejects the publish`,
+);
+
 // Reverse-DNS, exactly one slash. Copied from the live schema's own pattern
 // (static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json), not
 // from memory: a name that fails this is rejected at publish time.

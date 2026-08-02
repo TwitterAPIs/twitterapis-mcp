@@ -1,9 +1,25 @@
 # Smithery deployment descriptor for @twitterapis/mcp.
 #
-# Smithery is a hosted installer: it reads configSchema and PROMPTS the user for
-# each field, then starts the server with those values in the environment. Every
-# field therefore needs a title and a description, or the install prompt shows a
-# bare variable name and people paste the wrong thing.
+# READ THIS BEFORE ASSUMING THIS FILE LISTS US. It does not, and on 2026-08-02
+# it could not. Smithery retired the model this file was written for: the whole
+# "put smithery.yaml in your repo root, connect the repo, we build and host it"
+# path is gone, and the string smithery.yaml appears ZERO times across their
+# current documentation index at smithery.ai/docs/llms.txt. Listing on Smithery
+# today is one of exactly two flows, both of which need a Smithery account and
+# an API key that this tenant does not yet have:
+#
+#   1. URL      publish a public Streamable-HTTP endpoint, scanned by SmitheryBot
+#   2. Local    publish a prebuilt MCPB bundle as a stdio release
+#
+# The file is kept because it costs nothing, it is still read by a handful of
+# third-party crawlers that indexed the old convention, and it is an accurate
+# description of how to start this server from a config object. It is NOT a
+# submission and nothing consumes it on smithery.ai. See README for the state of
+# each directory.
+#
+# Every field still carries a title and a description, because a config schema
+# with a bare variable name is how people paste the wrong value into the wrong
+# field.
 startCommand:
   type: stdio
   configSchema:
