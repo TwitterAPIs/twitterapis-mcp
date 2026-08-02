@@ -264,6 +264,18 @@ npm test                  # gates, incl. "src/tools.js matches the generator"
 
 `npm test` fails if `src/tools.js` was hand-edited or left stale, if the catalog and the live spec disagree, or if the tool list and this README disagree.
 
+### Directory listings
+
+Where this server actually appears, and what each directory needs. A descriptor file sitting in the repo is not a listing, so this table records the listing, not the file. Checked 2026-08-02.
+
+| Directory | State | What it takes |
+| --- | --- | --- |
+| Official MCP Registry | listed as `io.github.TwitterAPIs/twitterapis-mcp` | `server.json` plus `mcpName` in the **published** `package.json`. Publish with `mcp-publisher`, authenticating with a GitHub token whose account is an org **admin**. Every release needs a fresh `publish`, since the registry pins a version. |
+| Glama | listed, crawled automatically | Nothing to submit. Glama indexed the GitHub repo on its own. `glama.json` names the maintainer for the claim, but the claim itself is completed from a signed-in Glama account. |
+| Smithery | not listed | `smithery.yaml` no longer does anything: the repo-linked build path was retired and the filename appears nowhere in Smithery's current docs. Listing now means publishing either a public Streamable HTTP endpoint or a prebuilt MCPB bundle, both from a Smithery account with an API key. |
+
+Two traps worth keeping in mind. The registry enforces `description` at 100 characters and `title` at 100; `test/registry-manifests.mjs` pins both, because the descriptors passed an earlier version of that gate while the registry rejected them with HTTP 422. And `mcpName` is verified against the tarball on npm, not against the working tree, so a wrong value is only visible after the release has shipped and costs another version to correct.
+
 ## License
 
 MIT
