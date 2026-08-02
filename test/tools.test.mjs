@@ -7,10 +7,33 @@ const check = (name, cond) => { if (cond) { pass++; } else { fail++; console.err
 const reads = TOOLS.filter((t) => !t.write);
 const writes = TOOLS.filter((t) => t.write);
 
-// Catalog shape (full parity: reads + writes)
-check("47 tools", TOOLS.length === 47);
-check("33 reads", reads.length === 33);
-check("14 writes", writes.length === 14);
+// Catalog shape (full parity: reads + writes).
+//
+// THESE THREE WERE RED ON MAIN FOR TWELVE DAYS. twitter_users_by_ids and
+// twitter_media_status were merged on 2026-07-31 (49 tools, 35 reads) and these
+// constants were left at the pre-merge 47/33. Because prepublishOnly runs
+// `npm test`, that made the package UNPUBLISHABLE: the release everyone was
+// waiting on would have failed at its first step, and the reason was never the
+// npm credential. Nothing caught it because GitHub Actions is permanently off
+// and nobody ran the suite locally after the merge.
+//
+// Keep the exact counts, they are what catches an accidentally DELETED tool,
+// which no other gate here would notice. Bump them deliberately in the same
+// commit that adds or removes a tool.
+const EXPECTED_TOOLS = 51;
+const EXPECTED_READS = 37;
+const EXPECTED_WRITES = 14;
+check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
+check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
+check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
+// Arithmetic invariant, independent of the three constants above: every tool is
+// either a read or a write. A partition that does not add up means `write` is
+// missing or misspelled on some tool, which the three counts alone can miss when
+// two errors cancel out.
+check(
+  `reads + writes == total (${reads.length} + ${writes.length} == ${TOOLS.length})`,
+  reads.length + writes.length === TOOLS.length,
+);
 check("names unique", new Set(TOOLS.map((t) => t.name)).size === TOOLS.length);
 check("paths unique", new Set(TOOLS.map((t) => t.path)).size === TOOLS.length);
 check("all names twitter_*", TOOLS.every((t) => /^twitter_[a-z0-9_]+$/.test(t.name)));

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.3 (2026-08-02)
+
+### Added
+
+- **Two new tools, `twitter_blocking` and `twitter_muting`**, for the accounts your authenticated account has blocked or muted. Both are cursor-paginated lists of full user objects and both read YOUR OWN lists only: there is no `user_id` argument, because X provides no way to read another account's block or mute list and an argument the API ignores would be worse than none. An empty `users` array means you block or mute nobody; it is never a silent parse failure, because the endpoint returns an error status rather than an empty page when it cannot read the list. The catalog is now **51 tools: 37 reads and 14 write actions**.
+- **Registry descriptors so the server is discoverable outside npm**: `server.json` for the official MCP Registry, `smithery.yaml` with a full `configSchema` (so hosted installers prompt for the API key by name rather than showing a bare variable), and `glama.json` for the maintainer claim. npm is a pull channel; these are where agent users browse.
+
+### Fixed
+
+- **`npm test` was failing on `main`, which blocked any release.** `twitter_users_by_ids` and `twitter_media_status` were merged on 2026-07-31 but the catalog-count assertions were left at the pre-merge 47 tools / 33 reads, so the suite reported a mismatch that had nothing to do with the tools themselves. The counts are corrected and now carry a reads-plus-writes-equals-total invariant that does not depend on them, so two cancelling errors cannot pass.
+
+### Changed
+
+- Release tooling hardened. No user-facing or API behaviour change.
+
 ## Unreleased
 
 ### Added

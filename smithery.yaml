@@ -1,0 +1,43 @@
+# Smithery deployment descriptor for @twitterapis/mcp.
+#
+# Smithery is a hosted installer: it reads configSchema and PROMPTS the user for
+# each field, then starts the server with those values in the environment. Every
+# field therefore needs a title and a description, or the install prompt shows a
+# bare variable name and people paste the wrong thing.
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - twitterapisKey
+    properties:
+      twitterapisKey:
+        type: string
+        title: TwitterAPIs API key
+        description: >-
+          Your twitterapis.com API key. Create one at
+          https://www.twitterapis.com/dashboard. Every tool call authenticates
+          with it, and usage is billed per call against that key.
+      twitterapisBaseUrl:
+        type: string
+        title: API base URL
+        description: >-
+          Only set this if you were given a different endpoint. Defaults to
+          https://api.twitterapis.com.
+        default: https://api.twitterapis.com
+      twitterapisTimeoutMs:
+        type: number
+        title: Request timeout (ms)
+        description: >-
+          Per-request timeout in milliseconds. Raise it if you page through
+          large follower lists on a slow connection.
+  commandFunction: |-
+    (config) => ({
+      command: 'node',
+      args: ['src/index.js'],
+      env: {
+        TWITTERAPIS_KEY: config.twitterapisKey,
+        ...(config.twitterapisBaseUrl ? { TWITTERAPIS_BASE_URL: config.twitterapisBaseUrl } : {}),
+        ...(config.twitterapisTimeoutMs ? { TWITTERAPIS_TIMEOUT_MS: String(config.twitterapisTimeoutMs) } : {})
+      }
+    })

@@ -1,6 +1,6 @@
 {
   "name": "@twitterapis/mcp",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Official MCP server for twitterapis.com, the Twitter/X API (search, users, followers, tweets, threads, lists, likes, bookmarks, DMs) plus write actions (post/like/retweet/follow) as native tools for Claude, Cursor, and any MCP client.",
   "repository": {
     "type": "git",
@@ -23,10 +23,11 @@
   "scripts": {
     "start": "node src/index.js",
     "check": "node --check src/index.js && node --check src/tools.js",
-    "test": "node test/tools.test.mjs && node test/smoke.mjs && node test/openapi-parity.mjs && node test/firewall.mjs",
+    "test": "node test/tools.test.mjs && node test/smoke.mjs && node test/openapi-parity.mjs && node test/firewall.mjs && node test/registry-manifests.mjs",
     "prepublishOnly": "npm test",
     "check:openapi-parity": "node test/openapi-parity.mjs",
-    "check:firewall": "node test/firewall.mjs"
+    "check:firewall": "node test/firewall.mjs",
+    "check:registry": "node test/registry-manifests.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
