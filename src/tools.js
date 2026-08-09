@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 51 tools (37 reads, 14 writes).
+// Catalog: 52 tools (37 reads, 15 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -1014,6 +1014,15 @@ export const TOOLS = [
     },
   },
   {
+    name: "twitter_customer_session_delete",
+    path: "/twitter/customer/session/delete",
+    method: "POST",
+    write: true,
+    description:
+      "Revoke the X account session you registered with twitter_customer_session, deleting the stored auth_token and ct0 from twitterapis.com. Self-serve, no ticket and no human in the loop. Scoped to your own API key by construction: it takes no account identifier of any kind, so it cannot reach another key's session. Idempotent and free: revoking twice, or revoking when nothing was stored, still returns ok with deleted=false, and it costs no credits, so a key that is out of balance can still delete its credentials. After this, the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes) and the write tools stop acting as that account until you register again. IMPORTANT: this deletes the stored copy only. It does NOT log the account out of x.com, so to invalidate the cookies themselves, also revoke the session from your X account settings.",
+    shape: {},
+  },
+  {
     name: "twitter_user_login",
     path: "/twitter/user/user_login",
     method: "POST",
@@ -1030,6 +1039,12 @@ export const TOOLS = [
       ),
       totp_secret: z.string().optional().describe(
         "The account's base32 two-factor (TOTP) secret. Required only when the account has 2FA enabled.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. HTTP or SOCKS proxy URL to perform the login through, e.g. 'http://user:pass@host:port'. Stored with the session and reused for its later requests. Omit to log in directly from the service's own IP. A residential proxy is recommended: X treats datacenter logins as automated.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. Browser User-Agent to mint and use the session with. Defaults to a current Chrome UA. Keep it consistent with the environment the account normally signs in from; a mismatch between the UA and the session is itself a signal to X.",
       ),
     },
   },

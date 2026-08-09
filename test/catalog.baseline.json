@@ -1,5 +1,5 @@
 {
-  "toolCount": 51,
+  "toolCount": 52,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -49,6 +49,7 @@
     "twitter_follow_user",
     "twitter_unfollow_user",
     "twitter_customer_session",
+    "twitter_customer_session_delete",
     "twitter_user_login",
     "twitter_media_upload",
     "twitter_media_status"
@@ -1979,6 +1980,21 @@
         ]
       }
     },
+    "twitter_customer_session_delete": {
+      "name": "twitter_customer_session_delete",
+      "path": "/twitter/customer/session/delete",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Revoke the X account session you registered with twitter_customer_session, deleting the stored auth_token and ct0 from twitterapis.com. Self-serve, no ticket and no human in the loop. Scoped to your own API key by construction: it takes no account identifier of any kind, so it cannot reach another key's session. Idempotent and free: revoking twice, or revoking when nothing was stored, still returns ok with deleted=false, and it costs no credits, so a key that is out of balance can still delete its credentials. After this, the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes) and the write tools stop acting as that account until you register again. IMPORTANT: this deletes the stored copy only. It does NOT log the account out of x.com, so to invalidate the cookies themselves, also revoke the session from your X account settings.",
+      "args": [],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
     "twitter_user_login": {
       "name": "twitter_user_login",
       "path": "/twitter/user/user_login",
@@ -1990,7 +2006,9 @@
       "args": [
         "username",
         "password",
-        "totp_secret"
+        "totp_secret",
+        "proxy_url",
+        "user_agent"
       ],
       "required": [
         "username",
@@ -2009,6 +2027,14 @@
           },
           "totp_secret": {
             "description": "The account's base32 two-factor (TOTP) secret. Required only when the account has 2FA enabled.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. HTTP or SOCKS proxy URL to perform the login through, e.g. 'http://user:pass@host:port'. Stored with the session and reused for its later requests. Omit to log in directly from the service's own IP. A residential proxy is recommended: X treats datacenter logins as automated.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. Browser User-Agent to mint and use the session with. Defaults to a current Chrome UA. Keep it consistent with the environment the account normally signs in from; a mismatch between the UA and the session is itself a signal to X.",
             "type": "string"
           }
         },

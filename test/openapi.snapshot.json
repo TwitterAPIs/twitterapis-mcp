@@ -561,7 +561,7 @@
                   },
                   "proxy_url": {
                     "type": "string",
-                    "description": "HTTP or SOCKS proxy URL to route session traffic through, for example http://user:pass@host:port. Defaults to direct."
+                    "description": "HTTP or SOCKS proxy URL the session egresses through, for example http://user:pass@host:port. This is a property of the session, so every call made with this API key on this session uses it, reads as well as writes. Defaults to direct, which means we choose the egress."
                   }
                 },
                 "required": [
@@ -574,11 +574,173 @@
         }
       }
     },
+    "/customer/session/delete": {
+      "post": {
+        "operationId": "customer-session-delete",
+        "summary": "Revoke Session",
+        "description": "Delete the X session cookies stored against your API key. The key is taken from the authenticated request, and the handler reads no identity from the body, the query string, or any second header, so a call can only ever remove the caller's own stored session. It is idempotent and answers 200 whether or not a row was there to remove. This call is free. Cost: Free per call.",
+        "tags": [
+          "Account Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/customer/session/delete\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/customer/session/delete\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/customer/session/delete\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({}),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete the auth_token and ct0 you registered, so we no longer hold your X session cookies. Self-serve, idempotent, and free.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "Always true. The request was accepted and no stored session for your API key remains."
+                    },
+                    "deleted": {
+                      "type": "boolean",
+                      "description": "True when a stored session was found and removed. False when nothing was stored for this API key, for example after an earlier revoke, or when you only ever sent per-call x-auth-token and x-ct0 credentials."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Human-readable confirmation. The wording differs depending on whether a stored session was removed."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "deleted": true,
+                  "message": "Your stored Twitter session was deleted. The auth_token and ct0 you registered are no longer on our servers. This does not log the account out of x.com: to invalidate the cookies themselves, revoke the session from your X account settings as well."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/user/user_login": {
       "post": {
         "operationId": "user-user-login",
         "summary": "User Login",
-        "description": "Log in to an X account with a username and password (plus a TOTP secret when two-factor authentication is enabled) and get back a fresh session: the auth_token, ct0, and twid cookies. This is a convenience alternative to Register Session for when you cannot copy cookies out of a browser. Bringing your own auth_token and ct0 via POST /customer/session stays the primary, recommended path. This call is free. Cost: Free per call.",
+        "description": "Log in to an X account with a username and password (plus a TOTP secret when two-factor authentication is enabled). The API runs the login itself and stores the resulting session server-side against your API key; authenticated-account reads and the write tools then act as that account. It does NOT return session cookies: the response is {ok, username, message}, never auth_token/ct0/twid. Bringing your own auth_token and ct0 via POST /customer/session stays the primary, recommended path, since it never sends a password over the wire. This call is free. Cost: Free per call.",
         "tags": [
           "Account Session"
         ],
@@ -607,30 +769,30 @@
         ],
         "responses": {
           "200": {
-            "description": "Mint an X session from a username, password, and optional TOTP 2FA secret, returning auth_token, ct0, and twid. A convenience alternative to bringing your own cookies via Register Session.",
+            "description": "Log in to X with a username and password (plus TOTP for 2FA) and store the resulting session against your API key, so authenticated-account reads and write tools then act as that account. A convenience alternative to bringing your own cookies via Register Session.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "auth_token": {
-                      "type": "string",
-                      "description": "The minted auth_token session cookie for the logged-in account."
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the session was created and stored against your API key."
                     },
-                    "ct0": {
+                    "username": {
                       "type": "string",
-                      "description": "The minted ct0 CSRF cookie that pairs with auth_token."
+                      "description": "The X handle the session belongs to."
                     },
-                    "twid": {
+                    "message": {
                       "type": "string",
-                      "description": "The minted twid cookie, which encodes the numeric user ID of the logged-in account."
+                      "description": "Human-readable confirmation. On success: \"Logged in. Private-data endpoints will now read as your account.\""
                     }
                   }
                 },
                 "example": {
-                  "auth_token": "abc123...",
-                  "ct0": "def456...",
-                  "twid": "u%3D44196397"
+                  "ok": true,
+                  "username": "myhandle",
+                  "message": "Logged in. Private-data endpoints will now read as your account."
                 }
               }
             }
@@ -743,7 +905,7 @@
                 "properties": {
                   "username": {
                     "type": "string",
-                    "description": "The X account username or handle (without the leading @). Some accounts also accept the email or phone used to sign in."
+                    "description": "The X account username or handle (without the leading @). Aliased as user_name for callers migrating from a twitterapi.io-shaped body."
                   },
                   "password": {
                     "type": "string",
@@ -752,6 +914,14 @@
                   "totp_secret": {
                     "type": "string",
                     "description": "The base32 two-factor (TOTP) secret, required only when the account has 2FA enabled. The API derives the current one-time code from it; omit for accounts without 2FA."
+                  },
+                  "proxy_url": {
+                    "type": "string",
+                    "description": "HTTP or SOCKS proxy the login itself runs through, for example http://user:pass@host:port. Optional; defaults to direct egress when omitted."
+                  },
+                  "user_agent": {
+                    "type": "string",
+                    "description": "Browser User-Agent sent for the login request. Optional; defaults to a current Chrome UA when omitted."
                   }
                 },
                 "required": [

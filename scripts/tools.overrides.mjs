@@ -700,6 +700,24 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    // The counterpart to twitter_customer_session. Deliberately placed next to it
+    // so an agent reading the catalog finds the way OUT beside the way IN: a
+    // credential you cannot withdraw is the objection this endpoint exists to
+    // answer, and it went unpublished on every surface for six days.
+    name: "twitter_customer_session_delete",
+    endpoint: "/customer/session/delete",
+    // NOT jsonBody. Unlike its sibling twitter_customer_session, this handler
+    // reads nothing from the request: it takes the api key from the auth
+    // middleware's context (c.get("apiKey")) and takes no body field and no
+    // second header, which is precisely what makes cross-key deletion
+    // impossible. A jsonBody:true here would advertise a request body the
+    // endpoint does not have.
+    write: true,
+    description:
+      "Revoke the X account session you registered with twitter_customer_session, deleting the stored auth_token and ct0 from twitterapis.com. Self-serve, no ticket and no human in the loop. Scoped to your own API key by construction: it takes no account identifier of any kind, so it cannot reach another key's session. Idempotent and free: revoking twice, or revoking when nothing was stored, still returns ok with deleted=false, and it costs no credits, so a key that is out of balance can still delete its credentials. After this, the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes) and the write tools stop acting as that account until you register again. IMPORTANT: this deletes the stored copy only. It does NOT log the account out of x.com, so to invalidate the cookies themselves, also revoke the session from your X account settings.",
+    args: [],
+  },
+  {
     // CONTRACT NOTE (maintainers): the published spec documents an
     // {auth_token, ct0, twid} response for this endpoint. That is WRONG. The live
     // handler returns {ok, username, message} and stores the minted session
@@ -723,6 +741,17 @@ export const TOOL_OVERRIDES = [
       { name: "totp_secret",
         describe:
           "The account's base32 two-factor (TOTP) secret. Required only when the account has 2FA enabled." },
+      // Added 2026-08-09 when the refreshed spec exposed both. Verified against
+      // the live handler (backend src/server/routes/user-login.ts), which reads
+      // body.proxy_url and body.user_agent and stores them on the resulting
+      // session, so they describe the SESSION's ongoing egress and fingerprint,
+      // not merely the one login call.
+      { name: "proxy_url",
+        describe:
+          "Optional. HTTP or SOCKS proxy URL to perform the login through, e.g. 'http://user:pass@host:port'. Stored with the session and reused for its later requests. Omit to log in directly from the service's own IP. A residential proxy is recommended: X treats datacenter logins as automated." },
+      { name: "user_agent",
+        describe:
+          "Optional. Browser User-Agent to mint and use the session with. Defaults to a current Chrome UA. Keep it consistent with the environment the account normally signs in from; a mismatch between the UA and the session is itself a signal to X." },
     ],
   },
   {
