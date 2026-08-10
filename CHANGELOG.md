@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.7 (2026-08-10)
+
+### Added
+
+- **8 new tools for X's long-form Articles/Notes feature** (#1096): `twitter_article_create`, `twitter_article_update_title`, `twitter_article_update_content`, `twitter_article_publish`, `twitter_article_unpublish`, `twitter_article_get`, `twitter_article_list`, `twitter_article_delete`. `twitter_article_get` is a public read (no session required, like `twitter_tweet_detail`); the other 7 require a customer session. The catalog is now **60 tools: 39 reads and 21 write actions**.
+
 ## Unreleased
 
 ### Changed
