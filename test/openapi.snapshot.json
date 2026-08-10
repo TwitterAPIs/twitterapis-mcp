@@ -4551,6 +4551,372 @@
         ]
       }
     },
+    "/user/bookmark_folders": {
+      "get": {
+        "operationId": "user-bookmark-folders",
+        "summary": "Bookmark Folders",
+        "description": "Fetch the caller's own bookmark folders. Each item carries the folder's id, name, and a cover image X auto-picks from its contents. Requires a registered session. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "User Reads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/user/bookmark_folders\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/bookmark_folders\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/bookmark_folders\");\nurl.search = new URLSearchParams({}).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List your registered account's bookmark folders.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of folders returned."
+                    },
+                    "folders": {
+                      "type": "array",
+                      "description": "The caller's own bookmark folders: id, name, cover_media_url.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "count": 1,
+                  "folders": [
+                    {
+                      "id": "2073826456430592429",
+                      "name": "Parasite SEO",
+                      "cover_media_url": "https://pbs.twimg.com/media/Ex_fuubVEAA9gcg.png"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/bookmark_folder_timeline": {
+      "get": {
+        "operationId": "user-bookmark-folder-timeline",
+        "summary": "Bookmark Folder Timeline",
+        "description": "Fetch the tweets inside one of the caller's own bookmark folders, identified by folder_id (from Bookmark Folders). Cursor-paginated. Requires a registered session. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "User Reads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/user/bookmark_folder_timeline?folder_id=2073826456430592429\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/bookmark_folder_timeline\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"folder_id\": \"2073826456430592429\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/bookmark_folder_timeline\");\nurl.search = new URLSearchParams({ folder_id: \"2073826456430592429\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/user/bookmark_folder_timeline?folder_id=2073826456430592429&cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.tweets | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.tweets[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/user/bookmark_folder_timeline\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"folder_id\": \"2073826456430592429\", \"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"tweets\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { folder_id: \"2073826456430592429\", cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/user/bookmark_folder_timeline\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.tweets ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read the tweets inside one of your bookmark folders.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "folder_id": {
+                      "type": "string",
+                      "description": "Echo of the folder_id you queried."
+                    },
+                    "tweets": {
+                      "type": "array",
+                      "description": "Tweets saved inside this folder, for this page.",
+                      "items": {
+                        "$ref": "#/components/schemas/Tweet"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of items returned in this page."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    }
+                  }
+                },
+                "example": {
+                  "folder_id": "2073826456430592429",
+                  "count": 1,
+                  "next_cursor": "-1783273732069",
+                  "tweets": [
+                    {
+                      "id": "2073438646657564825",
+                      "text": "https://t.co/dYukCmrM45",
+                      "created_at": "Sat Jul 04 16:07:50 +0000 2026",
+                      "author": {
+                        "id": "1451118635108478976",
+                        "username": "natiakourdadze",
+                        "name": "Natia Kurdadze"
+                      },
+                      "favorite_count": 41,
+                      "retweet_count": 5,
+                      "view_count": 6332
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "folder_id",
+            "in": "query",
+            "required": true,
+            "description": "The bookmark folder's id, from user/bookmark_folders.",
+            "schema": {
+              "type": "string",
+              "description": "The bookmark folder's id, from user/bookmark_folders.",
+              "example": "2073826456430592429"
+            },
+            "example": "2073826456430592429"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor."
+            }
+          }
+        ]
+      }
+    },
     "/user/likes": {
       "get": {
         "operationId": "user-likes",

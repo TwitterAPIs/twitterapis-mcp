@@ -1,5 +1,5 @@
 {
-  "toolCount": 60,
+  "toolCount": 62,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -35,6 +35,8 @@
     "twitter_blocking",
     "twitter_muting",
     "twitter_bookmark_search",
+    "twitter_bookmark_folders",
+    "twitter_bookmark_folder_timeline",
     "twitter_dm_list",
     "twitter_dm_conversation",
     "twitter_dm_send",
@@ -1316,6 +1318,95 @@
         },
         "required": [
           "query"
+        ]
+      }
+    },
+    "twitter_bookmark_folders": {
+      "name": "twitter_bookmark_folders",
+      "path": "/twitter/user/bookmark_folders",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List YOUR authenticated account's bookmark FOLDERS (X's internal name: collections), the named groups you can organize saved tweets into, separate from your flat bookmarks list (twitter_bookmarks). Requires an authenticated session behind your key. Returns each folder's id, name, and a cover image. Takes no arguments; your folders resolve from your session alone. Use twitter_bookmark_folder_timeline with a folder's id to read the tweets inside it.",
+      "args": [
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_bookmark_folder_timeline": {
+      "name": "twitter_bookmark_folder_timeline",
+      "path": "/twitter/user/bookmark_folder_timeline",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Read the tweets inside ONE of your authenticated account's bookmark folders, identified by folder_id (from twitter_bookmark_folders). Requires an authenticated session behind your key. Cursor-paginated; there is no count/page-size argument for this op.",
+      "args": [
+        "folder_id",
+        "cursor",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "folder_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "folder_id": {
+            "type": "string",
+            "description": "The bookmark folder's id, from twitter_bookmark_folders (e.g. '2073826456430592429')."
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "folder_id"
         ]
       }
     },

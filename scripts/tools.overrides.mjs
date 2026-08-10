@@ -476,6 +476,28 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    name: "twitter_bookmark_folders",
+    endpoint: "/user/bookmark_folders",
+    description:
+      "List YOUR authenticated account's bookmark FOLDERS (X's internal name: collections), the named groups you can organize saved tweets into, separate from your flat bookmarks list (twitter_bookmarks). Requires an authenticated session behind your key. Returns each folder's id, name, and a cover image. Takes no arguments; your folders resolve from your session alone. Use twitter_bookmark_folder_timeline with a folder's id to read the tweets inside it.",
+    args: [
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_bookmark_folder_timeline",
+    endpoint: "/user/bookmark_folder_timeline",
+    description:
+      "Read the tweets inside ONE of your authenticated account's bookmark folders, identified by folder_id (from twitter_bookmark_folders). Requires an authenticated session behind your key. Cursor-paginated; there is no count/page-size argument for this op.",
+    args: [
+      { name: "folder_id",
+        describe:
+          "The bookmark folder's id, from twitter_bookmark_folders (e.g. '2073826456430592429')." },
+      "@CURSOR",
+      "@INLINE",
+    ],
+  },
+  {
     name: "twitter_dm_list",
     endpoint: "/dm/list",
     description:
