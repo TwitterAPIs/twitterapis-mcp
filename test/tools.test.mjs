@@ -20,9 +20,9 @@ const writes = TOOLS.filter((t) => t.write);
 // Keep the exact counts, they are what catches an accidentally DELETED tool,
 // which no other gate here would notice. Bump them deliberately in the same
 // commit that adds or removes a tool.
-const EXPECTED_TOOLS = 52;
-const EXPECTED_READS = 37;
-const EXPECTED_WRITES = 15;
+const EXPECTED_TOOLS = 60;
+const EXPECTED_READS = 39;
+const EXPECTED_WRITES = 21;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -50,7 +50,7 @@ check("only writes carry write:true", TOOLS.every((t) => Boolean(t.write) === (t
 // image in a JSON body), customer/session and user_login (session bootstrap, JSON
 // body). Each reads a JSON request body, so it sets jsonBody:true and is a POST
 // write. dm/send is also live (below).
-const JSON_BODY_WRITES = ["twitter_media_upload", "twitter_customer_session", "twitter_user_login"];
+const JSON_BODY_WRITES = ["twitter_media_upload", "twitter_customer_session", "twitter_user_login", "twitter_article_update_content"];
 check("json-body writes present: POST + write + jsonBody", JSON_BODY_WRITES.every((n) => {
   const t = TOOLS.find((x) => x.name === n);
   return t && t.method === "POST" && t.write === true && t.jsonBody === true;
@@ -64,7 +64,7 @@ check("account tools use /account/* path", ["twitter_account_me", "twitter_accou
 check("dm_send present and is a write", TOOLS.find((t) => t.name === "twitter_dm_send")?.method === "POST" && TOOLS.find((t) => t.name === "twitter_dm_send")?.write === true);
 
 // The destructive (reversing) writes are flagged for client warnings.
-const DESTRUCTIVE = ["twitter_delete_tweet", "twitter_unfavorite_tweet", "twitter_unretweet", "twitter_unbookmark_tweet", "twitter_unfollow_user"];
+const DESTRUCTIVE = ["twitter_delete_tweet", "twitter_unfavorite_tweet", "twitter_unretweet", "twitter_unbookmark_tweet", "twitter_unfollow_user", "twitter_article_unpublish", "twitter_article_delete"];
 check("destructive writes flagged", DESTRUCTIVE.every((n) => TOOLS.find((t) => t.name === n)?.destructive === true));
 
 // Spot-check that the key new tools landed.

@@ -683,7 +683,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/customer/session",
     write: true, jsonBody: true,
     description:
-      "Register YOUR OWN X account session against your API key, so the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes) and the write tools (twitter_create_tweet, twitter_dm_send, twitter_follow_user, twitter_favorite_tweet, twitter_retweet, twitter_media_upload) act as your account. Provide your x.com session cookies auth_token and ct0 (copy them from a logged-in browser); optionally a user_agent and a residential proxy_url. The cookies are stored server-side against your key and are never returned. Returns ok, the resolved username, and whether the session validated live. Prefer twitter_user_login if you would rather pass a username/password than raw cookies. Most tools also accept auth_token/ct0 per-call without registering.",
+      "Register YOUR OWN X account session against your API key, so the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes, twitter_article_list) and the write tools (twitter_create_tweet, twitter_dm_send, twitter_follow_user, twitter_favorite_tweet, twitter_retweet, twitter_media_upload, twitter_article_create, twitter_article_update_title, twitter_article_update_content, twitter_article_publish, twitter_article_unpublish, twitter_article_delete) act as your account. Provide your x.com session cookies auth_token and ct0 (copy them from a logged-in browser); optionally a user_agent and a residential proxy_url. The cookies are stored server-side against your key and are never returned. Returns ok, the resolved username, and whether the session validated live. Prefer twitter_user_login if you would rather pass a username/password than raw cookies. Most tools also accept auth_token/ct0 per-call without registering.",
     args: [
       { name: "auth_token",
         describe:
@@ -776,6 +776,135 @@ export const TOOL_OVERRIDES = [
       { name: "media_id",
         describe:
           "Numeric media id returned by twitter_media_upload, e.g. '1234567890123456789'." },
+      "@INLINE",
+    ],
+  },
+  // ── Writes: Articles (X's long-form "Notes" feature, #1096) ────────────────
+  // An article is a DRAFT until published, then it is PUBLISHED and carries a
+  // public announcement tweet. Every op below except twitter_article_get acts
+  // AS the account behind your registered session (same auth model as
+  // twitter_create_tweet / twitter_dm_send): register first with
+  // twitter_customer_session or twitter_user_login, or pass auth_token/ct0
+  // per-call via @INLINE. twitter_article_get is the one PUBLIC read (same
+  // auth model as twitter_tweet_detail): just your API key, no session.
+  {
+    name: "twitter_article_create",
+    endpoint: "/article/create",
+    write: true,
+    description:
+      "Start a new DRAFT article ('Note') AS your authenticated account. No input required. Returns the new article's id (pass this to twitter_article_update_title / twitter_article_update_content / twitter_article_publish / twitter_article_delete) and its full article object. Requires an authenticated session with write capability behind your key.",
+    args: [
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_update_title",
+    endpoint: "/article/update_title",
+    write: true,
+    description:
+      "Set or replace the title of a DRAFT or PUBLISHED article AS your authenticated account. Provide the article's id (from twitter_article_create or twitter_article_list) and the new title. Requires an authenticated session with write capability behind your key. Returns the updated article object.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789')." },
+      { name: "title", minLength: 1,
+        describe:
+          "The new article title (non-empty)." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_update_content",
+    endpoint: "/article/update_content",
+    write: true, jsonBody: true,
+    description:
+      "Replace the body content of a DRAFT or PUBLISHED article AS your authenticated account. Provide the article's id and content_state: Draft.js JSON ({ blocks: [...], entityMap: [...] }) that YOU build and pass through verbatim, this tool does not construct or validate it. Requires an authenticated session with write capability behind your key. Returns the updated article object.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list." },
+      { name: "content_state", type: "json",
+        describe:
+          "Draft.js content state object: { blocks: [...], entityMap: [...] }. You construct this JSON yourself (it is the same shape the X Article editor produces); it is passed through to X verbatim and not validated here." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_publish",
+    endpoint: "/article/publish",
+    write: true,
+    description:
+      "Publish a DRAFT article AS your authenticated account, transitioning it to Published and posting a REAL, PUBLIC announcement tweet that your followers and anyone with the link can see. WARNING: this is a genuinely consequential, hard-to-fully-undo action, it is not like saving a draft. twitter_article_unpublish reverts the article to Draft but LEAVES the announcement tweet up; only twitter_article_delete on a published article unpublishes AND removes the announcement tweet, and by then the content was already public for however long it stayed up. Confirm with the caller before publishing unless they have clearly asked for it. Provide the article's id; audience and reply_control default to 'Everyone' when omitted; caption is an optional short (<=256 character) caption for the announcement tweet. Requires an authenticated session with write capability behind your key. Returns the updated (Published) article object.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list. Must currently be a Draft." },
+      { name: "audience", required: false,
+        describe:
+          "Optional. Who can see the published article, e.g. 'Everyone'. Defaults to 'Everyone' when omitted." },
+      { name: "reply_control", required: false,
+        describe:
+          "Optional. Who can reply to the announcement tweet, e.g. 'Everyone'. Defaults to 'Everyone' when omitted." },
+      { name: "caption", required: false,
+        describe:
+          "Optional. Short caption text for the announcement tweet, up to 256 characters." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_unpublish",
+    endpoint: "/article/unpublish",
+    write: true, destructive: true,
+    description:
+      "Revert a PUBLISHED article back to Draft AS your authenticated account. The announcement tweet the publish posted is LEFT IN PLACE, still publicly visible, use twitter_article_delete instead if you also want that tweet removed. X refuses this with an 'invalid_lifecycle' error if the article is not currently Published. Requires an authenticated session with write capability behind your key. Returns the updated (Draft) article object.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list. Must currently be Published." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_get",
+    endpoint: "/article/get",
+    description:
+      "Read a PUBLISHED article's full content (title, content_state, cover media, author, timestamps, public_url) via its announcement tweet. PUBLIC read: no registered session or per-call credentials needed, just your API key, same auth model as twitter_tweet_detail. Provide either id or url of the announcement tweet. Returns 404 (article null) if the tweet does not exist, is not visible, or is not an article announcement, for example a Draft that was never published, or a Published article that was later unpublished/deleted. Use twitter_article_list instead to read your OWN drafts.",
+    args: [
+      "@TWEET_REF",
+    ],
+  },
+  {
+    name: "twitter_article_list",
+    endpoint: "/article/list",
+    description:
+      "List YOUR OWN articles (drafts or published) AS your authenticated account, most recent first. X exposes no combined view, so this filters to ONE lifecycle per call: pass lifecycle='published' to list published articles, omit it (or pass 'draft') for drafts. Requires an authenticated session behind your key. Returns count, next_cursor (pass it back as cursor to fetch the next page; null/absent means no more pages), and the page of article objects.",
+    args: [
+      { name: "lifecycle", enum: ["draft", "published"], required: false,
+        describe:
+          "Which lifecycle to list: 'draft' or 'published'. Defaults to 'draft' when omitted. X has no combined view, list each lifecycle separately." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max articles to return for this page, 1 to 100. Defaults to 20 when omitted." },
+      "@CURSOR",
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_delete",
+    endpoint: "/article/delete",
+    write: true, destructive: true,
+    description:
+      "Delete an article AS your authenticated account. A DRAFT is hard-deleted outright; a PUBLISHED article is unpublished first and then its announcement tweet is deleted too, so this is the one op that fully removes a published article's public footprint (compare twitter_article_unpublish, which leaves the tweet up). Irreversible. lifecycle and tweet_id are optional fast-path hints (read them off a prior twitter_article_create or twitter_article_list response): when omitted, the server figures out the lifecycle itself by scanning your own Draft then Published articles, which costs an extra round trip. Requires an authenticated session with write capability behind your key. Returns ok/deleted and the id you targeted.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list." },
+      { name: "lifecycle", enum: ["draft", "published"], required: false,
+        describe:
+          "Optional fast-path hint: 'draft' or 'published', if you already know it. Omit to let the server resolve it (slower, one extra lookup)." },
+      { name: "tweet_id", required: false,
+        describe:
+          "Optional fast-path hint: the announcement tweet id, only meaningful when lifecycle is 'published'. Omit to let the server resolve it from your own article list." },
       "@INLINE",
     ],
   },
