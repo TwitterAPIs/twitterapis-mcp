@@ -55,6 +55,10 @@
     {
       "name": "Write Actions",
       "description": "Act on behalf of an authenticated account: like, retweet, bookmark, and follow, each with its undo. Billed at $0.0008 per call, the same as a standard read."
+    },
+    {
+      "name": "Articles",
+      "description": "X's long-form Articles ('Notes') feature: create, edit, publish, unpublish, list, and delete drafts owned by your registered session, plus a public read of any published article via its announcement tweet. Writes billed at $0.0016 per call; reads at $0.0008."
     }
   ],
   "paths": {
@@ -5391,7 +5395,7 @@
       "get": {
         "operationId": "user-tweets-complete",
         "summary": "Full Tweet History",
-        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` — pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
+        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` \u2014 pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
         "tags": [
           "User Reads"
         ],
@@ -10229,6 +10233,1473 @@
             }
           }
         ]
+      }
+    },
+    "/article/create": {
+      "post": {
+        "operationId": "article-create",
+        "summary": "Create Article Draft",
+        "description": "Start a new DRAFT article ('Notes') as the account behind your registered session. No body required. Requires a registered session. Billed at $0.0016 per call.",
+        "tags": [
+          "Articles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "responses": {
+          "200": {
+            "description": "Create Article Draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the call succeeded and an article object was returned."
+                    },
+                    "article": {
+                      "type": "object",
+                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "article": {
+                    "id": "QXJ0aWNsZUVudGl0eTox...",
+                    "rest_id": "1234567890123456789",
+                    "title": "How we built it",
+                    "preview_text": "A short preview of the article body...",
+                    "lifecycle": "Draft",
+                    "content_state": {
+                      "blocks": [],
+                      "entityMap": []
+                    },
+                    "cover_media": null,
+                    "media_entities": [],
+                    "author": null,
+                    "created_at_secs": 1754800000,
+                    "modified_at_secs": 1754800000,
+                    "first_published_at_secs": null,
+                    "visibility_setting": null,
+                    "tweet_id": null,
+                    "public_url": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/article/update_title": {
+      "post": {
+        "operationId": "article-update-title",
+        "summary": "Update Article Title",
+        "description": "Update the title of an article owned by the account behind your registered session. Requires a registered session. Billed at $0.0016 per call.",
+        "tags": [
+          "Articles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "responses": {
+          "200": {
+            "description": "Update Article Title",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the call succeeded and an article object was returned."
+                    },
+                    "article": {
+                      "type": "object",
+                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "article": {
+                    "id": "QXJ0aWNsZUVudGl0eTox...",
+                    "rest_id": "1234567890123456789",
+                    "title": "How we built it",
+                    "preview_text": "A short preview of the article body...",
+                    "lifecycle": "Draft",
+                    "content_state": {
+                      "blocks": [],
+                      "entityMap": []
+                    },
+                    "cover_media": null,
+                    "media_entities": [],
+                    "author": null,
+                    "created_at_secs": 1754800000,
+                    "modified_at_secs": 1754800000,
+                    "first_published_at_secs": null,
+                    "visibility_setting": null,
+                    "tweet_id": null,
+                    "public_url": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "The article's entity id (returned by article/create or article/list), e.g. 'ArticleEntity:1234567890123456789'."
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "The new article title."
+                  }
+                },
+                "required": [
+                  "id",
+                  "title"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/article/update_content": {
+      "post": {
+        "operationId": "article-update-content",
+        "summary": "Update Article Content",
+        "description": "Update the body content of an article owned by the account behind your registered session. content_state is Draft.js JSON ({ blocks, entityMap }), passed through verbatim and not validated server-side; the caller builds/edits it client-side. Requires a registered session. Billed at $0.0016 per call.",
+        "tags": [
+          "Articles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "responses": {
+          "200": {
+            "description": "Update Article Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the call succeeded and an article object was returned."
+                    },
+                    "article": {
+                      "type": "object",
+                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "article": {
+                    "id": "QXJ0aWNsZUVudGl0eTox...",
+                    "rest_id": "1234567890123456789",
+                    "title": "How we built it",
+                    "preview_text": "A short preview of the article body...",
+                    "lifecycle": "Draft",
+                    "content_state": {
+                      "blocks": [],
+                      "entityMap": []
+                    },
+                    "cover_media": null,
+                    "media_entities": [],
+                    "author": null,
+                    "created_at_secs": 1754800000,
+                    "modified_at_secs": 1754800000,
+                    "first_published_at_secs": null,
+                    "visibility_setting": null,
+                    "tweet_id": null,
+                    "public_url": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "The article's entity id (returned by article/create or article/list)."
+                  },
+                  "content_state": {
+                    "type": "object",
+                    "description": "Draft.js content state: { blocks: [...], entityMap: [...] }. Passed through verbatim."
+                  }
+                },
+                "required": [
+                  "id",
+                  "content_state"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/article/publish": {
+      "post": {
+        "operationId": "article-publish",
+        "summary": "Publish Article",
+        "description": "Publish a DRAFT article as the account behind your registered session, transitioning it to Published and posting a PUBLIC announcement tweet. This is a real, user-visible action; it is not fully reversible (article/unpublish reverts to Draft but leaves the announcement tweet; article/delete unpublishes and removes the tweet). Requires a registered session. Billed at $0.0016 per call.",
+        "tags": [
+          "Articles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "responses": {
+          "200": {
+            "description": "Publish Article",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the call succeeded and an article object was returned."
+                    },
+                    "article": {
+                      "type": "object",
+                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "article": {
+                    "id": "QXJ0aWNsZUVudGl0eTox...",
+                    "rest_id": "1234567890123456789",
+                    "title": "How we built it",
+                    "preview_text": "A short preview of the article body...",
+                    "lifecycle": "Draft",
+                    "content_state": {
+                      "blocks": [],
+                      "entityMap": []
+                    },
+                    "cover_media": null,
+                    "media_entities": [],
+                    "author": null,
+                    "created_at_secs": 1754800000,
+                    "modified_at_secs": 1754800000,
+                    "first_published_at_secs": null,
+                    "visibility_setting": null,
+                    "tweet_id": null,
+                    "public_url": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "The article's entity id (returned by article/create or article/list)."
+                  },
+                  "audience": {
+                    "type": "string",
+                    "description": "Who can see the published article. Defaults to 'Everyone' when omitted.",
+                    "example": "Everyone"
+                  },
+                  "reply_control": {
+                    "type": "string",
+                    "description": "Who can reply to the announcement tweet. Defaults to 'Everyone' when omitted.",
+                    "example": "Everyone"
+                  },
+                  "caption": {
+                    "type": "string",
+                    "description": "Optional caption text for the announcement tweet, up to 256 characters."
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/article/unpublish": {
+      "post": {
+        "operationId": "article-unpublish",
+        "summary": "Unpublish Article",
+        "description": "Revert a PUBLISHED article to Draft, as the account behind your registered session. The announcement tweet is left in place (use article/delete to remove it too). Requires a registered session. Billed at $0.0016 per call.",
+        "tags": [
+          "Articles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "responses": {
+          "200": {
+            "description": "Unpublish Article",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the call succeeded and an article object was returned."
+                    },
+                    "article": {
+                      "type": "object",
+                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "article": {
+                    "id": "QXJ0aWNsZUVudGl0eTox...",
+                    "rest_id": "1234567890123456789",
+                    "title": "How we built it",
+                    "preview_text": "A short preview of the article body...",
+                    "lifecycle": "Draft",
+                    "content_state": {
+                      "blocks": [],
+                      "entityMap": []
+                    },
+                    "cover_media": null,
+                    "media_entities": [],
+                    "author": null,
+                    "created_at_secs": 1754800000,
+                    "modified_at_secs": 1754800000,
+                    "first_published_at_secs": null,
+                    "visibility_setting": null,
+                    "tweet_id": null,
+                    "public_url": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "The article's entity id (returned by article/create or article/list)."
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/article/get": {
+      "get": {
+        "operationId": "article-get",
+        "summary": "Get Published Article",
+        "description": "Read a PUBLISHED article's full content via its announcement tweet id or status URL. PUBLIC read: no registered session or per-call credentials required, same auth model as tweet/detail. 404 if the tweet does not exist, is not visible, or is not an article announcement. Billed at $0.0008 per call.",
+        "tags": [
+          "Articles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "responses": {
+          "200": {
+            "description": "Get Published Article",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the call succeeded and an article object was returned."
+                    },
+                    "article": {
+                      "type": "object",
+                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "article": {
+                    "id": "QXJ0aWNsZUVudGl0eTox...",
+                    "rest_id": "1234567890123456789",
+                    "title": "How we built it",
+                    "preview_text": "A short preview of the article body...",
+                    "lifecycle": "Draft",
+                    "content_state": {
+                      "blocks": [],
+                      "entityMap": []
+                    },
+                    "cover_media": null,
+                    "media_entities": [],
+                    "author": null,
+                    "created_at_secs": 1754800000,
+                    "modified_at_secs": 1754800000,
+                    "first_published_at_secs": null,
+                    "visibility_setting": null,
+                    "tweet_id": null,
+                    "public_url": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the article's announcement tweet. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the article's announcement tweet. Provide either id or url.",
+              "example": "1759123456789012345"
+            },
+            "example": "1759123456789012345"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "description": "Full status URL of the article's announcement tweet, for example https://x.com/naval/status/1759123456789012345. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Full status URL of the article's announcement tweet, for example https://x.com/naval/status/1759123456789012345. Provide either id or url.",
+              "example": "https://x.com/naval/status/1759123456789012345"
+            },
+            "example": "https://x.com/naval/status/1759123456789012345"
+          }
+        ]
+      }
+    },
+    "/article/list": {
+      "get": {
+        "operationId": "article-list",
+        "summary": "List Articles",
+        "description": "List the account's OWN articles (drafts or published), as the account behind your registered session. Requires a registered session. Returns next_cursor for pagination. Billed at $0.0008 per call.",
+        "tags": [
+          "Articles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "responses": {
+          "200": {
+            "description": "List Articles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the call succeeded."
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of articles in this page."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor to fetch the next page, or null when there are no more pages."
+                    },
+                    "articles": {
+                      "type": "array",
+                      "description": "The page of article entities."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "count": 1,
+                  "next_cursor": null,
+                  "articles": [
+                    {
+                      "id": "QXJ0aWNsZUVudGl0eTox...",
+                      "rest_id": "1234567890123456789",
+                      "title": "How we built it",
+                      "preview_text": "A short preview of the article body...",
+                      "lifecycle": "Draft",
+                      "content_state": {
+                        "blocks": [],
+                        "entityMap": []
+                      },
+                      "cover_media": null,
+                      "media_entities": [],
+                      "author": null,
+                      "created_at_secs": 1754800000,
+                      "modified_at_secs": 1754800000,
+                      "first_published_at_secs": null,
+                      "visibility_setting": null,
+                      "tweet_id": null,
+                      "public_url": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "lifecycle",
+            "in": "query",
+            "required": false,
+            "description": "Filter by lifecycle: 'draft' or 'published'. Defaults to 'draft' when omitted. X exposes no combined view, so list one lifecycle at a time.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "published"
+              ],
+              "description": "Filter by lifecycle: 'draft' or 'published'. Defaults to 'draft' when omitted. X exposes no combined view, so list one lifecycle at a time.",
+              "example": "draft"
+            },
+            "example": "draft"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max articles to return for this page (1 to 100). Defaults to 20 when omitted.",
+            "schema": {
+              "type": "integer",
+              "description": "Max articles to return for this page (1 to 100). Defaults to 20 when omitted.",
+              "example": 20
+            },
+            "example": 20
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+            "schema": {
+              "type": "string",
+              "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call."
+            }
+          }
+        ]
+      }
+    },
+    "/article/delete": {
+      "post": {
+        "operationId": "article-delete",
+        "summary": "Delete Article",
+        "description": "Delete an article owned by the account behind your registered session. A DRAFT is hard-deleted; a PUBLISHED article is unpublished then its announcement tweet is deleted. lifecycle and tweet_id are optional fast-path hints (from a prior article/list or article/create response); when omitted, the server resolves lifecycle by scanning the account's own Draft then Published lists. Irreversible. Requires a registered session. Billed at $0.0008 per call.",
+        "tags": [
+          "Articles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "responses": {
+          "200": {
+            "description": "Delete Article",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the delete succeeded (mirrors deleted)."
+                    },
+                    "deleted": {
+                      "type": "boolean",
+                      "description": "True when the article was confirmed deleted."
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "The article entity id that was targeted."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "deleted": true,
+                  "id": "ArticleEntity:1234567890123456789"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "The article's entity id (returned by article/create or article/list)."
+                  },
+                  "lifecycle": {
+                    "type": "string",
+                    "description": "Optional fast-path hint: 'draft' or 'published'. When omitted, the server resolves it by scanning the account's own articles.",
+                    "enum": [
+                      "draft",
+                      "published"
+                    ]
+                  },
+                  "tweet_id": {
+                    "type": "string",
+                    "description": "Optional fast-path hint: the announcement tweet id, for a published article. When omitted and lifecycle is 'published', the server resolves it from the account's own article list."
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          }
+        }
       }
     }
   },

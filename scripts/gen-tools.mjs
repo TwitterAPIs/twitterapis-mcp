@@ -160,6 +160,12 @@ for (const t of TOOL_OVERRIDES) {
     if (!a.describe || a.describe.length < 10) {
       bad(`tool ${t.name} arg "${a.name}" has no usable description; a model reads this to decide how to call the tool`);
     }
+    if (type === "json" && !t.jsonBody) {
+      bad(
+        `tool ${t.name} arg "${a.name}" is type:"json" but the tool is not jsonBody:true; a non-jsonBody ` +
+          `tool sends args as query-string values, which cannot carry a real object.`,
+      );
+    }
     finalArgs.push({ name: a.name, type, enum: a.enum, min: a.min, max: a.max, minLength: a.minLength, required, describe: a.describe });
   }
 
@@ -225,6 +231,15 @@ function zodExpr(a) {
     e = "z.number()";
     if (a.min !== undefined) e += `.min(${a.min})`;
     if (a.max !== undefined) e += `.max(${a.max})`;
+  } else if (a.type === "json") {
+    // Arbitrary JSON object arg, for a param the handler reads as a real
+    // parsed object rather than a string (e.g. article/update_content's
+    // Draft.js content_state: { blocks, entityMap }). A plain z.string() here
+    // would make the MCP client send a JSON-encoded STRING, which a
+    // jsonBody:true tool then double-encodes into the request body, so the
+    // handler receives `typeof body.x === "string"` where it expects an
+    // object and rejects the call. Only valid on a jsonBody:true tool.
+    e = "z.record(z.string(), z.unknown())";
   } else {
     e = "z.string()";
     if (a.minLength !== undefined) e += `.min(${a.minLength})`;
@@ -261,6 +276,7 @@ const counts = {
   tools: resolved.length,
   reads: resolved.filter((t) => !t.write).length,
   writes: resolved.filter((t) => t.write).length,
+  jsonBody: resolved.filter((t) => t.jsonBody).length,
 };
 
 const rendered = `// GENERATED FILE. DO NOT EDIT BY HAND.
@@ -278,7 +294,7 @@ const rendered = `// GENERATED FILE. DO NOT EDIT BY HAND.
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
 // write actions, reads its params from the query string), except the per-call
-// inline credentials, which travel as x-* request headers, and the three
+// inline credentials, which travel as x-* request headers, and the ${counts.jsonBody}
 // jsonBody tools, whose fields travel in a JSON request body. A tool with
 // \`method: "POST"\` is a write that acts on behalf of the authenticated account
 // behind your API key; reads are GET and default when \`method\` is omitted.
