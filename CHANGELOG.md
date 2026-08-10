@@ -6,7 +6,17 @@
 
 - **8 new tools for X's long-form Articles/Notes feature** (#1096): `twitter_article_create`, `twitter_article_update_title`, `twitter_article_update_content`, `twitter_article_publish`, `twitter_article_unpublish`, `twitter_article_get`, `twitter_article_list`, `twitter_article_delete`. `twitter_article_get` is a public read (no session required, like `twitter_tweet_detail`); the other 7 require a customer session. The catalog is now **60 tools: 39 reads and 21 write actions**.
 
-## Unreleased
+## 0.6.6 (2026-08-09)
+
+### Added
+
+- **`twitter_customer_session_delete`**, the self-serve counterpart to `twitter_customer_session`: the backend has shipped this revoke endpoint since PR #188, but no published surface carried it, so an agent could link a session with no documented way to unlink it. Takes no body field and no header beyond the API key; the handler resolves the session to delete from the auth context, which is what makes cross-key deletion impossible. Placed next to `twitter_customer_session` so the way out sits beside the way in. The catalog is now **52 tools: 37 reads and 15 write actions**.
+
+### Fixed
+
+- **`twitter_user_login` was missing `proxy_url` and `user_agent`**, which the backend handler reads and stores on the resulting session, governing that session's ongoing egress and fingerprint rather than just the one login call. Both were undocumented and therefore uncallable through the tool. Verified against `src/server/routes/user-login.ts`, not the spec.
+
+## 0.6.5 (2026-08-06)
 
 ### Changed
 
@@ -37,7 +47,7 @@
 
 - Release tooling hardened. No user-facing or API behaviour change.
 
-## Unreleased
+## 0.6.2 (2026-07-21)
 
 ### Added
 
