@@ -58,7 +58,7 @@
     },
     {
       "name": "Articles",
-      "description": "X's long-form Articles ('Notes') feature: create, edit, publish, unpublish, list, and delete drafts owned by your registered session, plus a public read of any published article via its announcement tweet. Writes billed at $0.0016 per call; reads at $0.0008."
+      "description": "Create, edit, publish, and read X's long-form Articles (X's internal name: Notes). Publishing posts a real announcement tweet; reading a published article is a public call that needs no session."
     }
   ],
   "paths": {
@@ -5395,7 +5395,7 @@
       "get": {
         "operationId": "user-tweets-complete",
         "summary": "Full Tweet History",
-        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` \u2014 pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
+        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` — pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
         "tags": [
           "User Reads"
         ],
@@ -6335,10 +6335,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Items per page. Defaults to 20; capped at 100.",
+            "description": "Items per page. Defaults to 20; documented cap 100. NOTE: X returns this list in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint, not an exact limit; paginate with the cursor for more.",
             "schema": {
               "type": "integer",
-              "description": "Items per page. Defaults to 20; capped at 100."
+              "description": "Items per page. Defaults to 20; documented cap 100. NOTE: X returns this list in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint, not an exact limit; paginate with the cursor for more."
             }
           },
           {
@@ -6568,10 +6568,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "description": "Max items to return for this page. Default 20; documented range 1-100. NOTE: on follower/following lists X returns pages in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint here, not an exact limit; paginate with the cursor for more.",
             "schema": {
               "type": "integer",
-              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "description": "Max items to return for this page. Default 20; documented range 1-100. NOTE: on follower/following lists X returns pages in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint here, not an exact limit; paginate with the cursor for more.",
               "example": "20"
             },
             "example": "20"
@@ -6778,10 +6778,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "description": "Max items to return for this page. Default 20; documented range 1-100. NOTE: on follower/following lists X returns pages in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint here, not an exact limit; paginate with the cursor for more.",
             "schema": {
               "type": "integer",
-              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "description": "Max items to return for this page. Default 20; documented range 1-100. NOTE: on follower/following lists X returns pages in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint here, not an exact limit; paginate with the cursor for more.",
               "example": "20"
             },
             "example": "20"
@@ -6989,10 +6989,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "description": "Max items to return for this page. Default 20; documented range 1-100. NOTE: on follower/following lists X returns pages in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint here, not an exact limit; paginate with the cursor for more.",
             "schema": {
               "type": "integer",
-              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "description": "Max items to return for this page. Default 20; documented range 1-100. NOTE: on follower/following lists X returns pages in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint here, not an exact limit; paginate with the cursor for more.",
               "example": "20"
             },
             "example": "20"
@@ -7200,10 +7200,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "description": "Max items to return for this page. Default 20; documented range 1-100. NOTE: on follower/following lists X returns pages in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint here, not an exact limit; paginate with the cursor for more.",
             "schema": {
               "type": "integer",
-              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "description": "Max items to return for this page. Default 20; documented range 1-100. NOTE: on follower/following lists X returns pages in fixed chunks, so a small count may still return up to a full page (~100). Treat count as an upper-bound hint here, not an exact limit; paginate with the cursor for more.",
               "example": "20"
             },
             "example": "20"
@@ -10238,8 +10238,8 @@
     "/article/create": {
       "post": {
         "operationId": "article-create",
-        "summary": "Create Article Draft",
-        "description": "Start a new DRAFT article ('Notes') as the account behind your registered session. No body required. Requires a registered session. Billed at $0.0016 per call.",
+        "summary": "Create Article",
+        "description": "Start a new draft Article as the account behind your registered session, and return its entity id, ready for Update Title / Update Content. The draft is empty until you call those. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
         "tags": [
           "Articles"
         ],
@@ -10249,9 +10249,26 @@
           }
         ],
         "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/article/create\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/article/create\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/article/create\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({}),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Create Article Draft",
+            "description": "Start a new draft article. No request body required.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10259,21 +10276,22 @@
                   "properties": {
                     "ok": {
                       "type": "boolean",
-                      "description": "True when the call succeeded and an article object was returned."
+                      "description": "True when the draft was created."
                     },
                     "article": {
                       "type": "object",
-                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                      "description": "The new draft article: id (base64 entity id, pass this to every other article/* call), rest_id (numeric string), title (null until set), preview_text, lifecycle (Draft), content_state ({ blocks: [], entityMap: [] }, empty until Update Content), cover_media (null), media_entities ([]), author (user profile object), created_at_secs, modified_at_secs, first_published_at_secs (null), visibility_setting (null), tweet_id (null until published), and public_url (null until published).",
+                      "additionalProperties": true
                     }
                   }
                 },
                 "example": {
                   "ok": true,
                   "article": {
-                    "id": "QXJ0aWNsZUVudGl0eTox...",
-                    "rest_id": "1234567890123456789",
-                    "title": "How we built it",
-                    "preview_text": "A short preview of the article body...",
+                    "id": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4",
+                    "rest_id": "2086650228950683648",
+                    "title": null,
+                    "preview_text": "",
                     "lifecycle": "Draft",
                     "content_state": {
                       "blocks": [],
@@ -10281,9 +10299,13 @@
                     },
                     "cover_media": null,
                     "media_entities": [],
-                    "author": null,
-                    "created_at_secs": 1754800000,
-                    "modified_at_secs": 1754800000,
+                    "author": {
+                      "id": "44196397",
+                      "username": "elonmusk",
+                      "name": "Elon Musk"
+                    },
+                    "created_at_secs": 1786400000,
+                    "modified_at_secs": 1786400000,
                     "first_published_at_secs": null,
                     "visibility_setting": null,
                     "tweet_id": null,
@@ -10398,7 +10420,7 @@
       "post": {
         "operationId": "article-update-title",
         "summary": "Update Article Title",
-        "description": "Update the title of an article owned by the account behind your registered session. Requires a registered session. Billed at $0.0016 per call.",
+        "description": "Set the title of an article you own, identified by its entity id. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
         "tags": [
           "Articles"
         ],
@@ -10408,9 +10430,26 @@
           }
         ],
         "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/article/update_title\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"title\": \"Why we rebuilt our onboarding from scratch\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/article/update_title\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"title\": \"Why we rebuilt our onboarding from scratch\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/article/update_title\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", title: \"Why we rebuilt our onboarding from scratch\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Update Article Title",
+            "description": "Set the title on a draft or published article.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10418,21 +10457,22 @@
                   "properties": {
                     "ok": {
                       "type": "boolean",
-                      "description": "True when the call succeeded and an article object was returned."
+                      "description": "True when the title was updated."
                     },
                     "article": {
                       "type": "object",
-                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                      "description": "The updated article, full shape: id, rest_id, title, preview_text, lifecycle, content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url.",
+                      "additionalProperties": true
                     }
                   }
                 },
                 "example": {
                   "ok": true,
                   "article": {
-                    "id": "QXJ0aWNsZUVudGl0eTox...",
-                    "rest_id": "1234567890123456789",
-                    "title": "How we built it",
-                    "preview_text": "A short preview of the article body...",
+                    "id": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4",
+                    "rest_id": "2086650228950683648",
+                    "title": "Why we rebuilt our onboarding from scratch",
+                    "preview_text": "",
                     "lifecycle": "Draft",
                     "content_state": {
                       "blocks": [],
@@ -10440,9 +10480,13 @@
                     },
                     "cover_media": null,
                     "media_entities": [],
-                    "author": null,
-                    "created_at_secs": 1754800000,
-                    "modified_at_secs": 1754800000,
+                    "author": {
+                      "id": "44196397",
+                      "username": "elonmusk",
+                      "name": "Elon Musk"
+                    },
+                    "created_at_secs": 1786400000,
+                    "modified_at_secs": 1786400120,
                     "first_published_at_secs": null,
                     "visibility_setting": null,
                     "tweet_id": null,
@@ -10560,11 +10604,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "description": "The article's entity id (returned by article/create or article/list), e.g. 'ArticleEntity:1234567890123456789'."
+                    "description": "The article's base64 entity id, returned by article/create or article/list (the id field, not rest_id).",
+                    "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
                   },
                   "title": {
                     "type": "string",
-                    "description": "The new article title."
+                    "description": "The new title text.",
+                    "example": "Why we rebuilt our onboarding from scratch"
                   }
                 },
                 "required": [
@@ -10581,7 +10627,7 @@
       "post": {
         "operationId": "article-update-content",
         "summary": "Update Article Content",
-        "description": "Update the body content of an article owned by the account behind your registered session. content_state is Draft.js JSON ({ blocks, entityMap }), passed through verbatim and not validated server-side; the caller builds/edits it client-side. Requires a registered session. Billed at $0.0016 per call.",
+        "description": "Replace the body of an article you own with a new content_state, identified by its entity id. content_state is Draft.js editor-state JSON ({ blocks: [...], entityMap: [...] }) that you build client-side; it is passed through to X verbatim and not validated on our side. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
         "tags": [
           "Articles"
         ],
@@ -10591,9 +10637,26 @@
           }
         ],
         "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/article/update_content\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"content_state\": {\"blocks\":[{\"key\":\"a1b2c\",\"text\":\"Opening paragraph.\",\"type\":\"unstyled\",\"depth\":0,\"inlineStyleRanges\":[],\"entityRanges\":[]}],\"entityMap\":{}}}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/article/update_content\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"content_state\": {\"blocks\": [{\"key\": \"a1b2c\", \"text\": \"Opening paragraph.\", \"type\": \"unstyled\", \"depth\": 0, \"inlineStyleRanges\": [], \"entityRanges\": []}], \"entityMap\": {}}},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/article/update_content\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", content_state: { blocks: [{ key: \"a1b2c\", text: \"Opening paragraph.\", type: \"unstyled\", depth: 0, inlineStyleRanges: [], entityRanges: [] }], entityMap: {} } }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Update Article Content",
+            "description": "Replace an article's body with a new Draft.js content_state.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10601,31 +10664,45 @@
                   "properties": {
                     "ok": {
                       "type": "boolean",
-                      "description": "True when the call succeeded and an article object was returned."
+                      "description": "True when the content was updated."
                     },
                     "article": {
                       "type": "object",
-                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                      "description": "The updated article, full shape: id, rest_id, title, preview_text, lifecycle, content_state (your new blocks/entityMap, echoed back), cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url.",
+                      "additionalProperties": true
                     }
                   }
                 },
                 "example": {
                   "ok": true,
                   "article": {
-                    "id": "QXJ0aWNsZUVudGl0eTox...",
-                    "rest_id": "1234567890123456789",
-                    "title": "How we built it",
-                    "preview_text": "A short preview of the article body...",
+                    "id": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4",
+                    "rest_id": "2086650228950683648",
+                    "title": "Why we rebuilt our onboarding from scratch",
+                    "preview_text": "Opening paragraph.",
                     "lifecycle": "Draft",
                     "content_state": {
-                      "blocks": [],
+                      "blocks": [
+                        {
+                          "key": "a1b2c",
+                          "text": "Opening paragraph.",
+                          "type": "unstyled",
+                          "depth": 0,
+                          "inlineStyleRanges": [],
+                          "entityRanges": []
+                        }
+                      ],
                       "entityMap": []
                     },
                     "cover_media": null,
                     "media_entities": [],
-                    "author": null,
-                    "created_at_secs": 1754800000,
-                    "modified_at_secs": 1754800000,
+                    "author": {
+                      "id": "44196397",
+                      "username": "elonmusk",
+                      "name": "Elon Musk"
+                    },
+                    "created_at_secs": 1786400000,
+                    "modified_at_secs": 1786400240,
                     "first_published_at_secs": null,
                     "visibility_setting": null,
                     "tweet_id": null,
@@ -10743,11 +10820,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "description": "The article's entity id (returned by article/create or article/list)."
+                    "description": "The article's base64 entity id, returned by article/create or article/list (the id field, not rest_id).",
+                    "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
                   },
                   "content_state": {
-                    "type": "object",
-                    "description": "Draft.js content state: { blocks: [...], entityMap: [...] }. Passed through verbatim."
+                    "type": "string",
+                    "description": "The article body as a Draft.js content-state JSON object: { blocks: [...], entityMap: [...] }. You build and edit this client-side (see the Draft.js editor-state model); it is sent as-is in the JSON request body, not as a string field.",
+                    "example": "{\"blocks\":[{\"key\":\"a1b2c\",\"text\":\"Opening paragraph.\",\"type\":\"unstyled\",\"depth\":0,\"inlineStyleRanges\":[],\"entityRanges\":[]}],\"entityMap\":{}}"
                   }
                 },
                 "required": [
@@ -10764,7 +10843,7 @@
       "post": {
         "operationId": "article-publish",
         "summary": "Publish Article",
-        "description": "Publish a DRAFT article as the account behind your registered session, transitioning it to Published and posting a PUBLIC announcement tweet. This is a real, user-visible action; it is not fully reversible (article/unpublish reverts to Draft but leaves the announcement tweet; article/delete unpublishes and removes the tweet). Requires a registered session. Billed at $0.0016 per call.",
+        "description": "Publish a draft article as the account behind your registered session, transitioning it from Draft to Published. WARNING: publishing posts a real, public announcement tweet on the account's timeline. This is not a preview or a private action, and it cannot be undone by re-editing the article: once published, the only way back is Delete Article, which unpublishes the article AND removes the announcement tweet. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
         "tags": [
           "Articles"
         ],
@@ -10774,9 +10853,26 @@
           }
         ],
         "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/article/publish\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/article/publish\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/article/publish\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Publish Article",
+            "description": "Publish a draft article. This posts a real, public announcement tweet.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10784,35 +10880,49 @@
                   "properties": {
                     "ok": {
                       "type": "boolean",
-                      "description": "True when the call succeeded and an article object was returned."
+                      "description": "True when the article was published."
                     },
                     "article": {
                       "type": "object",
-                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                      "description": "The published article, full shape: id, rest_id, title, preview_text, lifecycle (now Published), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs (now set), visibility_setting (now Public), tweet_id (the new announcement tweet's id), public_url (https://x.com/i/article/<rest_id>).",
+                      "additionalProperties": true
                     }
                   }
                 },
                 "example": {
                   "ok": true,
                   "article": {
-                    "id": "QXJ0aWNsZUVudGl0eTox...",
-                    "rest_id": "1234567890123456789",
-                    "title": "How we built it",
-                    "preview_text": "A short preview of the article body...",
-                    "lifecycle": "Draft",
+                    "id": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4",
+                    "rest_id": "2086650228950683648",
+                    "title": "Why we rebuilt our onboarding from scratch",
+                    "preview_text": "Opening paragraph.",
+                    "lifecycle": "Published",
                     "content_state": {
-                      "blocks": [],
+                      "blocks": [
+                        {
+                          "key": "a1b2c",
+                          "text": "Opening paragraph.",
+                          "type": "unstyled",
+                          "depth": 0,
+                          "inlineStyleRanges": [],
+                          "entityRanges": []
+                        }
+                      ],
                       "entityMap": []
                     },
                     "cover_media": null,
                     "media_entities": [],
-                    "author": null,
-                    "created_at_secs": 1754800000,
-                    "modified_at_secs": 1754800000,
-                    "first_published_at_secs": null,
-                    "visibility_setting": null,
-                    "tweet_id": null,
-                    "public_url": null
+                    "author": {
+                      "id": "44196397",
+                      "username": "elonmusk",
+                      "name": "Elon Musk"
+                    },
+                    "created_at_secs": 1786400000,
+                    "modified_at_secs": 1786400400,
+                    "first_published_at_secs": 1786400400,
+                    "visibility_setting": "Public",
+                    "tweet_id": "2086650300012345678",
+                    "public_url": "https://x.com/i/article/2086650228950683648"
                   }
                 }
               }
@@ -10926,21 +11036,23 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "description": "The article's entity id (returned by article/create or article/list)."
+                    "description": "The article's base64 entity id, returned by article/create or article/list (the id field, not rest_id).",
+                    "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
                   },
                   "audience": {
                     "type": "string",
-                    "description": "Who can see the published article. Defaults to 'Everyone' when omitted.",
+                    "description": "Who can read the published article. Defaults to \"Everyone\" (X's own dialog default) when omitted.",
                     "example": "Everyone"
                   },
                   "reply_control": {
                     "type": "string",
-                    "description": "Who can reply to the announcement tweet. Defaults to 'Everyone' when omitted.",
+                    "description": "Who can reply to the announcement tweet. Defaults to \"Everyone\" (X's own dialog default) when omitted.",
                     "example": "Everyone"
                   },
                   "caption": {
                     "type": "string",
-                    "description": "Optional caption text for the announcement tweet, up to 256 characters."
+                    "description": "Optional caption text for the announcement tweet, up to 256 characters.",
+                    "example": "New post: why we rebuilt our onboarding from scratch."
                   }
                 },
                 "required": [
@@ -10956,7 +11068,7 @@
       "post": {
         "operationId": "article-unpublish",
         "summary": "Unpublish Article",
-        "description": "Revert a PUBLISHED article to Draft, as the account behind your registered session. The announcement tweet is left in place (use article/delete to remove it too). Requires a registered session. Billed at $0.0016 per call.",
+        "description": "Revert a Published article back to Draft, identified by its entity id. The announcement tweet the original publish posted is left in place; use Delete Article to remove it too. X server-validates this transition and returns a 422 (invalid_lifecycle) if the article is not currently Published. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
         "tags": [
           "Articles"
         ],
@@ -10966,9 +11078,26 @@
           }
         ],
         "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/article/unpublish\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/article/unpublish\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/article/unpublish\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Unpublish Article",
+            "description": "Revert a published article back to Draft. The announcement tweet is left in place.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10976,34 +11105,48 @@
                   "properties": {
                     "ok": {
                       "type": "boolean",
-                      "description": "True when the call succeeded and an article object was returned."
+                      "description": "True when the article was reverted to Draft."
                     },
                     "article": {
                       "type": "object",
-                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                      "description": "The reverted article, full shape: id, rest_id, title, preview_text, lifecycle (back to Draft), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url.",
+                      "additionalProperties": true
                     }
                   }
                 },
                 "example": {
                   "ok": true,
                   "article": {
-                    "id": "QXJ0aWNsZUVudGl0eTox...",
-                    "rest_id": "1234567890123456789",
-                    "title": "How we built it",
-                    "preview_text": "A short preview of the article body...",
+                    "id": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4",
+                    "rest_id": "2086650228950683648",
+                    "title": "Why we rebuilt our onboarding from scratch",
+                    "preview_text": "Opening paragraph.",
                     "lifecycle": "Draft",
                     "content_state": {
-                      "blocks": [],
+                      "blocks": [
+                        {
+                          "key": "a1b2c",
+                          "text": "Opening paragraph.",
+                          "type": "unstyled",
+                          "depth": 0,
+                          "inlineStyleRanges": [],
+                          "entityRanges": []
+                        }
+                      ],
                       "entityMap": []
                     },
                     "cover_media": null,
                     "media_entities": [],
-                    "author": null,
-                    "created_at_secs": 1754800000,
-                    "modified_at_secs": 1754800000,
-                    "first_published_at_secs": null,
+                    "author": {
+                      "id": "44196397",
+                      "username": "elonmusk",
+                      "name": "Elon Musk"
+                    },
+                    "created_at_secs": 1786400000,
+                    "modified_at_secs": 1786400500,
+                    "first_published_at_secs": 1786400400,
                     "visibility_setting": null,
-                    "tweet_id": null,
+                    "tweet_id": "2086650300012345678",
                     "public_url": null
                   }
                 }
@@ -11118,7 +11261,8 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "description": "The article's entity id (returned by article/create or article/list)."
+                    "description": "The article's base64 entity id, returned by article/create or article/list (the id field, not rest_id).",
+                    "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
                   }
                 },
                 "required": [
@@ -11133,8 +11277,8 @@
     "/article/get": {
       "get": {
         "operationId": "article-get",
-        "summary": "Get Published Article",
-        "description": "Read a PUBLISHED article's full content via its announcement tweet id or status URL. PUBLIC read: no registered session or per-call credentials required, same auth model as tweet/detail. 404 if the tweet does not exist, is not visible, or is not an article announcement. Billed at $0.0008 per call.",
+        "summary": "Get Article",
+        "description": "Read an article's full content. Two mutually exclusive forms: id or url (the announcement tweet id or status URL) for a public, pooled read that needs no session, works for Published articles only. Or article_id (the article's own entity id, from Article Create or Article List) for an owner-only read that requires a registered session and also works for your own Drafts. Billed at $0.0008 per call. Cost: $0.0008 per call.",
         "tags": [
           "Articles"
         ],
@@ -11144,45 +11288,76 @@
           }
         ],
         "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/article/get?id=2086650300012345678\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/article/get\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"id\": \"2086650300012345678\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/article/get\");\nurl.search = new URLSearchParams({ id: \"2086650300012345678\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Get Published Article",
+            "description": "Read an article via its announcement tweet, or your own via its entity id.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "description": "True when the call succeeded and an article object was returned."
+                    "id": {
+                      "type": "string",
+                      "description": "Echo of the announcement tweet id that was resolved from your id/url."
                     },
                     "article": {
                       "type": "object",
-                      "description": "The article entity: id, rest_id, title, preview_text, lifecycle (Draft/Published/null), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url. Null when the call failed."
+                      "description": "The published article, or null if no article was found at that tweet id/URL. Full shape when present: id, rest_id, title, preview_text, lifecycle (Published), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting (Public), tweet_id, public_url.",
+                      "additionalProperties": true
                     }
                   }
                 },
                 "example": {
-                  "ok": true,
+                  "id": "2086650300012345678",
                   "article": {
-                    "id": "QXJ0aWNsZUVudGl0eTox...",
-                    "rest_id": "1234567890123456789",
-                    "title": "How we built it",
-                    "preview_text": "A short preview of the article body...",
-                    "lifecycle": "Draft",
+                    "id": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4",
+                    "rest_id": "2086650228950683648",
+                    "title": "Why we rebuilt our onboarding from scratch",
+                    "preview_text": "Opening paragraph.",
+                    "lifecycle": "Published",
                     "content_state": {
-                      "blocks": [],
+                      "blocks": [
+                        {
+                          "key": "a1b2c",
+                          "text": "Opening paragraph.",
+                          "type": "unstyled",
+                          "depth": 0,
+                          "inlineStyleRanges": [],
+                          "entityRanges": []
+                        }
+                      ],
                       "entityMap": []
                     },
                     "cover_media": null,
                     "media_entities": [],
-                    "author": null,
-                    "created_at_secs": 1754800000,
-                    "modified_at_secs": 1754800000,
-                    "first_published_at_secs": null,
-                    "visibility_setting": null,
-                    "tweet_id": null,
-                    "public_url": null
+                    "author": {
+                      "id": "44196397",
+                      "username": "elonmusk",
+                      "name": "Elon Musk"
+                    },
+                    "created_at_secs": 1786400000,
+                    "modified_at_secs": 1786400400,
+                    "first_published_at_secs": 1786400400,
+                    "visibility_setting": "Public",
+                    "tweet_id": "2086650300012345678",
+                    "public_url": "https://x.com/i/article/2086650228950683648"
                   }
                 }
               }
@@ -11226,20 +11401,6 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
                 }
               }
             }
@@ -11292,25 +11453,37 @@
             "name": "id",
             "in": "query",
             "required": false,
-            "description": "Numeric ID of the article's announcement tweet. Provide either id or url.",
+            "description": "PUBLIC form. The article's announcement tweet id, or its status URL. Provide exactly one of id, url, or article_id.",
             "schema": {
               "type": "string",
-              "description": "Numeric ID of the article's announcement tweet. Provide either id or url.",
-              "example": "1759123456789012345"
+              "description": "PUBLIC form. The article's announcement tweet id, or its status URL. Provide exactly one of id, url, or article_id.",
+              "example": "2086650300012345678"
             },
-            "example": "1759123456789012345"
+            "example": "2086650300012345678"
           },
           {
             "name": "url",
             "in": "query",
             "required": false,
-            "description": "Full status URL of the article's announcement tweet, for example https://x.com/naval/status/1759123456789012345. Provide either id or url.",
+            "description": "PUBLIC form. Status URL of the article's announcement tweet, for example https://x.com/i/status/2086650300012345678. Provide exactly one of id, url, or article_id.",
             "schema": {
               "type": "string",
-              "description": "Full status URL of the article's announcement tweet, for example https://x.com/naval/status/1759123456789012345. Provide either id or url.",
-              "example": "https://x.com/naval/status/1759123456789012345"
+              "description": "PUBLIC form. Status URL of the article's announcement tweet, for example https://x.com/i/status/2086650300012345678. Provide exactly one of id, url, or article_id.",
+              "example": "https://x.com/i/status/2086650300012345678"
             },
-            "example": "https://x.com/naval/status/1759123456789012345"
+            "example": "https://x.com/i/status/2086650300012345678"
+          },
+          {
+            "name": "article_id",
+            "in": "query",
+            "required": false,
+            "description": "OWNER-ONLY form. The article's own entity id, from Article Create or Article List. Requires a registered session. Provide exactly one of id, url, or article_id.",
+            "schema": {
+              "type": "string",
+              "description": "OWNER-ONLY form. The article's own entity id, from Article Create or Article List. Requires a registered session. Provide exactly one of id, url, or article_id.",
+              "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
+            },
+            "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
           }
         ]
       }
@@ -11319,7 +11492,7 @@
       "get": {
         "operationId": "article-list",
         "summary": "List Articles",
-        "description": "List the account's OWN articles (drafts or published), as the account behind your registered session. Requires a registered session. Returns next_cursor for pagination. Billed at $0.0008 per call.",
+        "description": "List the caller's own articles at one lifecycle at a time: Draft or Published (default Draft). X exposes no combined view across both, so call it twice, once per lifecycle, to see everything. Cursor-paginated. Requires a registered session. Billed at $0.0008 per call. Cost: $0.0008 per call.",
         "tags": [
           "Articles"
         ],
@@ -11329,42 +11502,73 @@
           }
         ],
         "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/article/list?lifecycle=draft&count=20\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/article/list\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"lifecycle\": \"draft\", \"count\": 20},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/article/list\");\nurl.search = new URLSearchParams({ lifecycle: \"draft\", count: \"20\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/article/list?lifecycle=draft&cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.articles | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.articles[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/article/list\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"lifecycle\": \"draft\", \"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"articles\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { lifecycle: \"draft\", cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/article/list\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.articles ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "List Articles",
+            "description": "List your own articles, filtered by lifecycle (draft or published).",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "description": "True when the call succeeded."
-                    },
                     "count": {
                       "type": "integer",
-                      "description": "Number of articles in this page."
+                      "description": "Number of articles returned in this page."
                     },
                     "next_cursor": {
                       "type": "string",
-                      "description": "Opaque cursor to fetch the next page, or null when there are no more pages."
+                      "description": "Opaque cursor for the next page, or null when the list ends."
                     },
                     "articles": {
                       "type": "array",
-                      "description": "The page of article entities."
+                      "description": "Articles at the requested lifecycle, for this page. Each item: id, rest_id, title, preview_text, lifecycle, content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
                     }
                   }
                 },
                 "example": {
-                  "ok": true,
                   "count": 1,
                   "next_cursor": null,
                   "articles": [
                     {
-                      "id": "QXJ0aWNsZUVudGl0eTox...",
-                      "rest_id": "1234567890123456789",
-                      "title": "How we built it",
-                      "preview_text": "A short preview of the article body...",
+                      "id": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4",
+                      "rest_id": "2086650228950683648",
+                      "title": "Why we rebuilt our onboarding from scratch",
+                      "preview_text": "",
                       "lifecycle": "Draft",
                       "content_state": {
                         "blocks": [],
@@ -11372,9 +11576,13 @@
                       },
                       "cover_media": null,
                       "media_entities": [],
-                      "author": null,
-                      "created_at_secs": 1754800000,
-                      "modified_at_secs": 1754800000,
+                      "author": {
+                        "id": "44196397",
+                        "username": "elonmusk",
+                        "name": "Elon Musk"
+                      },
+                      "created_at_secs": 1786400000,
+                      "modified_at_secs": 1786400120,
                       "first_published_at_secs": null,
                       "visibility_setting": null,
                       "tweet_id": null,
@@ -11427,20 +11635,6 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -11489,14 +11683,10 @@
             "name": "lifecycle",
             "in": "query",
             "required": false,
-            "description": "Filter by lifecycle: 'draft' or 'published'. Defaults to 'draft' when omitted. X exposes no combined view, so list one lifecycle at a time.",
+            "description": "Which set of articles to list: \"draft\" or \"published\". Defaults to \"draft\".",
             "schema": {
               "type": "string",
-              "enum": [
-                "draft",
-                "published"
-              ],
-              "description": "Filter by lifecycle: 'draft' or 'published'. Defaults to 'draft' when omitted. X exposes no combined view, so list one lifecycle at a time.",
+              "description": "Which set of articles to list: \"draft\" or \"published\". Defaults to \"draft\".",
               "example": "draft"
             },
             "example": "draft"
@@ -11505,22 +11695,22 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max articles to return for this page (1 to 100). Defaults to 20 when omitted.",
+            "description": "Items per page. Defaults to 20; capped at 100.",
             "schema": {
               "type": "integer",
-              "description": "Max articles to return for this page (1 to 100). Defaults to 20 when omitted.",
-              "example": 20
+              "description": "Items per page. Defaults to 20; capped at 100.",
+              "example": "20"
             },
-            "example": 20
+            "example": "20"
           },
           {
             "name": "cursor",
             "in": "query",
             "required": false,
-            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+            "description": "Pagination cursor from a previous response's next_cursor.",
             "schema": {
               "type": "string",
-              "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call."
+              "description": "Pagination cursor from a previous response's next_cursor."
             }
           }
         ]
@@ -11530,7 +11720,7 @@
       "post": {
         "operationId": "article-delete",
         "summary": "Delete Article",
-        "description": "Delete an article owned by the account behind your registered session. A DRAFT is hard-deleted; a PUBLISHED article is unpublished then its announcement tweet is deleted. lifecycle and tweet_id are optional fast-path hints (from a prior article/list or article/create response); when omitted, the server resolves lifecycle by scanning the account's own Draft then Published lists. Irreversible. Requires a registered session. Billed at $0.0008 per call.",
+        "description": "Delete an article you own, identified by its entity id. A Draft is hard-deleted directly. A Published article is unpublished first (reverting it to Draft) and then its announcement tweet is deleted, which is what makes it stop being publicly reachable, a two-step reversal for Publish Article. Pass lifecycle and tweet_id as optional fast-path hints when you already know them (from a prior list/create response); omitted, the server resolves them itself by scanning your Draft then Published lists, costing a couple of extra round trips. Requires a registered session. Billed at $0.0008 per call. Cost: $0.0008 per call.",
         "tags": [
           "Articles"
         ],
@@ -11540,9 +11730,26 @@
           }
         ],
         "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/article/delete\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/article/delete\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/article/delete\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Delete Article",
+            "description": "Delete an article. A draft is hard-deleted; a published article is unpublished, then its announcement tweet is removed too.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11550,22 +11757,22 @@
                   "properties": {
                     "ok": {
                       "type": "boolean",
-                      "description": "True when the delete succeeded (mirrors deleted)."
+                      "description": "Mirrors deleted."
                     },
                     "deleted": {
                       "type": "boolean",
-                      "description": "True when the article was confirmed deleted."
+                      "description": "True when the delete completed: the draft was hard-deleted, or the published article was unpublished and its announcement tweet removed."
                     },
                     "id": {
                       "type": "string",
-                      "description": "The article entity id that was targeted."
+                      "description": "Echo of the article id you deleted."
                     }
                   }
                 },
                 "example": {
                   "ok": true,
                   "deleted": true,
-                  "id": "ArticleEntity:1234567890123456789"
+                  "id": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
                 }
               }
             }
@@ -11678,19 +11885,18 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "description": "The article's entity id (returned by article/create or article/list)."
+                    "description": "The article's base64 entity id, returned by article/create or article/list (the id field, not rest_id).",
+                    "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
                   },
                   "lifecycle": {
                     "type": "string",
-                    "description": "Optional fast-path hint: 'draft' or 'published'. When omitted, the server resolves it by scanning the account's own articles.",
-                    "enum": [
-                      "draft",
-                      "published"
-                    ]
+                    "description": "Fast-path hint: \"draft\" or \"published\". When you already know the article's lifecycle (e.g. from a prior article/list or article/create response), pass it to skip a lookup. Omit it and the server resolves it by scanning your own Draft then Published lists.",
+                    "example": "draft"
                   },
                   "tweet_id": {
                     "type": "string",
-                    "description": "Optional fast-path hint: the announcement tweet id, for a published article. When omitted and lifecycle is 'published', the server resolves it from the account's own article list."
+                    "description": "Fast-path hint: the announcement tweet id, for a PUBLISHED article only. Omit it and the server resolves it from the article's own metadata when lifecycle resolves to published.",
+                    "example": "2086650300012345678"
                   }
                 },
                 "required": [
@@ -12378,6 +12584,33 @@
             "type": "string",
             "nullable": true,
             "description": "X help-center link explaining the \"About this account\" transparency data; null when the panel is unavailable."
+          },
+          "protected": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether the account is locked, so only approved followers can see its posts. Null on a trimmed user object that carries no protected key, which is an honest \"not available\" rather than a claim the account is public."
+          },
+          "affiliate_label": {
+            "type": "object",
+            "nullable": true,
+            "description": "The affiliation badge X shows beside the display name, linking the account to a parent organization. Null when the account has no affiliation.",
+            "properties": {
+              "description": {
+                "type": "string",
+                "nullable": true,
+                "description": "The parent organization's display name, for example \"X\"."
+              },
+              "badge_url": {
+                "type": "string",
+                "nullable": true,
+                "description": "URL of the small badge image X renders next to the name."
+              },
+              "url": {
+                "type": "string",
+                "nullable": true,
+                "description": "Link to the parent organization's profile."
+              }
+            }
           }
         }
       },

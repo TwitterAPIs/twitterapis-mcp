@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.8 (2026-08-10)
+
+### Added
+
+- **`twitter_article_get` gains an owner-only `article_id` form** (task #12, competitor parity): pass `article_id` (the article's own entity id, from `twitter_article_create` or `twitter_article_list`) to read one of your own articles by id, including Drafts, which have no announcement tweet the existing public `id`/`url` form could resolve. Requires a registered session or per-call `auth_token`/`ct0`, same as the other authenticated article tools. Returns `article: null` when the id is not found or not owned by the calling account, X exposes no dedicated get-by-id op, so this scans the caller's own Draft then Published lists and matches client-side, same approach `article/delete` already used for lifecycle resolution.
+
 ## 0.6.7 (2026-08-10)
 
 ### Added
