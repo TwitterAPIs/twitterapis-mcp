@@ -1240,13 +1240,28 @@ export const TOOLS = [
     name: "twitter_article_get",
     path: "/twitter/article/get",
     description:
-      "Read a PUBLISHED article's full content (title, content_state, cover media, author, timestamps, public_url) via its announcement tweet. PUBLIC read: no registered session or per-call credentials needed, just your API key, same auth model as twitter_tweet_detail. Provide either id or url of the announcement tweet. Returns 404 (article null) if the tweet does not exist, is not visible, or is not an article announcement, for example a Draft that was never published, or a Published article that was later unpublished/deleted. Use twitter_article_list instead to read your OWN drafts.",
+      "Read an article's full content (title, content_state, cover media, author, timestamps, public_url). Two mutually exclusive forms. PUBLIC: provide id or url of the article's announcement tweet, no registered session or per-call credentials needed, just your API key, same auth model as twitter_tweet_detail, works for PUBLISHED articles only. OWNER-ONLY: provide article_id (the article's own entity id, from twitter_article_create or twitter_article_list), requires an authenticated session, also reaches your own Drafts, which have no announcement tweet the public form could resolve. Returns 404 (article null) if not found, not visible, or (article_id form) not owned by the calling account.",
     shape: {
       id: z.string().optional().describe(
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Provide exactly one of id or url.",
       ),
       url: z.string().optional().describe(
         "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      article_id: z.string().optional().describe(
+        "OWNER-ONLY form. The article's own entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789', or the bare numeric rest_id). Requires an authenticated session. Provide exactly one of id, url, or article_id.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
       ),
     },
   },

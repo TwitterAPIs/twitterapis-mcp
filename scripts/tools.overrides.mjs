@@ -868,9 +868,13 @@ export const TOOL_OVERRIDES = [
     name: "twitter_article_get",
     endpoint: "/article/get",
     description:
-      "Read a PUBLISHED article's full content (title, content_state, cover media, author, timestamps, public_url) via its announcement tweet. PUBLIC read: no registered session or per-call credentials needed, just your API key, same auth model as twitter_tweet_detail. Provide either id or url of the announcement tweet. Returns 404 (article null) if the tweet does not exist, is not visible, or is not an article announcement, for example a Draft that was never published, or a Published article that was later unpublished/deleted. Use twitter_article_list instead to read your OWN drafts.",
+      "Read an article's full content (title, content_state, cover media, author, timestamps, public_url). Two mutually exclusive forms. PUBLIC: provide id or url of the article's announcement tweet, no registered session or per-call credentials needed, just your API key, same auth model as twitter_tweet_detail, works for PUBLISHED articles only. OWNER-ONLY: provide article_id (the article's own entity id, from twitter_article_create or twitter_article_list), requires an authenticated session, also reaches your own Drafts, which have no announcement tweet the public form could resolve. Returns 404 (article null) if not found, not visible, or (article_id form) not owned by the calling account.",
     args: [
       "@TWEET_REF",
+      { name: "article_id", required: false,
+        describe:
+          "OWNER-ONLY form. The article's own entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789', or the bare numeric rest_id). Requires an authenticated session. Provide exactly one of id, url, or article_id." },
+      "@INLINE",
     ],
   },
   {
