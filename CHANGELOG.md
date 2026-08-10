@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0 (2026-08-11)
+
+### Removed
+
+- **`twitter_users_by_ids` removed from the tool list.** X refuses the batch `UsersByRestIds` lookup for the pooled cookie sessions this package's REST backend reads through (confirmed by instrumenting the request and verifying a token was actually attached before it was rejected, not just repeated 403s). The REST endpoint itself stays live and returns an honest `503 endpoint_unavailable` rather than being deleted, but a tool the model can call and always get a hard failure from is worse than no tool at all, so it is out of the catalog. Use `twitter_user_info_by_id` instead: same user object, one id per call. The catalog is now **61 tools: 40 reads and 21 write actions**.
+
 ## 0.6.9 (2026-08-10)
 
 ### Added
