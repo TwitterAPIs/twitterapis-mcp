@@ -1,11 +1,10 @@
 {
-  "toolCount": 62,
+  "toolCount": 61,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
     "twitter_user_info",
     "twitter_user_info_by_id",
-    "twitter_users_by_ids",
     "twitter_user_about",
     "twitter_user_affiliates",
     "twitter_check_follow_relationship",
@@ -205,33 +204,6 @@
         },
         "required": [
           "user_id"
-        ]
-      }
-    },
-    "twitter_users_by_ids": {
-      "name": "twitter_users_by_ids",
-      "path": "/twitter/users/by_ids",
-      "method": "GET",
-      "write": false,
-      "destructive": false,
-      "jsonBody": false,
-      "description": "Resolve up to 100 numeric user ids into full profiles in ONE call. Same user object as twitter_user_info_by_id, returned as a list. Use this whenever you hold several ids and would otherwise loop twitter_user_info_by_id, for example hydrating the authors of a batch of tweets. Ids that no longer resolve (suspended or deleted accounts) are omitted rather than returned as nulls; compare the requested and resolved counts in the response, or diff the returned ids against the ones you sent, to see which were dropped. Sending more than 100 ids is rejected rather than truncated, so a short list always means those accounts are gone, never that the request was clipped.",
-      "args": [
-        "user_ids"
-      ],
-      "required": [
-        "user_ids"
-      ],
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "user_ids": {
-            "type": "string",
-            "description": "Comma-separated numeric Twitter/X user ids, up to 100 (e.g. '44196397,745273'). Duplicates are collapsed and billed once."
-          }
-        },
-        "required": [
-          "user_ids"
         ]
       }
     },
