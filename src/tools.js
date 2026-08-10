@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 60 tools (39 reads, 21 writes).
+// Catalog: 62 tools (41 reads, 21 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -616,6 +616,52 @@ export const TOOLS = [
       ),
       count: z.number().int().min(1).max(200).optional().describe(
         "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_bookmark_folders",
+    path: "/twitter/user/bookmark_folders",
+    description:
+      "List YOUR authenticated account's bookmark FOLDERS (X's internal name: collections), the named groups you can organize saved tweets into, separate from your flat bookmarks list (twitter_bookmarks). Requires an authenticated session behind your key. Returns each folder's id, name, and a cover image. Takes no arguments; your folders resolve from your session alone. Use twitter_bookmark_folder_timeline with a folder's id to read the tweets inside it.",
+    shape: {
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_bookmark_folder_timeline",
+    path: "/twitter/user/bookmark_folder_timeline",
+    description:
+      "Read the tweets inside ONE of your authenticated account's bookmark folders, identified by folder_id (from twitter_bookmark_folders). Requires an authenticated session behind your key. Cursor-paginated; there is no count/page-size argument for this op.",
+    shape: {
+      folder_id: z.string().describe(
+        "The bookmark folder's id, from twitter_bookmark_folders (e.g. '2073826456430592429').",
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",

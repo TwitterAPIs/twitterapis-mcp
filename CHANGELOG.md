@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.9 (2026-08-10)
+
+### Added
+
+- **2 new tools for X's bookmark folders** (task #9): `twitter_bookmark_folders` (list your own bookmark folders, X's internal name: collections) and `twitter_bookmark_folder_timeline` (read the tweets inside one specific folder, by `folder_id`). Both require an authenticated session, same auth model as `twitter_bookmarks` and `twitter_bookmark_search`. `twitter_bookmark_folder_timeline` is cursor-paginated only; there is no count/page-size argument for this op. The catalog is now **62 tools: 41 reads and 21 write actions**.
+
 ## 0.6.8 (2026-08-10)
 
 ### Added
