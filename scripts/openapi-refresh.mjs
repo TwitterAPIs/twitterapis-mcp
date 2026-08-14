@@ -40,7 +40,12 @@ const die = (msg) => {
 const routeSet = (spec) => {
   const s = new Set();
   for (const [p, ops] of Object.entries(spec.paths || {})) {
-    for (const m of Object.keys(ops)) if (m === "get" || m === "post") s.add(`${m.toUpperCase()} ${p}`);
+    // get/post/delete match gen-tools.mjs's METHODS set: this is a diff-display
+    // helper only (the full spec is always vendored as-is below), but a route
+    // silently missing from the printed diff reads as "nothing changed" for a
+    // method this generator does not yet recognize, same failure class as
+    // gen-tools.mjs skipping it outright.
+    for (const m of Object.keys(ops)) if (m === "get" || m === "post" || m === "delete") s.add(`${m.toUpperCase()} ${p}`);
   }
   return s;
 };

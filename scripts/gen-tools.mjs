@@ -32,12 +32,27 @@
 //   - the spec has an endpoint no override covers
 //   - an override arg is not a real param of that endpoint (and is not a header)
 //   - a spec param is neither exposed as an arg nor listed in omit with a reason
-//   - two tools share a name or a path, or a group reference does not resolve
+//   - two tools share a name or a (method, path) pair, or a group reference does not resolve
+//   - an override targets a path the spec serves under more than one HTTP method
+//     without saying which one (method: "..."), since the endpoint is then ambiguous
+//
+// METHODS + PATH PARAMS. A spec path can carry more than one HTTP method (e.g.
+// POST /monitor/{id} to update, DELETE /monitor/{id} to remove) and a method can
+// be "delete", not only get/post. So endpoints are keyed by (path, method), never
+// by path alone, and an override that targets an ambiguous path must say
+// method: "DELETE" (etc) to disambiguate; a path served under exactly one method
+// still resolves without the override naming it, so every pre-existing override
+// keeps working unchanged. A path segment written `{name}` (OpenAPI path-param
+// syntax) is picked up even when the spec declares no formal `in: "path"`
+// parameter for it (this API's spec does not), synthesized as a required string
+// param, and threaded through as a resolved tool's `pathParams` so the runtime
+// substitutes it into the URL instead of sending it as a query/body field.
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ARG_GROUPS, TOOL_OVERRIDES } from "./tools.overrides.mjs";
+import { buildEndpoints, pathParamNames, endpointKey } from "./gen-tools-endpoints.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
@@ -60,26 +75,12 @@ if (!existsSync(SNAPSHOT)) {
 }
 const spec = JSON.parse(readFileSync(SNAPSHOT, "utf8"));
 
-/** endpoint path -> { method, params: Map<name,{required,type,body}> } */
-const ENDPOINTS = new Map();
-for (const [p, ops] of Object.entries(spec.paths || {})) {
-  for (const [m, op] of Object.entries(ops)) {
-    if (m !== "get" && m !== "post") continue;
-    const params = new Map();
-    for (const x of op.parameters || []) {
-      params.set(x.name, { required: Boolean(x.required), type: x.schema?.type || "string" });
-    }
-    const body = op.requestBody?.content?.["application/json"]?.schema;
-    if (body) {
-      const req = new Set(body.required || []);
-      for (const [k, v] of Object.entries(body.properties || {})) {
-        params.set(k, { required: req.has(k), type: v.type || "string", body: true });
-      }
-    }
-    if (ENDPOINTS.has(p)) bad(`spec declares ${p} under more than one of GET/POST; the catalog assumes one verb per path`);
-    ENDPOINTS.set(p, { method: m.toUpperCase(), params });
-  }
-}
+// (path, method) -> { path, method, params: Map<name,{required,type,body,path}> },
+// and path -> Set<METHOD> for the ambiguity check below. Built by
+// gen-tools-endpoints.mjs, kept as its own module so this exact logic (a DELETE
+// method, and two methods on one path) is unit-testable against a synthetic
+// route table, see test/gen-tools-endpoints.mjs.
+const { endpoints: ENDPOINTS, methodsByPath: METHODS_BY_PATH } = buildEndpoints(spec.paths);
 
 // ── 2. Resolve overrides against the spec ────────────────────────────────────
 // The MCP tool path carries the /twitter prefix the spec omits, except for the
@@ -105,27 +106,50 @@ function expandArgs(tool) {
 }
 
 const seenNames = new Set();
-const seenPaths = new Set();
-const seenEndpoints = new Set();
+const seenToolRoutes = new Set(); // MCP-facing (method, path) pairs
+const seenEndpoints = new Set(); // spec-facing (path, method) keys, i.e. ENDPOINTS keys
 const resolved = [];
 
 for (const t of TOOL_OVERRIDES) {
   if (seenNames.has(t.name)) bad(`duplicate tool name ${t.name}`);
   seenNames.add(t.name);
 
-  const ep = ENDPOINTS.get(t.endpoint);
-  if (!ep) {
+  const methodsForPath = METHODS_BY_PATH.get(t.endpoint);
+  if (!methodsForPath || methodsForPath.size === 0) {
     bad(
       `tool ${t.name} targets endpoint ${t.endpoint}, which the vendored spec does not have. ` +
         `Either the route was retired upstream (drop the tool) or the snapshot is stale (npm run openapi:refresh).`,
     );
     continue;
   }
-  seenEndpoints.add(t.endpoint);
+
+  // A path served under one HTTP method resolves without the override naming it
+  // (every pre-existing override keeps working). A path served under more than
+  // one method (e.g. POST + DELETE /monitor/{id}) is ambiguous and the override
+  // must say which one it targets via method: "DELETE" (etc).
+  let epMethod = t.method;
+  if (!epMethod) {
+    if (methodsForPath.size === 1) {
+      epMethod = [...methodsForPath][0];
+    } else {
+      bad(
+        `tool ${t.name} targets endpoint ${t.endpoint}, which the spec serves under more than one ` +
+          `method (${[...methodsForPath].join(", ")}); the override must set method: "..." to say which one.`,
+      );
+      continue;
+    }
+  } else if (!methodsForPath.has(epMethod)) {
+    bad(`tool ${t.name} sets method: "${epMethod}" but ${t.endpoint} is not served under that method in the spec (spec has: ${[...methodsForPath].join(", ")})`);
+    continue;
+  }
+
+  const ep = ENDPOINTS.get(endpointKey(t.endpoint, epMethod));
+  seenEndpoints.add(endpointKey(t.endpoint, epMethod));
 
   const path = toolPathFor(t.endpoint);
-  if (seenPaths.has(path)) bad(`duplicate tool path ${path}`);
-  seenPaths.add(path);
+  const routeKey = `${epMethod} ${path}`;
+  if (seenToolRoutes.has(routeKey)) bad(`duplicate tool route ${routeKey}`);
+  seenToolRoutes.add(routeKey);
 
   const args = expandArgs(t);
   const exposed = new Set();
@@ -191,14 +215,28 @@ for (const t of TOOL_OVERRIDES) {
   if (t.jsonBody && !t.write) bad(`tool ${t.name} sets jsonBody but is not a write`);
 
   const method = ep.method;
-  if (Boolean(t.write) !== (method === "POST")) {
+  // Reads are GET; writes are POST or DELETE (a DELETE mutates account state just
+  // as much as a POST write does, so it must carry write:true the same way).
+  if (Boolean(t.write) !== (method === "POST" || method === "DELETE")) {
     bad(
       `tool ${t.name}: the spec serves ${t.endpoint} as ${method} but the override marks it ` +
-        `${t.write ? "write:true" : "a read"}. Reads are GET, writes are POST.`,
+        `${t.write ? "write:true" : "a read"}. Reads are GET, writes are POST or DELETE.`,
     );
   }
+  if (t.jsonBody && method === "DELETE") {
+    bad(`tool ${t.name} sets jsonBody:true but is a DELETE; a DELETE route here takes no request body.`);
+  }
 
-  resolved.push({ ...t, path, method, args: finalArgs });
+  // Args that resolved against a path:true spec param travel in the URL, not the
+  // query string or JSON body; the runtime substitutes them via pathParams.
+  const pathParams = finalArgs.filter((a) => ep.params.get(a.name)?.path).map((a) => a.name);
+  for (const name of pathParamNames(t.endpoint)) {
+    if (!pathParams.includes(name)) {
+      bad(`tool ${t.name} targets ${t.endpoint}, whose path carries {${name}}, but no arg named "${name}" was exposed to fill it`);
+    }
+  }
+
+  resolved.push({ ...t, path, method, args: finalArgs, pathParams });
 }
 
 // Every spec endpoint needs a tool. This is the drift check that catches a route
@@ -258,6 +296,7 @@ const body = resolved
     if (t.write) L.push("    write: true,");
     if (t.destructive) L.push("    destructive: true,");
     if (t.jsonBody) L.push("    jsonBody: true,");
+    if (t.pathParams && t.pathParams.length) L.push(`    pathParams: ${JSON.stringify(t.pathParams)},`);
     L.push("    description:");
     L.push(`      ${q(t.description)},`);
     if (t.args.length === 0) {
@@ -294,22 +333,27 @@ const rendered = `// GENERATED FILE. DO NOT EDIT BY HAND.
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
 // write actions, reads its params from the query string), except the per-call
-// inline credentials, which travel as x-* request headers, and the ${counts.jsonBody}
-// jsonBody tools, whose fields travel in a JSON request body. A tool with
-// \`method: "POST"\` is a write that acts on behalf of the authenticated account
-// behind your API key; reads are GET and default when \`method\` is omitted.
+// inline credentials, which travel as x-* request headers, the ${counts.jsonBody}
+// jsonBody tools, whose fields travel in a JSON request body, and any arg listed
+// in pathParams, which is substituted into the URL path (e.g. {id}) instead. A
+// tool with \`method: "POST"\` or \`method: "DELETE"\` is a write that acts on
+// behalf of the authenticated account behind your API key; reads are GET and
+// default when \`method\` is omitted.
 //
 // write:true       -> action mutates account/Twitter state (readOnlyHint:false)
 // destructive:true -> action removes/reverses state (delete, un-follow/like/RT/bookmark)
+// pathParams        -> arg names substituted into the URL template, not sent as
+//                      query-string or body fields (e.g. ["id"] for /monitor/{id})
 import { z } from "zod";
 
 export const TOOLS = [
 ${body}
 ];
 
-// The query-string builder is hand-written logic, not catalog data, so it lives
-// in its own module and is re-exported here to keep this file's one import path.
-export { buildQuery } from "./query.js";
+// The query-string builder and the path-param substitution helper are
+// hand-written logic, not catalog data, so they live in their own module and
+// are re-exported here to keep this file's one import path.
+export { buildQuery, resolvePathParams, MissingPathParamError } from "./query.js";
 `;
 
 // ── 4. Write or check ────────────────────────────────────────────────────────

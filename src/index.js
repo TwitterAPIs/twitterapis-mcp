@@ -24,7 +24,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 // places and drifted: the package shipped 0.5.0 while the MCP handshake and the
 // outbound user-agent both still advertised 0.3.0.
 const VERSION = createRequire(import.meta.url)("../package.json").version;
-import { TOOLS, buildQuery } from "./tools.js";
+import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "./tools.js";
 
 const API_KEY = process.env.TWITTERAPIS_KEY;
 const BASE_URL = (
@@ -44,9 +44,26 @@ if (!API_KEY) {
 // from the query string, so the same buildQuery path serves both and only the
 // HTTP method differs. A few POST endpoints (customer/session, user_login,
 // media/upload) instead read a JSON request body; those tools set jsonBody:true
-// and callEndpoint sends the args in the body rather than the query string.
-async function callEndpoint(path, args, method = "GET", jsonBody = false) {
-  const all = args || {};
+// and callEndpoint sends the args in the body rather than the query string. A
+// handful of monitoring endpoints (/monitor/{id}, /webhook/{id}, ...) carry a
+// REST path parameter instead: those tools set pathParams (the arg names to
+// substitute into the URL template) and callEndpoint splices them into path
+// before building the query string or body, so a pathParams arg never leaks
+// into either.
+async function callEndpoint(path, args, method = "GET", jsonBody = false, pathParams = []) {
+  // Fill {name} URL segments from args and strip those keys, so a pathParams arg
+  // (e.g. a monitor/webhook id) never also leaks into the query string or JSON
+  // body. A missing value fails loudly rather than shipping a request that still
+  // contains the literal "{id}" against the API.
+  let resolvedPath, all;
+  try {
+    ({ path: resolvedPath, args: all } = resolvePathParams(path, pathParams, args));
+  } catch (err) {
+    if (err instanceof MissingPathParamError) {
+      return { isError: true, content: [{ type: "text", text: err.message }] };
+    }
+    throw err;
+  }
 
   const headers = {
     // The API accepts either header; send both for maximum compatibility.
@@ -64,7 +81,7 @@ async function callEndpoint(path, args, method = "GET", jsonBody = false) {
     // and user_login the credentials ARE the payload the handler reads from the
     // body, so they must NOT be diverted into x-* headers the way per-call inline
     // creds are on the query-string tools.
-    url = `${BASE_URL}${path}`;
+    url = `${BASE_URL}${resolvedPath}`;
     headers["content-type"] = "application/json";
     reqBody = JSON.stringify(all);
   } else {
@@ -75,7 +92,7 @@ async function callEndpoint(path, args, method = "GET", jsonBody = false) {
     // session is used. Lets a single key act as many accounts.
     const { auth_token, ct0, user_agent, proxy_url, ...rest } = all;
     const q = buildQuery(rest);
-    url = `${BASE_URL}${path}${q ? `?${q}` : ""}`;
+    url = `${BASE_URL}${resolvedPath}${q ? `?${q}` : ""}`;
     if (auth_token && ct0) {
       headers["x-auth-token"] = auth_token;
       headers["x-ct0"] = ct0;
@@ -138,7 +155,7 @@ for (const tool of TOOLS) {
   server.registerTool(
     tool.name,
     { description: tool.description, inputSchema: tool.shape, annotations },
-    async (args) => callEndpoint(tool.path, args, method, Boolean(tool.jsonBody)),
+    async (args) => callEndpoint(tool.path, args, method, Boolean(tool.jsonBody), tool.pathParams || []),
   );
 }
 
