@@ -59,6 +59,10 @@
     {
       "name": "Articles",
       "description": "Create, edit, publish, and read X's long-form Articles (X's internal name: Notes). Publishing posts a real announcement tweet; reading a published article is a public call that needs no session."
+    },
+    {
+      "name": "Monitoring",
+      "description": "Watch an X account for new posts and get them pushed to your own webhook, HMAC-signed, retried for 21 minutes on failure. Polls on a shared interval and never spends your read credits: monitor and webhook management are free account administration, not metered reads."
     }
   ],
   "paths": {
@@ -744,7 +748,7 @@
       "post": {
         "operationId": "user-user-login",
         "summary": "User Login",
-        "description": "Log in to an X account with a username and password (plus a TOTP secret when two-factor authentication is enabled). The API runs the login itself and stores the resulting session server-side against your API key; authenticated-account reads and the write tools then act as that account. It does NOT return session cookies: the response is {ok, username, message}, never auth_token/ct0/twid. Bringing your own auth_token and ct0 via POST /customer/session stays the primary, recommended path, since it never sends a password over the wire. This call is free. Cost: Free per call.",
+        "description": "Log in to an X account with a username and password (plus a TOTP secret when two-factor authentication is enabled). The API runs the login itself and stores the resulting session server-side against your API key; authenticated-account reads and the write tools then act as that account. It does NOT return session cookies: the response is {ok, username, message}, never auth_token/ct0/twid. Bringing your own auth_token and ct0 via POST /customer/session stays the primary, recommended path, since it never sends a password over the wire. This call costs $0.01, billed only on a successful login; a rejected attempt (bad credentials, captcha, etc.) is never charged. Cost: $0.0100 per call.",
         "tags": [
           "Account Session"
         ],
@@ -753,7 +757,7 @@
             "bearerAuth": []
           }
         ],
-        "x-cost-usd": 0,
+        "x-cost-usd": 0.01,
         "x-codeSamples": [
           {
             "lang": "bash",
@@ -12093,6 +12097,1709 @@
                 "required": [
                   "id"
                 ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/monitor": {
+      "post": {
+        "operationId": "monitor-post",
+        "summary": "Create Monitor",
+        "description": "Start watching an X account. Every new post from that account is delivered, HMAC-signed, to your registered webhook(s) on a shared poll interval. Free: monitor creation is account administration, not a metered read. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/monitor\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"handle\": \"elonmusk\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/monitor\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"handle\": \"elonmusk\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/monitor\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ handle: \"elonmusk\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Watch an X account for new posts and push them to your webhook(s).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The new monitor's id, used in the update/delete/health routes below."
+                    },
+                    "handle": {
+                      "type": "string",
+                      "description": "The normalized (lowercased, @ stripped) handle being watched."
+                    },
+                    "subject": {
+                      "type": "string",
+                      "description": "Internal query expression for this monitor, currently always from:<handle>."
+                    },
+                    "kind": {
+                      "type": "string",
+                      "description": "Monitor type. Currently always \"account\"."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "\"active\" or \"paused\"."
+                    },
+                    "webhook_ids": {
+                      "type": "string",
+                      "description": "The restriction set passed at create, or null for the default (deliver to all)."
+                    },
+                    "poll_interval_ms": {
+                      "type": "integer",
+                      "description": "Current poll interval in milliseconds. Not yet a published SLA; subject to change."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "ISO 8601 creation timestamp."
+                    }
+                  }
+                },
+                "example": {
+                  "id": "b6f2c1a4-9e3d-4c11-8a2f-7d5e6c9b0a11",
+                  "handle": "elonmusk",
+                  "subject": "from:elonmusk",
+                  "kind": "account",
+                  "status": "active",
+                  "webhook_ids": null,
+                  "poll_interval_ms": 120000,
+                  "poll_interval_note": "NOT a published SLA yet, subject to change.",
+                  "created_at": "2026-08-13T10:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "handle": {
+                    "type": "string",
+                    "description": "The X username to watch, without the @.",
+                    "example": "elonmusk"
+                  },
+                  "webhook_ids": {
+                    "type": "string",
+                    "description": "Array of webhook ids (from POST /twitter/webhook) to restrict delivery to. Omit to deliver to every active webhook on the account, the default.",
+                    "example": "[]"
+                  }
+                },
+                "required": [
+                  "handle"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "monitor-get",
+        "summary": "List Monitors",
+        "description": "Returns every non-deleted monitor on your account, most recently created first. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/monitor\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/monitor\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/monitor\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List every monitor on your account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "monitors": {
+                      "type": "string",
+                      "description": "Array of monitor objects: id, subject, kind, status, degraded, events_possibly_missed, webhook_ids, created_at."
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of monitors returned."
+                    }
+                  }
+                },
+                "example": {
+                  "monitors": [
+                    {
+                      "id": "b6f2c1a4-9e3d-4c11-8a2f-7d5e6c9b0a11",
+                      "subject": "from:elonmusk",
+                      "kind": "account",
+                      "status": "active",
+                      "degraded": false,
+                      "events_possibly_missed": 0,
+                      "webhook_ids": null,
+                      "created_at": "2026-08-13T10:00:00.000Z"
+                    }
+                  ],
+                  "count": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/monitor/{id}": {
+      "post": {
+        "operationId": "monitor-id-post",
+        "summary": "Update Monitor",
+        "description": "Partial update of an existing monitor. Send status to pause or resume it, webhook_ids to change which webhooks receive its events, or both in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/monitor/{id}\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"status\": \"paused\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/monitor/{id}\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"status\": \"paused\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/monitor/{id}\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ status: \"paused\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pause, resume, or change which webhooks a monitor delivers to.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The monitor's id."
+                    },
+                    "subject": {
+                      "type": "string",
+                      "description": "The monitor's query expression, e.g. from:elonmusk."
+                    },
+                    "kind": {
+                      "type": "string",
+                      "description": "Monitor type."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "\"active\" or \"paused\" after the update."
+                    },
+                    "degraded": {
+                      "type": "boolean",
+                      "description": "Whether the shared pool is currently serving this monitor slower than the published interval."
+                    },
+                    "events_possibly_missed": {
+                      "type": "integer",
+                      "description": "Running count of possibly-missed events, never reset by an update."
+                    },
+                    "webhook_ids": {
+                      "type": "string",
+                      "description": "The current restriction set, or null for the default (deliver to all)."
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "description": "ISO 8601 timestamp of this update."
+                    }
+                  }
+                },
+                "example": {
+                  "id": "b6f2c1a4-9e3d-4c11-8a2f-7d5e6c9b0a11",
+                  "subject": "from:elonmusk",
+                  "kind": "account",
+                  "status": "paused",
+                  "degraded": false,
+                  "events_possibly_missed": 0,
+                  "webhook_ids": null,
+                  "updated_at": "2026-08-13T11:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "description": "\"active\" to resume, \"paused\" to pause. Omit to leave status unchanged.",
+                    "example": "paused"
+                  },
+                  "webhook_ids": {
+                    "type": "string",
+                    "description": "Array of webhook ids to restrict delivery to. Send an empty array to clear the restriction back to \"deliver to every active webhook\". Omit the field entirely to leave it unchanged.",
+                    "example": "[]"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "monitor-id-delete",
+        "summary": "Delete Monitor",
+        "description": "Soft-deletes the monitor: it stops polling immediately and disappears from List Monitors, but its delivery history is retained rather than cascade-deleted. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X DELETE \"https://api.twitterapis.com/twitter/monitor/{id}\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.delete(\n    \"https://api.twitterapis.com/twitter/monitor/{id}\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/monitor/{id}\", {\n  method: \"DELETE\",\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stop watching an account and remove the monitor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deleted": {
+                      "type": "boolean",
+                      "description": "True on success."
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "The deleted monitor's id."
+                    }
+                  }
+                },
+                "example": {
+                  "deleted": true,
+                  "id": "b6f2c1a4-9e3d-4c11-8a2f-7d5e6c9b0a11"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/monitor/{id}/health": {
+      "get": {
+        "operationId": "monitor-id-health",
+        "summary": "Monitor Health",
+        "description": "Returns a single monitor's current status, degradation flag, and cursor position, for building your own health dashboard. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/monitor/{id}/health\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/monitor/{id}/health\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/monitor/{id}/health\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Check one monitor's poll status and last-seen tweet id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The monitor's id."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "\"active\" or \"paused\"."
+                    },
+                    "degraded": {
+                      "type": "boolean",
+                      "description": "Whether the shared pool is currently serving this monitor slower than the published interval."
+                    },
+                    "poll_interval_ms": {
+                      "type": "integer",
+                      "description": "Current poll interval in milliseconds."
+                    },
+                    "events_possibly_missed": {
+                      "type": "integer",
+                      "description": "Running count of possibly-missed events."
+                    },
+                    "last_tweet_id": {
+                      "type": "string",
+                      "description": "The most recent tweet id this monitor has delivered, or null before its first poll."
+                    },
+                    "last_poll_at": {
+                      "type": "string",
+                      "description": "ISO 8601 timestamp of the most recent poll, or null before the first one."
+                    }
+                  }
+                },
+                "example": {
+                  "id": "b6f2c1a4-9e3d-4c11-8a2f-7d5e6c9b0a11",
+                  "status": "active",
+                  "degraded": false,
+                  "poll_interval_ms": 120000,
+                  "events_possibly_missed": 0,
+                  "last_tweet_id": "1899999999999999999",
+                  "last_poll_at": "2026-08-13T11:58:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/monitor/deliveries": {
+      "get": {
+        "operationId": "monitor-deliveries",
+        "summary": "Monitor Deliveries",
+        "description": "Returns your most recent monitor delivery events, most recent first, each carrying the actual measured lag: detected_lag_ms is X's own post timestamp subtracted from the moment our scheduler enqueued the delivery (i.e. real detection latency, bound by the current poll interval), and delivery_lag_ms is the separate queue-to-webhook-POST time. Either can be null for an older event whose payload predates this field. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/monitor/deliveries\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/monitor/deliveries\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/monitor/deliveries\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent delivery events across every monitor, with real detection and delivery latency.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deliveries": {
+                      "type": "string",
+                      "description": "Array of delivery events: id, monitor_id, tweet_id, status, tweet_created_at, detected_at, delivered_at, detected_lag_ms, delivery_lag_ms, total_lag_ms."
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of events returned."
+                    }
+                  }
+                },
+                "example": {
+                  "deliveries": [
+                    {
+                      "id": "79a94efd-8b6c-46f7-afa5-1fecdf1250a1",
+                      "monitor_id": "bd964ae0-7763-4dd6-9295-233d9badf6f9",
+                      "tweet_id": "2087910515246784773",
+                      "status": "delivered",
+                      "tweet_created_at": "Thu Aug 13 14:33:52 +0000 2026",
+                      "detected_at": "2026-08-13T14:34:25.984Z",
+                      "delivered_at": "2026-08-13T14:34:29.580Z",
+                      "detected_lag_ms": 33984,
+                      "delivery_lag_ms": 3596,
+                      "total_lag_ms": 37580
+                    }
+                  ],
+                  "count": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Max events to return, 1-200. Defaults to 50.",
+            "schema": {
+              "type": "integer",
+              "description": "Max events to return, 1-200. Defaults to 50.",
+              "example": "50"
+            },
+            "example": "50"
+          }
+        ]
+      }
+    },
+    "/webhook": {
+      "post": {
+        "operationId": "webhook-post",
+        "summary": "Create Webhook",
+        "description": "Register your HTTPS endpoint to receive signed monitor events. The signing secret is returned exactly once in this response; store it immediately, it cannot be retrieved again. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/webhook\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"url\": \"https://example.com/webhooks/twitterapis\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/webhook\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"url\": \"https://example.com/webhooks/twitterapis\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/webhook\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ url: \"https://example.com/webhooks/twitterapis\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Register a URL to receive monitor events.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The new webhook's id."
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "The registered delivery URL."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "\"active\" (delivers) or \"disabled\" (a 410 Gone response from your endpoint sets this; re-register to reactivate)."
+                    },
+                    "secret": {
+                      "type": "string",
+                      "description": "The HMAC signing secret, shown ONLY in this response. Use it to verify the X-TwitterAPIs-Signature header on every delivery."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "ISO 8601 creation timestamp."
+                    }
+                  }
+                },
+                "example": {
+                  "id": "e4a1f9c2-3b7d-4a88-9f1e-2c6d8b4a5e10",
+                  "url": "https://example.com/webhooks/twitterapis",
+                  "status": "active",
+                  "secret": "[example value redacted at vendoring time, see scripts/openapi-refresh.mjs]",
+                  "created_at": "2026-08-13T10:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Your https delivery endpoint. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at creation.",
+                    "example": "https://example.com/webhooks/twitterapis"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "webhook-get",
+        "summary": "List Webhooks",
+        "description": "Returns every non-deleted webhook on your account. Never returns the signing secret; that is shown once, at creation. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/webhook\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/webhook\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/webhook\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List every webhook on your account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "webhooks": {
+                      "type": "string",
+                      "description": "Array of webhook objects: id, url, status, created_at."
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of webhooks returned."
+                    }
+                  }
+                },
+                "example": {
+                  "webhooks": [
+                    {
+                      "id": "e4a1f9c2-3b7d-4a88-9f1e-2c6d8b4a5e10",
+                      "url": "https://example.com/webhooks/twitterapis",
+                      "status": "active",
+                      "created_at": "2026-08-13T10:00:00.000Z"
+                    }
+                  ],
+                  "count": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhook/{id}/test": {
+      "post": {
+        "operationId": "webhook-id-test",
+        "summary": "Test Webhook",
+        "description": "Sends a single HMAC-signed test event to this webhook's URL right now and returns the outcome synchronously. Unlike a real monitor event, a test send is never queued, retried, or dead-lettered: it is a one-shot diagnostic so you can confirm your endpoint and signature verification both work before relying on the webhook. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/webhook/{id}/test\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/webhook/{id}/test\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/webhook/{id}/test\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({}),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fire one real signed test delivery and see the result immediately.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The webhook's id."
+                    },
+                    "delivered": {
+                      "type": "boolean",
+                      "description": "True if your endpoint returned a 2xx within the delivery timeout."
+                    },
+                    "status_code": {
+                      "type": "integer",
+                      "description": "The HTTP status your endpoint returned, or null if the request failed before a response was received (timeout, connection refused, DNS failure, or an egress-safety refusal)."
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Human-readable failure reason when delivered is false, or null on success."
+                    }
+                  }
+                },
+                "example": {
+                  "id": "e4a1f9c2-3b7d-4a88-9f1e-2c6d8b4a5e10",
+                  "delivered": true,
+                  "status_code": 200,
+                  "error": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhook/{id}": {
+      "delete": {
+        "operationId": "webhook-id",
+        "summary": "Delete Webhook",
+        "description": "Soft-deletes the webhook: it stops receiving deliveries immediately and disappears from List Webhooks, but delivery history referencing it is retained rather than cascade-deleted. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X DELETE \"https://api.twitterapis.com/twitter/webhook/{id}\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.delete(\n    \"https://api.twitterapis.com/twitter/webhook/{id}\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/webhook/{id}\", {\n  method: \"DELETE\",\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove a webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deleted": {
+                      "type": "boolean",
+                      "description": "True on success."
+                    },
+                    "id": {
+                      "type": "string",
+                      "description": "The deleted webhook's id."
+                    }
+                  }
+                },
+                "example": {
+                  "deleted": true,
+                  "id": "e4a1f9c2-3b7d-4a88-9f1e-2c6d8b4a5e10"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
               }
             }
           }

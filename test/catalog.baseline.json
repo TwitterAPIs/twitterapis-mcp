@@ -1,5 +1,5 @@
 {
-  "toolCount": 61,
+  "toolCount": 71,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -61,7 +61,17 @@
     "twitter_article_unpublish",
     "twitter_article_get",
     "twitter_article_list",
-    "twitter_article_delete"
+    "twitter_article_delete",
+    "twitter_monitor_create",
+    "twitter_monitor_list",
+    "twitter_monitor_update",
+    "twitter_monitor_delete",
+    "twitter_monitor_health",
+    "twitter_monitor_deliveries",
+    "twitter_monitor_webhook_create",
+    "twitter_monitor_webhook_list",
+    "twitter_monitor_webhook_delete",
+    "twitter_monitor_webhook_test"
   ],
   "tools": {
     "twitter_advanced_search": {
@@ -2632,6 +2642,270 @@
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
             "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "twitter_monitor_create": {
+      "name": "twitter_monitor_create",
+      "path": "/twitter/monitor",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Start watching an X account for new posts. Every new post from that handle is HMAC-signed and delivered to your registered webhook(s) on a shared poll interval (see twitter_monitor_webhook_create to register a delivery URL first). Free: monitor creation is account administration, not a metered read. Returns the new monitor's id, plus its normalized handle, status, and poll_interval_ms.",
+      "args": [
+        "handle",
+        "webhook_ids"
+      ],
+      "required": [
+        "handle"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The X username to watch, without the leading @ (e.g. 'elonmusk')."
+          },
+          "webhook_ids": {
+            "description": "Optional. Comma-separated webhook id(s) from twitter_monitor_webhook_create to restrict this monitor's deliveries to. Omit to deliver to every active webhook on the account (the default).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "handle"
+        ]
+      }
+    },
+    "twitter_monitor_list": {
+      "name": "twitter_monitor_list",
+      "path": "/twitter/monitor",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List every monitor on your account: id, subject (its from:<handle> query), kind, status ('active' or 'paused'), degraded flag, events_possibly_missed, webhook_ids restriction, and created_at. Takes no arguments.",
+      "args": [],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "twitter_monitor_update": {
+      "name": "twitter_monitor_update",
+      "path": "/twitter/monitor/{id}",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Partially update an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, or both in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Free per call. Both fields are optional; omit either to leave it unchanged.",
+      "args": [
+        "id",
+        "status",
+        "webhook_ids"
+      ],
+      "required": [
+        "id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The monitor's id, from twitter_monitor_create or twitter_monitor_list."
+          },
+          "status": {
+            "description": "'paused' to pause the monitor, 'active' to resume it. Omit to leave status unchanged.",
+            "type": "string",
+            "enum": [
+              "active",
+              "paused"
+            ]
+          },
+          "webhook_ids": {
+            "description": "Optional. Comma-separated webhook id(s) to restrict delivery to. Pass an empty string to clear the restriction back to 'deliver to every active webhook'. Omit entirely to leave it unchanged.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "twitter_monitor_delete": {
+      "name": "twitter_monitor_delete",
+      "path": "/twitter/monitor/{id}",
+      "method": "DELETE",
+      "write": true,
+      "destructive": true,
+      "jsonBody": false,
+      "description": "Stop and remove a monitor by id. Irreversible: create a new monitor with twitter_monitor_create if you want to watch that handle again. Delivery history referencing this monitor is retained, not cascade-deleted. Free per call.",
+      "args": [
+        "id"
+      ],
+      "required": [
+        "id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The monitor's id, from twitter_monitor_create or twitter_monitor_list."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "twitter_monitor_health": {
+      "name": "twitter_monitor_health",
+      "path": "/twitter/monitor/{id}/health",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Read one monitor's current status, degradation flag, poll interval, possibly-missed-event count, and cursor position (last_tweet_id, last_poll_at), for building your own health dashboard. Free per call.",
+      "args": [
+        "id"
+      ],
+      "required": [
+        "id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The monitor's id, from twitter_monitor_create or twitter_monitor_list."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "twitter_monitor_deliveries": {
+      "name": "twitter_monitor_deliveries",
+      "path": "/twitter/monitor/deliveries",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List your most recent monitor delivery events across every monitor, most recent first: id, monitor_id, tweet_id, status, tweet_created_at, and the real measured latency (detected_lag_ms, from X's own post timestamp to enqueue; delivery_lag_ms, the separate queue-to-webhook-POST time; total_lag_ms). Free per call.",
+      "args": [
+        "limit"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "description": "Max delivery events to return, 1 to 200. Defaults to 50 when omitted.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
+          }
+        }
+      }
+    },
+    "twitter_monitor_webhook_create": {
+      "name": "twitter_monitor_webhook_create",
+      "path": "/twitter/webhook",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Register an HTTPS endpoint to receive signed monitor events. The HMAC signing secret is returned ONLY in this response, store it immediately: it cannot be retrieved again, and it is what you use to verify the X-TwitterAPIs-Signature header on every delivery. Free per call.",
+      "args": [
+        "url"
+      ],
+      "required": [
+        "url"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Your https delivery endpoint, e.g. 'https://example.com/webhooks/twitterapis'. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    "twitter_monitor_webhook_list": {
+      "name": "twitter_monitor_webhook_list",
+      "path": "/twitter/webhook",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "List every webhook registered on your account: id, url, status ('active' delivers, 'disabled' means the endpoint returned a 410 Gone and needs re-registering to reactivate), and created_at. The signing secret is never returned here, only at creation. Takes no arguments.",
+      "args": [],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "twitter_monitor_webhook_delete": {
+      "name": "twitter_monitor_webhook_delete",
+      "path": "/twitter/webhook/{id}",
+      "method": "DELETE",
+      "write": true,
+      "destructive": true,
+      "jsonBody": false,
+      "description": "Soft-delete a webhook by id: it stops receiving deliveries immediately and disappears from twitter_monitor_webhook_list, but delivery history referencing it is retained rather than cascade-deleted. Irreversible from the caller's side (register a new webhook with twitter_monitor_webhook_create to resume delivery). Free per call.",
+      "args": [
+        "id"
+      ],
+      "required": [
+        "id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "twitter_monitor_webhook_test": {
+      "name": "twitter_monitor_webhook_test",
+      "path": "/twitter/webhook/{id}/test",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Send one HMAC-signed test event to this webhook's URL right now and return the outcome synchronously: delivered (true if your endpoint returned a 2xx within the delivery timeout), status_code, and error. Unlike a real monitor event, a test send is never queued, retried, or dead-lettered, it is a one-shot diagnostic to confirm your endpoint and signature verification both work before relying on the webhook. Free per call.",
+      "args": [
+        "id"
+      ],
+      "required": [
+        "id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list."
           }
         },
         "required": [

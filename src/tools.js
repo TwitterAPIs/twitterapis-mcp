@@ -8,18 +8,22 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 61 tools (40 reads, 21 writes).
+// Catalog: 71 tools (44 reads, 27 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
 // write actions, reads its params from the query string), except the per-call
-// inline credentials, which travel as x-* request headers, and the 4
-// jsonBody tools, whose fields travel in a JSON request body. A tool with
-// `method: "POST"` is a write that acts on behalf of the authenticated account
-// behind your API key; reads are GET and default when `method` is omitted.
+// inline credentials, which travel as x-* request headers, the 4
+// jsonBody tools, whose fields travel in a JSON request body, and any arg listed
+// in pathParams, which is substituted into the URL path (e.g. {id}) instead. A
+// tool with `method: "POST"` or `method: "DELETE"` is a write that acts on
+// behalf of the authenticated account behind your API key; reads are GET and
+// default when `method` is omitted.
 //
 // write:true       -> action mutates account/Twitter state (readOnlyHint:false)
 // destructive:true -> action removes/reverses state (delete, un-follow/like/RT/bookmark)
+// pathParams        -> arg names substituted into the URL template, not sent as
+//                      query-string or body fields (e.g. ["id"] for /monitor/{id})
 import { z } from "zod";
 
 export const TOOLS = [
@@ -1361,8 +1365,139 @@ export const TOOLS = [
       ),
     },
   },
+  {
+    name: "twitter_monitor_create",
+    path: "/twitter/monitor",
+    method: "POST",
+    write: true,
+    description:
+      "Start watching an X account for new posts. Every new post from that handle is HMAC-signed and delivered to your registered webhook(s) on a shared poll interval (see twitter_monitor_webhook_create to register a delivery URL first). Free: monitor creation is account administration, not a metered read. Returns the new monitor's id, plus its normalized handle, status, and poll_interval_ms.",
+    shape: {
+      handle: z.string().min(1).describe(
+        "The X username to watch, without the leading @ (e.g. 'elonmusk').",
+      ),
+      webhook_ids: z.string().optional().describe(
+        "Optional. Comma-separated webhook id(s) from twitter_monitor_webhook_create to restrict this monitor's deliveries to. Omit to deliver to every active webhook on the account (the default).",
+      ),
+    },
+  },
+  {
+    name: "twitter_monitor_list",
+    path: "/twitter/monitor",
+    description:
+      "List every monitor on your account: id, subject (its from:<handle> query), kind, status ('active' or 'paused'), degraded flag, events_possibly_missed, webhook_ids restriction, and created_at. Takes no arguments.",
+    shape: {},
+  },
+  {
+    name: "twitter_monitor_update",
+    path: "/twitter/monitor/{id}",
+    method: "POST",
+    write: true,
+    pathParams: ["id"],
+    description:
+      "Partially update an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, or both in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Free per call. Both fields are optional; omit either to leave it unchanged.",
+    shape: {
+      id: z.string().describe(
+        "The monitor's id, from twitter_monitor_create or twitter_monitor_list.",
+      ),
+      status: z.enum(["active","paused"]).optional().describe(
+        "'paused' to pause the monitor, 'active' to resume it. Omit to leave status unchanged.",
+      ),
+      webhook_ids: z.string().optional().describe(
+        "Optional. Comma-separated webhook id(s) to restrict delivery to. Pass an empty string to clear the restriction back to 'deliver to every active webhook'. Omit entirely to leave it unchanged.",
+      ),
+    },
+  },
+  {
+    name: "twitter_monitor_delete",
+    path: "/twitter/monitor/{id}",
+    method: "DELETE",
+    write: true,
+    destructive: true,
+    pathParams: ["id"],
+    description:
+      "Stop and remove a monitor by id. Irreversible: create a new monitor with twitter_monitor_create if you want to watch that handle again. Delivery history referencing this monitor is retained, not cascade-deleted. Free per call.",
+    shape: {
+      id: z.string().describe(
+        "The monitor's id, from twitter_monitor_create or twitter_monitor_list.",
+      ),
+    },
+  },
+  {
+    name: "twitter_monitor_health",
+    path: "/twitter/monitor/{id}/health",
+    pathParams: ["id"],
+    description:
+      "Read one monitor's current status, degradation flag, poll interval, possibly-missed-event count, and cursor position (last_tweet_id, last_poll_at), for building your own health dashboard. Free per call.",
+    shape: {
+      id: z.string().describe(
+        "The monitor's id, from twitter_monitor_create or twitter_monitor_list.",
+      ),
+    },
+  },
+  {
+    name: "twitter_monitor_deliveries",
+    path: "/twitter/monitor/deliveries",
+    description:
+      "List your most recent monitor delivery events across every monitor, most recent first: id, monitor_id, tweet_id, status, tweet_created_at, and the real measured latency (detected_lag_ms, from X's own post timestamp to enqueue; delivery_lag_ms, the separate queue-to-webhook-POST time; total_lag_ms). Free per call.",
+    shape: {
+      limit: z.number().int().min(1).max(200).optional().describe(
+        "Max delivery events to return, 1 to 200. Defaults to 50 when omitted.",
+      ),
+    },
+  },
+  {
+    name: "twitter_monitor_webhook_create",
+    path: "/twitter/webhook",
+    method: "POST",
+    write: true,
+    description:
+      "Register an HTTPS endpoint to receive signed monitor events. The HMAC signing secret is returned ONLY in this response, store it immediately: it cannot be retrieved again, and it is what you use to verify the X-TwitterAPIs-Signature header on every delivery. Free per call.",
+    shape: {
+      url: z.string().min(1).describe(
+        "Your https delivery endpoint, e.g. 'https://example.com/webhooks/twitterapis'. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration.",
+      ),
+    },
+  },
+  {
+    name: "twitter_monitor_webhook_list",
+    path: "/twitter/webhook",
+    description:
+      "List every webhook registered on your account: id, url, status ('active' delivers, 'disabled' means the endpoint returned a 410 Gone and needs re-registering to reactivate), and created_at. The signing secret is never returned here, only at creation. Takes no arguments.",
+    shape: {},
+  },
+  {
+    name: "twitter_monitor_webhook_delete",
+    path: "/twitter/webhook/{id}",
+    method: "DELETE",
+    write: true,
+    destructive: true,
+    pathParams: ["id"],
+    description:
+      "Soft-delete a webhook by id: it stops receiving deliveries immediately and disappears from twitter_monitor_webhook_list, but delivery history referencing it is retained rather than cascade-deleted. Irreversible from the caller's side (register a new webhook with twitter_monitor_webhook_create to resume delivery). Free per call.",
+    shape: {
+      id: z.string().describe(
+        "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list.",
+      ),
+    },
+  },
+  {
+    name: "twitter_monitor_webhook_test",
+    path: "/twitter/webhook/{id}/test",
+    method: "POST",
+    write: true,
+    pathParams: ["id"],
+    description:
+      "Send one HMAC-signed test event to this webhook's URL right now and return the outcome synchronously: delivered (true if your endpoint returned a 2xx within the delivery timeout), status_code, and error. Unlike a real monitor event, a test send is never queued, retried, or dead-lettered, it is a one-shot diagnostic to confirm your endpoint and signature verification both work before relying on the webhook. Free per call.",
+    shape: {
+      id: z.string().describe(
+        "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list.",
+      ),
+    },
+  },
 ];
 
-// The query-string builder is hand-written logic, not catalog data, so it lives
-// in its own module and is re-exported here to keep this file's one import path.
-export { buildQuery } from "./query.js";
+// The query-string builder and the path-param substitution helper are
+// hand-written logic, not catalog data, so they live in their own module and
+// are re-exported here to keep this file's one import path.
+export { buildQuery, resolvePathParams, MissingPathParamError } from "./query.js";

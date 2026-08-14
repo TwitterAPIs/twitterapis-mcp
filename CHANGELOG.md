@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.1 (2026-08-14)
+
+### Added
+
+- **10 new tools for account monitoring + webhooks** (task #49, backend build plan Phase 5): watch an X account for new posts and get them pushed to your own HTTPS endpoint instead of polling. `twitter_monitor_create`, `twitter_monitor_list`, `twitter_monitor_update`, `twitter_monitor_delete`, `twitter_monitor_health`, `twitter_monitor_deliveries`, `twitter_monitor_webhook_create`, `twitter_monitor_webhook_list`, `twitter_monitor_webhook_delete`, `twitter_monitor_webhook_test`. Free per call (account administration, not a metered Twitter read); needs only your API key, no linked X session. The catalog is now **71 tools: 44 reads and 27 write actions**.
+
+### Fixed
+
+- **The generator (`scripts/gen-tools.mjs`) could not represent a DELETE route, or two HTTP methods on the same REST path**, which is exactly the shape the monitor/webhook endpoints need (`/monitor/{id}` is POST to update and DELETE to remove; `/monitor` and `/webhook` are each GET to list and POST to create). The endpoint table was keyed by path alone (a second method on the same path silently overwrote the first) and skipped every method that wasn't `get`/`post` outright, so a vendored `delete` operation never reached the catalog at all. Endpoints are now keyed by `(method, path)`; an override targeting an ambiguous path sets `method: "..."` to say which one. A `{name}` URL-template segment (this API's spec declares no formal `in: "path"` parameter for one) is synthesized as a required arg and threaded through as the tool's `pathParams`, which the runtime (`src/index.js`, via the new `resolvePathParams` in `src/query.js`) substitutes into the URL instead of sending as a query-string or JSON-body field. Regression-tested against a synthetic route table in `test/gen-tools-endpoints.mjs`, independent of the real spec.
+
 ## 0.7.0 (2026-08-11)
 
 ### Removed

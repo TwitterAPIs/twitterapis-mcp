@@ -1,5 +1,5 @@
 // Unit tests for the tool catalog + query builder. No network, no SDK server.
-import { TOOLS, buildQuery } from "../src/tools.js";
+import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "../src/tools.js";
 
 let pass = 0, fail = 0;
 const check = (name, cond) => { if (cond) { pass++; } else { fail++; console.error("  FAIL:", name); } };
@@ -20,9 +20,9 @@ const writes = TOOLS.filter((t) => t.write);
 // Keep the exact counts, they are what catches an accidentally DELETED tool,
 // which no other gate here would notice. Bump them deliberately in the same
 // commit that adds or removes a tool.
-const EXPECTED_TOOLS = 61;
-const EXPECTED_READS = 40;
-const EXPECTED_WRITES = 21;
+const EXPECTED_TOOLS = 71;
+const EXPECTED_READS = 44;
+const EXPECTED_WRITES = 27;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -35,16 +35,27 @@ check(
   reads.length + writes.length === TOOLS.length,
 );
 check("names unique", new Set(TOOLS.map((t) => t.name)).size === TOOLS.length);
-check("paths unique", new Set(TOOLS.map((t) => t.path)).size === TOOLS.length);
+// Path is NOT globally unique: the monitor/webhook family serves more than one
+// HTTP method on the same REST path (POST update + DELETE remove both target
+// /twitter/monitor/{id}), so the catalog's true routing key is (method, path).
+check("(method, path) unique", new Set(TOOLS.map((t) => `${t.method || "GET"} ${t.path}`)).size === TOOLS.length);
 check("all names twitter_*", TOOLS.every((t) => /^twitter_[a-z0-9_]+$/.test(t.name)));
 check("all paths /twitter/* or /account/*", TOOLS.every((t) => t.path.startsWith("/twitter/") || t.path.startsWith("/account/")));
 check("all have a real description", TOOLS.every((t) => typeof t.description === "string" && t.description.length > 20));
 check("all have an object shape", TOOLS.every((t) => t.shape && typeof t.shape === "object" && !Array.isArray(t.shape)));
 
-// Method discipline: reads are GET (no method or "GET"), writes are POST.
-check("reads have no POST method", reads.every((t) => !t.method || t.method === "GET"));
-check("writes are POST", writes.every((t) => t.method === "POST"));
-check("only writes carry write:true", TOOLS.every((t) => Boolean(t.write) === (t.method === "POST")));
+// Method discipline: reads are GET (no method or "GET"); writes are POST or
+// DELETE (a DELETE mutates account state just as much as a POST write does).
+check("reads have no POST/DELETE method", reads.every((t) => !t.method || t.method === "GET"));
+check("writes are POST or DELETE", writes.every((t) => t.method === "POST" || t.method === "DELETE"));
+check("only writes carry write:true", TOOLS.every((t) => Boolean(t.write) === (t.method === "POST" || t.method === "DELETE")));
+// A tool whose path carries a {name} template must list it in pathParams, and
+// nothing else may claim pathParams (it is meaningless without a template).
+check("pathParams match {name} templates in path", TOOLS.every((t) => {
+  const templated = [...(t.path.matchAll(/\{([^}]+)\}/g) || [])].map((m) => m[1]);
+  const declared = t.pathParams || [];
+  return JSON.stringify([...templated].sort()) === JSON.stringify([...declared].sort());
+}));
 
 // Previously-walled endpoints are now first-class tools: media/upload (base64
 // image in a JSON body), customer/session and user_login (session bootstrap, JSON
@@ -64,8 +75,38 @@ check("account tools use /account/* path", ["twitter_account_me", "twitter_accou
 check("dm_send present and is a write", TOOLS.find((t) => t.name === "twitter_dm_send")?.method === "POST" && TOOLS.find((t) => t.name === "twitter_dm_send")?.write === true);
 
 // The destructive (reversing) writes are flagged for client warnings.
-const DESTRUCTIVE = ["twitter_delete_tweet", "twitter_unfavorite_tweet", "twitter_unretweet", "twitter_unbookmark_tweet", "twitter_unfollow_user", "twitter_article_unpublish", "twitter_article_delete"];
+const DESTRUCTIVE = ["twitter_delete_tweet", "twitter_unfavorite_tweet", "twitter_unretweet", "twitter_unbookmark_tweet", "twitter_unfollow_user", "twitter_article_unpublish", "twitter_article_delete", "twitter_monitor_delete", "twitter_monitor_webhook_delete"];
 check("destructive writes flagged", DESTRUCTIVE.every((n) => TOOLS.find((t) => t.name === n)?.destructive === true));
+
+// Monitoring family (task #14/#488): the first tools in this catalog that carry
+// a REST path parameter (/monitor/{id}, /webhook/{id}, /webhook/{id}/test) and
+// the first that serve more than one HTTP method on the very same path
+// (/monitor/{id} is POST to update, DELETE to remove; /monitor and /webhook are
+// each GET to list, POST to create).
+const MONITORING = [
+  "twitter_monitor_create", "twitter_monitor_list", "twitter_monitor_update",
+  "twitter_monitor_delete", "twitter_monitor_health", "twitter_monitor_deliveries",
+  "twitter_monitor_webhook_create", "twitter_monitor_webhook_list",
+  "twitter_monitor_webhook_delete", "twitter_monitor_webhook_test",
+];
+check("all monitoring tools present", MONITORING.every((n) => TOOLS.some((t) => t.name === n)));
+check("monitor DELETE tool present and is a real DELETE write", (() => {
+  const t = TOOLS.find((x) => x.name === "twitter_monitor_delete");
+  return t && t.method === "DELETE" && t.write === true && t.destructive === true;
+})());
+check("webhook DELETE tool present and is a real DELETE write", (() => {
+  const t = TOOLS.find((x) => x.name === "twitter_monitor_webhook_delete");
+  return t && t.method === "DELETE" && t.write === true && t.destructive === true;
+})());
+check("monitor update (POST) and monitor delete (DELETE) share one REST path but differ in method", (() => {
+  const upd = TOOLS.find((x) => x.name === "twitter_monitor_update");
+  const del = TOOLS.find((x) => x.name === "twitter_monitor_delete");
+  return upd && del && upd.path === del.path && upd.method === "POST" && del.method === "DELETE";
+})());
+check("path-templated tools carry a matching pathParams entry", (() => {
+  const templated = TOOLS.filter((t) => t.name === "twitter_monitor_update" || t.name === "twitter_monitor_delete" || t.name === "twitter_monitor_health" || t.name === "twitter_monitor_webhook_delete" || t.name === "twitter_monitor_webhook_test");
+  return templated.length === 5 && templated.every((t) => Array.isArray(t.pathParams) && t.pathParams.includes("id") && t.shape.id);
+})());
 
 // Spot-check that the key new tools landed.
 const EXPECTED_NEW = [
@@ -94,6 +135,36 @@ check("buildQuery keeps tweet text for writes", buildQuery({ text: "gm world", r
 // count is zod .positive() upstream so 0 never reaches buildQuery; the builder itself
 // keeps any non-empty stringified value (it is a dumb stringifier, not a validator).
 check("buildQuery stringifies numeric 0 as count=0", buildQuery({ count: 0 }) === "count=0");
+
+// Path-param substitution (backs the monitor/webhook {id} tools).
+check("resolvePathParams substitutes {id} and strips it from args", (() => {
+  const { path, args } = resolvePathParams("/twitter/monitor/{id}", ["id"], { id: "abc-123", status: "paused" });
+  return path === "/twitter/monitor/abc-123" && !("id" in args) && args.status === "paused";
+})());
+check("resolvePathParams URL-encodes the substituted value", (() => {
+  const { path } = resolvePathParams("/twitter/webhook/{id}", ["id"], { id: "a b/c" });
+  return path === "/twitter/webhook/a%20b%2Fc";
+})());
+check("resolvePathParams with no pathParams is a no-op passthrough", (() => {
+  const { path, args } = resolvePathParams("/twitter/monitor", [], { handle: "elonmusk" });
+  return path === "/twitter/monitor" && args.handle === "elonmusk";
+})());
+check("resolvePathParams throws MissingPathParamError on a missing value", (() => {
+  try {
+    resolvePathParams("/twitter/monitor/{id}", ["id"], {});
+    return false;
+  } catch (e) {
+    return e instanceof MissingPathParamError && e.paramName === "id";
+  }
+})());
+check("resolvePathParams throws on an empty-string value too", (() => {
+  try {
+    resolvePathParams("/twitter/monitor/{id}", ["id"], { id: "" });
+    return false;
+  } catch (e) {
+    return e instanceof MissingPathParamError;
+  }
+})());
 
 console.log(`tools.test: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
