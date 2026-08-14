@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.2 (2026-08-14)
+
+### Added
+
+- **3 new compat tools for tweet monitoring** (task #87): `twitter_x_user_stream_add_user`, `twitter_x_user_stream_remove_user`, `twitter_x_user_stream_list_users` -- drop-in equivalents of `twitter_monitor_create`/`twitter_monitor_delete`/`twitter_monitor_list` using an alternate request/response envelope shape, for migrating an existing integration built against that shape without a rewrite. Free per call, same underlying monitor system, same safety checks as the native tools. The catalog is now **74 tools: 45 reads and 29 write actions**.
+
+### Fixed
+
+- **The generator's `toolPathFor` only special-cased `/account/*` as un-prefixed** (billing reads mounted at the API root rather than under `/twitter/`); the 3 new compat routes live at `/oapi/x_user_stream/*`, the same shape of gap, now handled identically.
+
 ## 0.7.1 (2026-08-14)
 
 ### Added

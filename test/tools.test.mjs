@@ -20,9 +20,9 @@ const writes = TOOLS.filter((t) => t.write);
 // Keep the exact counts, they are what catches an accidentally DELETED tool,
 // which no other gate here would notice. Bump them deliberately in the same
 // commit that adds or removes a tool.
-const EXPECTED_TOOLS = 71;
-const EXPECTED_READS = 44;
-const EXPECTED_WRITES = 27;
+const EXPECTED_TOOLS = 74;
+const EXPECTED_READS = 45;
+const EXPECTED_WRITES = 29;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -40,7 +40,7 @@ check("names unique", new Set(TOOLS.map((t) => t.name)).size === TOOLS.length);
 // /twitter/monitor/{id}), so the catalog's true routing key is (method, path).
 check("(method, path) unique", new Set(TOOLS.map((t) => `${t.method || "GET"} ${t.path}`)).size === TOOLS.length);
 check("all names twitter_*", TOOLS.every((t) => /^twitter_[a-z0-9_]+$/.test(t.name)));
-check("all paths /twitter/* or /account/*", TOOLS.every((t) => t.path.startsWith("/twitter/") || t.path.startsWith("/account/")));
+check("all paths /twitter/* or /account/* or /oapi/x_user_stream/*", TOOLS.every((t) => t.path.startsWith("/twitter/") || t.path.startsWith("/account/") || t.path.startsWith("/oapi/x_user_stream/")));
 check("all have a real description", TOOLS.every((t) => typeof t.description === "string" && t.description.length > 20));
 check("all have an object shape", TOOLS.every((t) => t.shape && typeof t.shape === "object" && !Array.isArray(t.shape)));
 

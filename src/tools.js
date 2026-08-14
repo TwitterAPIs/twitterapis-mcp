@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 71 tools (44 reads, 27 writes).
+// Catalog: 74 tools (45 reads, 29 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -1445,6 +1445,40 @@ export const TOOLS = [
         "Max delivery events to return, 1 to 200. Defaults to 50 when omitted.",
       ),
     },
+  },
+  {
+    name: "twitter_x_user_stream_add_user",
+    path: "/oapi/x_user_stream/add_user_to_monitor_tweet",
+    method: "POST",
+    write: true,
+    description:
+      "Compat drop-in for twitter_monitor_create using an x_user_stream-shaped request/response envelope: watch an X account for new posts, translated onto the same underlying monitor system. Free per call. Prefer twitter_monitor_create for new integrations; this exists for migrating an existing x_user_stream-shaped integration without a rewrite.",
+    shape: {
+      x_user_name: z.string().describe(
+        "The X username to watch, without the @.",
+      ),
+    },
+  },
+  {
+    name: "twitter_x_user_stream_remove_user",
+    path: "/oapi/x_user_stream/remove_user_to_monitor_tweet",
+    method: "POST",
+    write: true,
+    destructive: true,
+    description:
+      "Compat drop-in for twitter_monitor_delete using an x_user_stream-shaped envelope: stop watching an account. Irreversible. Free per call.",
+    shape: {
+      id_for_user: z.string().describe(
+        "The monitor id, from twitter_x_user_stream_list_users. Same value as a twitter_monitor_* tool's monitor id.",
+      ),
+    },
+  },
+  {
+    name: "twitter_x_user_stream_list_users",
+    path: "/oapi/x_user_stream/get_user_to_monitor_tweet",
+    description:
+      "Compat drop-in for twitter_monitor_list using an x_user_stream-shaped envelope: list every account you are currently tweet-monitoring. Honest field mapping, not fabricated: x_user_id is always null (this API stores no numeric Twitter user id) and is_monitor_profile is always 0 (profile-change monitoring is not a capability this API has). Free per call.",
+    shape: {},
   },
   {
     name: "twitter_monitor_webhook_create",

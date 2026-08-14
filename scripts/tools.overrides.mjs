@@ -1011,6 +1011,39 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    name: "twitter_x_user_stream_add_user",
+    endpoint: "/oapi/x_user_stream/add_user_to_monitor_tweet",
+    method: "POST",
+    write: true,
+    description:
+      "Compat drop-in for twitter_monitor_create using an x_user_stream-shaped request/response envelope: watch an X account for new posts, translated onto the same underlying monitor system. Free per call. Prefer twitter_monitor_create for new integrations; this exists for migrating an existing x_user_stream-shaped integration without a rewrite.",
+    args: [
+      { name: "x_user_name",
+        describe:
+          "The X username to watch, without the @." },
+    ],
+  },
+  {
+    name: "twitter_x_user_stream_remove_user",
+    endpoint: "/oapi/x_user_stream/remove_user_to_monitor_tweet",
+    method: "POST",
+    write: true, destructive: true,
+    description:
+      "Compat drop-in for twitter_monitor_delete using an x_user_stream-shaped envelope: stop watching an account. Irreversible. Free per call.",
+    args: [
+      { name: "id_for_user",
+        describe:
+          "The monitor id, from twitter_x_user_stream_list_users. Same value as a twitter_monitor_* tool's monitor id." },
+    ],
+  },
+  {
+    name: "twitter_x_user_stream_list_users",
+    endpoint: "/oapi/x_user_stream/get_user_to_monitor_tweet",
+    description:
+      "Compat drop-in for twitter_monitor_list using an x_user_stream-shaped envelope: list every account you are currently tweet-monitoring. Honest field mapping, not fabricated: x_user_id is always null (this API stores no numeric Twitter user id) and is_monitor_profile is always 0 (profile-change monitoring is not a capability this API has). Free per call.",
+    args: [],
+  },
+  {
     name: "twitter_monitor_webhook_create",
     endpoint: "/webhook",
     method: "POST",
