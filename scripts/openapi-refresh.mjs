@@ -37,6 +37,38 @@ const die = (msg) => {
   process.exit(1);
 };
 
+// The published docs illustrate a few responses with a canned example secret
+// (e.g. POST /webhook's response shows a fake HMAC signing secret next to a
+// fake webhook id, so a reader sees the SHAPE of what they'll get back). That
+// pair is real-looking-but-fake documentation prose, never read by anything in
+// this repo (gen-tools.mjs only reads .parameters and .requestBody.schema, and
+// asserted so in its own tests), but it is INDISTINGUISHABLE, to a generic
+// scanner, from an actual identity+secret pair someone accidentally committed.
+// Redact known secret-shaped example VALUES at vendoring time so the snapshot
+// never carries content that reads as a live credential, while leaving every
+// field this repo actually consumes (parameters, requestBody schemas, response
+// schemas) untouched. Applied recursively so it survives wherever the docs
+// nest an example.
+const EXAMPLE_SECRET_KEYS = new Set(["secret", "token", "password", "api_key", "apikey", "auth_token", "ct0"]);
+function redactExampleSecrets(node) {
+  if (Array.isArray(node)) {
+    for (const v of node) redactExampleSecrets(v);
+    return;
+  }
+  if (node && typeof node === "object") {
+    for (const [k, v] of Object.entries(node)) {
+      if (k === "example" && v && typeof v === "object" && !Array.isArray(v)) {
+        for (const ek of Object.keys(v)) {
+          if (EXAMPLE_SECRET_KEYS.has(ek.toLowerCase()) && typeof v[ek] === "string") {
+            v[ek] = "[example value redacted at vendoring time, see scripts/openapi-refresh.mjs]";
+          }
+        }
+      }
+      redactExampleSecrets(v);
+    }
+  }
+}
+
 const routeSet = (spec) => {
   const s = new Set();
   for (const [p, ops] of Object.entries(spec.paths || {})) {
@@ -62,6 +94,8 @@ try {
   die(`${SPEC_URL} did not return JSON: ${e.message}`);
 }
 if (!next.openapi || !next.paths) die("payload has no openapi/paths keys, refusing to vendor it");
+
+redactExampleSecrets(next);
 
 const nextRoutes = routeSet(next);
 if (nextRoutes.size === 0) die("payload declares zero GET/POST routes");

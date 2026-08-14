@@ -13221,7 +13221,7 @@
                   "id": "e4a1f9c2-3b7d-4a88-9f1e-2c6d8b4a5e10",
                   "url": "https://example.com/webhooks/twitterapis",
                   "status": "active",
-                  "secret": "whsec_9f1e2c6d8b4a5e10b6f2c1a49e3d4c11",
+                  "secret": "[example value redacted at vendoring time, see scripts/openapi-refresh.mjs]",
                   "created_at": "2026-08-13T10:00:00.000Z"
                 }
               }
