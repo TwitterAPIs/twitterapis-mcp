@@ -91,7 +91,7 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-74 tools: 45 reads and 29 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`); the 13 monitoring tools are also free (account administration, not metered reads).
+75 tools: 46 reads and 29 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`); the 14 monitoring tools are also free (account administration, not metered reads).
 
 Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **most write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark, monitor/webhook delete) are annotated `destructiveHint: true` so MCP clients can prompt before running them. The **monitoring** tools (see below) are the one exception: they administer your twitterapis.com account, not an X session, so they need only your API key, no linked session and no inline credentials.
 
@@ -177,6 +177,7 @@ Watch an X account for new posts and get them pushed to your own HTTPS endpoint,
 | `twitter_monitor_update` | Pause/resume a monitor or change its `webhook_ids` restriction |
 | `twitter_monitor_delete` | Stop and remove a monitor (irreversible) |
 | `twitter_monitor_health` | One monitor's status, degradation flag, poll interval, cursor position |
+| `twitter_monitor_account_health` | Account-wide rollup: service status, active/paused monitor counts, 24h delivery outcome counts, one call |
 | `twitter_monitor_deliveries` | Recent delivery events across every monitor, with detection + delivery latency |
 | `twitter_x_user_stream_add_user` | Compat drop-in for `twitter_monitor_create` using an x_user_stream-shaped envelope |
 | `twitter_x_user_stream_remove_user` | Compat drop-in for `twitter_monitor_delete` using an x_user_stream-shaped envelope |
@@ -276,7 +277,7 @@ Calls are billed to your twitterapis.com account. Almost every endpoint is $0.00
 
 **Do I need an X (Twitter) developer account?** No. Get an API key at [twitterapis.com/signup](https://www.twitterapis.com/signup); there is no application or approval step.
 
-**Is it read-only?** No. 45 read tools work with just your API key; 29 write actions (post, like, retweet, follow, DM, media upload, article create/edit/publish/delete, monitor/webhook create/update/delete) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD, which is account administration and needs only your API key.
+**Is it read-only?** No. 46 read tools work with just your API key; 29 write actions (post, like, retweet, follow, DM, media upload, article create/edit/publish/delete, monitor/webhook create/update/delete) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD, which is account administration and needs only your API key.
 
 **Which clients are supported?** Claude Desktop, Cursor, Windsurf, and VS Code (Copilot agent mode), or any Model Context Protocol client.
 

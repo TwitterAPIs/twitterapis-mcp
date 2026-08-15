@@ -20,8 +20,8 @@ const writes = TOOLS.filter((t) => t.write);
 // Keep the exact counts, they are what catches an accidentally DELETED tool,
 // which no other gate here would notice. Bump them deliberately in the same
 // commit that adds or removes a tool.
-const EXPECTED_TOOLS = 74;
-const EXPECTED_READS = 45;
+const EXPECTED_TOOLS = 75;
+const EXPECTED_READS = 46;
 const EXPECTED_WRITES = 29;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);

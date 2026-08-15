@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 74 tools (45 reads, 29 writes).
+// Catalog: 75 tools (46 reads, 29 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -1434,6 +1434,13 @@ export const TOOLS = [
         "The monitor's id, from twitter_monitor_create or twitter_monitor_list.",
       ),
     },
+  },
+  {
+    name: "twitter_monitor_account_health",
+    path: "/twitter/monitor/health",
+    description:
+      "Account-wide monitoring rollup in ONE call, distinct from twitter_monitor_health (which needs an id and reports one monitor's cursor): service status ('operational' or 'degraded'), active/paused/total counts across every monitor you own, and pending/delivered/failed delivery counts from the last 24 hours. Takes no arguments. A key with zero monitors gets zeroed counts back, never an error. Free per call.",
+    shape: {},
   },
   {
     name: "twitter_monitor_deliveries",

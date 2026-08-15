@@ -1000,6 +1000,13 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    name: "twitter_monitor_account_health",
+    endpoint: "/monitor/health",
+    description:
+      "Account-wide monitoring rollup in ONE call, distinct from twitter_monitor_health (which needs an id and reports one monitor's cursor): service status ('operational' or 'degraded'), active/paused/total counts across every monitor you own, and pending/delivered/failed delivery counts from the last 24 hours. Takes no arguments. A key with zero monitors gets zeroed counts back, never an error. Free per call.",
+    args: [],
+  },
+  {
     name: "twitter_monitor_deliveries",
     endpoint: "/monitor/deliveries",
     description:
