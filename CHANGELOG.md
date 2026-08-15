@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.4 (2026-08-15)
+
+### Added
+
+- **`domain_filter` on `twitter_monitor_create` and `twitter_monitor_update`** (task #30 follow-up): an optional bare hostname or full URL that restricts a monitor's delivery to only the new posts carrying a link to that host or a subdomain of it. Normalized server-side (lowercased, scheme/path/query/fragment/leading `www.`/trailing port stripped), rejected with a 400 on an invalid hostname shape after normalization. Pass an empty string on update to clear an existing filter; omit the field to leave it unchanged. A filtered-out post still advances the monitor's cursor and is never a metered read either way, it just isn't delivered. This param was already live on the backend and unrestricted for every account; it was undocumented until now. No new tool, no catalog count change.
+
 ## 0.7.3 (2026-08-15)
 
 ### Added

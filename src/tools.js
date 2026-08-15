@@ -1379,6 +1379,9 @@ export const TOOLS = [
       webhook_ids: z.string().optional().describe(
         "Optional. Comma-separated webhook id(s) from twitter_monitor_webhook_create to restrict this monitor's deliveries to. Omit to deliver to every active webhook on the account (the default).",
       ),
+      domain_filter: z.string().optional().describe(
+        "Optional. A bare hostname ('example.com') or a full URL ('https://example.com/blog') to restrict delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Omit for no filter, the default (deliver every new post). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, never silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric.",
+      ),
     },
   },
   {
@@ -1395,7 +1398,7 @@ export const TOOLS = [
     write: true,
     pathParams: ["id"],
     description:
-      "Partially update an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, or both in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Free per call. Both fields are optional; omit either to leave it unchanged.",
+      "Partially update an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, change or clear its domain_filter, or any combination in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Free per call. All three fields are optional; omit any of them to leave that part unchanged.",
     shape: {
       id: z.string().describe(
         "The monitor's id, from twitter_monitor_create or twitter_monitor_list.",
@@ -1405,6 +1408,9 @@ export const TOOLS = [
       ),
       webhook_ids: z.string().optional().describe(
         "Optional. Comma-separated webhook id(s) to restrict delivery to. Pass an empty string to clear the restriction back to 'deliver to every active webhook'. Omit entirely to leave it unchanged.",
+      ),
+      domain_filter: z.string().optional().describe(
+        "Optional. A bare hostname or full URL to restrict delivery to, same shape and normalization as twitter_monitor_create's domain_filter. Pass an empty string (or null) to clear an existing filter back to 'deliver every new post'. Omit entirely to leave the current filter unchanged. Rejected with a 400 if a non-empty value does not normalize to a valid hostname.",
       ),
     },
   },
