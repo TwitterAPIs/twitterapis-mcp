@@ -12986,6 +12986,162 @@
         }
       }
     },
+    "/monitor/health": {
+      "get": {
+        "operationId": "monitor-health",
+        "summary": "Account Monitor Health",
+        "description": "Returns a single-call summary of your entire monitoring setup: overall status, how many of your monitors are active vs paused, and how many delivery attempts in the last 24 hours were pending, delivered, or failed. Distinct from Monitor Health above, which reports one monitor's cursor state, not your whole account's. Cost: Free per call.",
+        "tags": [
+          "Monitoring"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/monitor/health\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/monitor/health\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/monitor/health\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account-wide monitoring rollup: service status, active/paused counts, 24h delivery outcomes, in one call.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "\"operational\", or \"degraded\" if any of your ACTIVE monitors is currently being served slower than the published poll interval. A degraded paused monitor never flips this, since nothing is polling it."
+                    },
+                    "monitors": {
+                      "type": "string",
+                      "description": "Counts across every non-deleted monitor you own: active, paused, and total."
+                    },
+                    "deliveries_24h": {
+                      "type": "string",
+                      "description": "Counts across every delivery attempt created in the last 24 hours: pending (still queued or retrying), delivered (succeeded), and failed (dead-lettered after retries were exhausted)."
+                    }
+                  }
+                },
+                "example": {
+                  "status": "operational",
+                  "monitors": {
+                    "active": 3,
+                    "paused": 1,
+                    "total": 4
+                  },
+                  "deliveries_24h": {
+                    "pending": 2,
+                    "delivered": 150,
+                    "failed": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/monitor/deliveries": {
       "get": {
         "operationId": "monitor-deliveries",

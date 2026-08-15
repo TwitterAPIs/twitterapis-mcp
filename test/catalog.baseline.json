@@ -1,5 +1,5 @@
 {
-  "toolCount": 74,
+  "toolCount": 75,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -67,6 +67,7 @@
     "twitter_monitor_update",
     "twitter_monitor_delete",
     "twitter_monitor_health",
+    "twitter_monitor_account_health",
     "twitter_monitor_deliveries",
     "twitter_x_user_stream_add_user",
     "twitter_x_user_stream_remove_user",
@@ -2793,6 +2794,21 @@
         "required": [
           "id"
         ]
+      }
+    },
+    "twitter_monitor_account_health": {
+      "name": "twitter_monitor_account_health",
+      "path": "/twitter/monitor/health",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Account-wide monitoring rollup in ONE call, distinct from twitter_monitor_health (which needs an id and reports one monitor's cursor): service status ('operational' or 'degraded'), active/paused/total counts across every monitor you own, and pending/delivered/failed delivery counts from the last 24 hours. Takes no arguments. A key with zero monitors gets zeroed counts back, never an error. Free per call.",
+      "args": [],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
       }
     },
     "twitter_monitor_deliveries": {
