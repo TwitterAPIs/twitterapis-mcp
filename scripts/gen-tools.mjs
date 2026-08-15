@@ -196,7 +196,10 @@ for (const t of TOOL_OVERRIDES) {
           `tool sends args as query-string values, which cannot carry a real object.`,
       );
     }
-    finalArgs.push({ name: a.name, type, enum: a.enum, min: a.min, max: a.max, minLength: a.minLength, required, describe: a.describe });
+    if (a.nullable && required) {
+      bad(`tool ${t.name} arg "${a.name}" is nullable:true but required:true; nullable only makes sense on an optional arg`);
+    }
+    finalArgs.push({ name: a.name, type, enum: a.enum, min: a.min, max: a.max, minLength: a.minLength, required, nullable: a.nullable, describe: a.describe });
   }
 
   // Every spec param must be accounted for: exposed, or omitted with a reason.
@@ -288,6 +291,15 @@ function zodExpr(a) {
     e = "z.string()";
     if (a.minLength !== undefined) e += `.min(${a.minLength})`;
   }
+  // Fixed 2026-08-16: a field whose own description promises "pass null to
+  // clear" (domain_filter) needs .nullable() -- without it, z.string().optional()
+  // accepts only string|undefined, so an MCP client following the documented
+  // contract and passing literal null gets a schema-validation rejection
+  // before the request is even sent. Only meaningful combined with .optional()
+  // (enforced above: nullable requires !required), since the two together are
+  // what let a client omit the field (leave unchanged) OR pass null (clear) as
+  // two distinct, both-valid states.
+  if (a.nullable) e += ".nullable()";
   if (!a.required) e += ".optional()";
   return `${e}.describe(\n        ${q(a.describe)},\n      )`;
 }

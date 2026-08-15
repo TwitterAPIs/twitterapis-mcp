@@ -13,7 +13,7 @@
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
 // write actions, reads its params from the query string), except the per-call
-// inline credentials, which travel as x-* request headers, the 4
+// inline credentials, which travel as x-* request headers, the 9
 // jsonBody tools, whose fields travel in a JSON request body, and any arg listed
 // in pathParams, which is substituted into the URL path (e.g. {id}) instead. A
 // tool with `method: "POST"` or `method: "DELETE"` is a write that acts on
@@ -1370,6 +1370,7 @@ export const TOOLS = [
     path: "/twitter/monitor",
     method: "POST",
     write: true,
+    jsonBody: true,
     description:
       "Start watching an X account for new posts. Every new post from that handle is HMAC-signed and delivered to your registered webhook(s) on a shared poll interval (see twitter_monitor_webhook_create to register a delivery URL first). Free: monitor creation is account administration, not a metered read. Returns the new monitor's id, plus its normalized handle, status, and poll_interval_ms.",
     shape: {
@@ -1396,6 +1397,7 @@ export const TOOLS = [
     path: "/twitter/monitor/{id}",
     method: "POST",
     write: true,
+    jsonBody: true,
     pathParams: ["id"],
     description:
       "Partially update an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, change or clear its domain_filter, or any combination in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Free per call. All three fields are optional; omit any of them to leave that part unchanged.",
@@ -1409,7 +1411,7 @@ export const TOOLS = [
       webhook_ids: z.string().optional().describe(
         "Optional. Comma-separated webhook id(s) to restrict delivery to. Pass an empty string to clear the restriction back to 'deliver to every active webhook'. Omit entirely to leave it unchanged.",
       ),
-      domain_filter: z.string().optional().describe(
+      domain_filter: z.string().nullable().optional().describe(
         "Optional. A bare hostname or full URL to restrict delivery to, same shape and normalization as twitter_monitor_create's domain_filter. Pass an empty string (or null) to clear an existing filter back to 'deliver every new post'. Omit entirely to leave the current filter unchanged. Rejected with a 400 if a non-empty value does not normalize to a valid hostname.",
       ),
     },
@@ -1464,6 +1466,7 @@ export const TOOLS = [
     path: "/oapi/x_user_stream/add_user_to_monitor_tweet",
     method: "POST",
     write: true,
+    jsonBody: true,
     description:
       "Compat drop-in for twitter_monitor_create using an x_user_stream-shaped request/response envelope: watch an X account for new posts, translated onto the same underlying monitor system. Free per call. Prefer twitter_monitor_create for new integrations; this exists for migrating an existing x_user_stream-shaped integration without a rewrite.",
     shape: {
@@ -1478,6 +1481,7 @@ export const TOOLS = [
     method: "POST",
     write: true,
     destructive: true,
+    jsonBody: true,
     description:
       "Compat drop-in for twitter_monitor_delete using an x_user_stream-shaped envelope: stop watching an account. Irreversible. Free per call.",
     shape: {
@@ -1498,6 +1502,7 @@ export const TOOLS = [
     path: "/twitter/webhook",
     method: "POST",
     write: true,
+    jsonBody: true,
     description:
       "Register an HTTPS endpoint to receive signed monitor events. The HMAC signing secret is returned ONLY in this response, store it immediately: it cannot be retrieved again, and it is what you use to verify the X-TwitterAPIs-Signature header on every delivery. Free per call.",
     shape: {
