@@ -61,7 +61,22 @@ check("pathParams match {name} templates in path", TOOLS.every((t) => {
 // image in a JSON body), customer/session and user_login (session bootstrap, JSON
 // body). Each reads a JSON request body, so it sets jsonBody:true and is a POST
 // write. dm/send is also live (below).
-const JSON_BODY_WRITES = ["twitter_media_upload", "twitter_customer_session", "twitter_user_login", "twitter_article_update_content"];
+//
+// Fixed 2026-08-16: the 5 monitor/webhook write tools below were shipped with
+// jsonBody unset (defaulting to false, query-string args), but their backend
+// handlers (createMonitorRoute, updateMonitorRoute, createWebhookRoute,
+// addUserToMonitorTweetRoute, removeUserToMonitorTweetRoute) all read ONLY
+// `await c.req.json()` with no query-string fallback -- unlike most write
+// endpoints, which go through resolveBodyParam's dual-mode query-or-body
+// resolution. Every call to any of these 5 tools failed with a 400 "Provide
+// `handle`/`url`/... in the JSON body" error, live-reproduced against
+// production before this fix (products/twitterapis-backend, monitor.ts /
+// webhook.ts / getxapi-stream-compat.ts).
+const JSON_BODY_WRITES = [
+  "twitter_media_upload", "twitter_customer_session", "twitter_user_login", "twitter_article_update_content",
+  "twitter_monitor_create", "twitter_monitor_update", "twitter_monitor_webhook_create",
+  "twitter_x_user_stream_add_user", "twitter_x_user_stream_remove_user",
+];
 check("json-body writes present: POST + write + jsonBody", JSON_BODY_WRITES.every((n) => {
   const t = TOOLS.find((x) => x.name === n);
   return t && t.method === "POST" && t.write === true && t.jsonBody === true;

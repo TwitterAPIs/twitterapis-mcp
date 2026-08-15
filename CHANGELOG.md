@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.5 (2026-08-16)
+
+### Fixed
+
+- **5 write tools sent every arg as a URL query-string parameter with no request body**, silently failing 100% of calls: `twitter_monitor_create`, `twitter_monitor_update`, `twitter_monitor_webhook_create`, `twitter_x_user_stream_add_user`, `twitter_x_user_stream_remove_user`. Their backend routes read only `c.req.json()` with no query-string fallback, unlike most write endpoints here which accept either. Every call to any of these 5 returned a 400 "Provide `<field>` in the JSON body" error. Now sends `jsonBody: true` so args travel as a real JSON body, matching what the backend actually reads. Found by an independent review, confirmed live against production before and after the fix (see this repo's own test/smoke.mjs pattern).
+- **`twitter_monitor_update`'s `domain_filter` now accepts `null`** (in addition to an empty string) to clear an existing filter, matching its documented "pass an empty string (or null) to clear" behavior, which the schema previously rejected.
+
 ## 0.7.4 (2026-08-15)
 
 ### Added

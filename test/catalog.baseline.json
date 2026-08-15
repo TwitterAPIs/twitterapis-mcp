@@ -2659,7 +2659,7 @@
       "method": "POST",
       "write": true,
       "destructive": false,
-      "jsonBody": false,
+      "jsonBody": true,
       "description": "Start watching an X account for new posts. Every new post from that handle is HMAC-signed and delivered to your registered webhook(s) on a shared poll interval (see twitter_monitor_webhook_create to register a delivery URL first). Free: monitor creation is account administration, not a metered read. Returns the new monitor's id, plus its normalized handle, status, and poll_interval_ms.",
       "args": [
         "handle",
@@ -2712,7 +2712,7 @@
       "method": "POST",
       "write": true,
       "destructive": false,
-      "jsonBody": false,
+      "jsonBody": true,
       "description": "Partially update an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, change or clear its domain_filter, or any combination in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Free per call. All three fields are optional; omit any of them to leave that part unchanged.",
       "args": [
         "id",
@@ -2744,7 +2744,14 @@
           },
           "domain_filter": {
             "description": "Optional. A bare hostname or full URL to restrict delivery to, same shape and normalization as twitter_monitor_create's domain_filter. Pass an empty string (or null) to clear an existing filter back to 'deliver every new post'. Omit entirely to leave the current filter unchanged. Rejected with a 400 if a non-empty value does not normalize to a valid hostname.",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -2851,7 +2858,7 @@
       "method": "POST",
       "write": true,
       "destructive": false,
-      "jsonBody": false,
+      "jsonBody": true,
       "description": "Compat drop-in for twitter_monitor_create using an x_user_stream-shaped request/response envelope: watch an X account for new posts, translated onto the same underlying monitor system. Free per call. Prefer twitter_monitor_create for new integrations; this exists for migrating an existing x_user_stream-shaped integration without a rewrite.",
       "args": [
         "x_user_name"
@@ -2878,7 +2885,7 @@
       "method": "POST",
       "write": true,
       "destructive": true,
-      "jsonBody": false,
+      "jsonBody": true,
       "description": "Compat drop-in for twitter_monitor_delete using an x_user_stream-shaped envelope: stop watching an account. Irreversible. Free per call.",
       "args": [
         "id_for_user"
@@ -2920,7 +2927,7 @@
       "method": "POST",
       "write": true,
       "destructive": false,
-      "jsonBody": false,
+      "jsonBody": true,
       "description": "Register an HTTPS endpoint to receive signed monitor events. The HMAC signing secret is returned ONLY in this response, store it immediately: it cannot be retrieved again, and it is what you use to verify the X-TwitterAPIs-Signature header on every delivery. Free per call.",
       "args": [
         "url"

@@ -26,6 +26,21 @@
 //   - required-ness and base type are DERIVED from the spec. Set them here only
 //     to deviate deliberately, and say why in the neighbouring comment.
 //   - After editing this file run `npm run build`.
+//   - BEFORE adding a new write:true tool, or copy-pasting one as a template:
+//     open the corresponding route handler in products/twitterapis-backend and
+//     check whether it reads `c.req.json()` directly (needs jsonBody:true here)
+//     or goes through resolveBodyParam/similar dual-mode query-or-body helper
+//     (jsonBody can stay unset). Getting this wrong is NOT caught by any test
+//     in THIS repo -- gen-tools.mjs and catalog-identity.mjs only check internal
+//     consistency, never whether jsonBody actually matches what the backend
+//     reads. Incident 2026-08-16: 5 tools (twitter_monitor_create/update,
+//     twitter_monitor_webhook_create, twitter_x_user_stream_add_user/
+//     remove_user) shipped with jsonBody unset while their backend handlers
+//     read ONLY the JSON body -- every call to any of them failed with a 400,
+//     for an unknown period, caught only by an independent code-review pass
+//     that happened to trace one call path all the way into the sibling repo.
+//     Verify with a REAL live call (see test/smoke.mjs for the pattern), not
+//     just by reading the route -- a static read is a hypothesis, not proof.
 
 /** Reusable arg runs. A tool references one as the string "@NAME". */
 export const ARG_GROUPS = {
@@ -936,7 +951,14 @@ export const TOOL_OVERRIDES = [
     name: "twitter_monitor_create",
     endpoint: "/monitor",
     method: "POST",
-    write: true,
+    write: true, jsonBody: true,
+    // Fixed 2026-08-16: the backend's createMonitorRoute reads ONLY
+    // `await c.req.json()` with no query-string fallback (unlike most
+    // write endpoints, which go through resolveBodyParam's dual-mode
+    // query-or-body resolution). Without jsonBody:true this tool sent
+    // every arg as a query string the backend never reads, so EVERY call
+    // failed with a 400 "Provide `handle` ... in the JSON body" -- live-
+    // reproduced against production before this fix.
     description:
       "Start watching an X account for new posts. Every new post from that handle is HMAC-signed and delivered to your registered webhook(s) on a shared poll interval (see twitter_monitor_webhook_create to register a delivery URL first). Free: monitor creation is account administration, not a metered read. Returns the new monitor's id, plus its normalized handle, status, and poll_interval_ms.",
     args: [
@@ -963,7 +985,9 @@ export const TOOL_OVERRIDES = [
     name: "twitter_monitor_update",
     endpoint: "/monitor/{id}",
     method: "POST",
-    write: true,
+    write: true, jsonBody: true,
+    // Fixed 2026-08-16, same root cause as twitter_monitor_create above:
+    // updateMonitorRoute also reads only c.req.json(), no query fallback.
     description:
       "Partially update an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, change or clear its domain_filter, or any combination in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Free per call. All three fields are optional; omit any of them to leave that part unchanged.",
     args: [
@@ -976,7 +1000,7 @@ export const TOOL_OVERRIDES = [
       { name: "webhook_ids", required: false,
         describe:
           "Optional. Comma-separated webhook id(s) to restrict delivery to. Pass an empty string to clear the restriction back to 'deliver to every active webhook'. Omit entirely to leave it unchanged." },
-      { name: "domain_filter", required: false,
+      { name: "domain_filter", required: false, nullable: true,
         describe:
           "Optional. A bare hostname or full URL to restrict delivery to, same shape and normalization as twitter_monitor_create's domain_filter. Pass an empty string (or null) to clear an existing filter back to 'deliver every new post'. Omit entirely to leave the current filter unchanged. Rejected with a 400 if a non-empty value does not normalize to a valid hostname." },
     ],
@@ -1027,7 +1051,9 @@ export const TOOL_OVERRIDES = [
     name: "twitter_x_user_stream_add_user",
     endpoint: "/oapi/x_user_stream/add_user_to_monitor_tweet",
     method: "POST",
-    write: true,
+    write: true, jsonBody: true,
+    // Fixed 2026-08-16, same root cause: addUserToMonitorTweetRoute
+    // (getxapi-stream-compat.ts) reads only c.req.json(), no query fallback.
     description:
       "Compat drop-in for twitter_monitor_create using an x_user_stream-shaped request/response envelope: watch an X account for new posts, translated onto the same underlying monitor system. Free per call. Prefer twitter_monitor_create for new integrations; this exists for migrating an existing x_user_stream-shaped integration without a rewrite.",
     args: [
@@ -1040,7 +1066,9 @@ export const TOOL_OVERRIDES = [
     name: "twitter_x_user_stream_remove_user",
     endpoint: "/oapi/x_user_stream/remove_user_to_monitor_tweet",
     method: "POST",
-    write: true, destructive: true,
+    write: true, destructive: true, jsonBody: true,
+    // Fixed 2026-08-16, same root cause: removeUserToMonitorTweetRoute
+    // (getxapi-stream-compat.ts) reads only c.req.json(), no query fallback.
     description:
       "Compat drop-in for twitter_monitor_delete using an x_user_stream-shaped envelope: stop watching an account. Irreversible. Free per call.",
     args: [
@@ -1060,7 +1088,9 @@ export const TOOL_OVERRIDES = [
     name: "twitter_monitor_webhook_create",
     endpoint: "/webhook",
     method: "POST",
-    write: true,
+    write: true, jsonBody: true,
+    // Fixed 2026-08-16, same root cause: createWebhookRoute (webhook.ts)
+    // reads only c.req.json(), no query fallback.
     description:
       "Register an HTTPS endpoint to receive signed monitor events. The HMAC signing secret is returned ONLY in this response, store it immediately: it cannot be retrieved again, and it is what you use to verify the X-TwitterAPIs-Signature header on every delivery. Free per call.",
     args: [
