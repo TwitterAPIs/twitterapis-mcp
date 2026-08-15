@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.3 (2026-08-15)
+
+### Added
+
+- **`twitter_monitor_account_health`** (task #111): account-wide monitoring rollup in ONE call, distinct from `twitter_monitor_health` (which needs an id and reports one monitor's cursor): service status ("operational" or "degraded"), active/paused/total counts across every monitor you own, and pending/delivered/failed delivery counts from the last 24 hours. Takes no arguments. A key with zero monitors gets zeroed counts back, never an error. Free per call. The catalog is now **75 tools: 46 reads and 29 write actions**.
+
 ## 0.7.2 (2026-08-14)
 
 ### Added
