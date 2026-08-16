@@ -26,9 +26,10 @@
     "build": "node scripts/gen-tools.mjs --write",
     "build:check": "node scripts/gen-tools.mjs --check",
     "openapi:refresh": "node scripts/openapi-refresh.mjs",
-    "test": "node scripts/gen-tools.mjs --check && node test/gen-tools-endpoints.mjs && node test/catalog-identity.mjs && node test/tools.test.mjs && node test/smoke.mjs && node test/openapi-parity.mjs && node test/readme-parity.mjs && node test/firewall.mjs && node test/registry-manifests.mjs",
+    "test": "node scripts/gen-tools.mjs --check && node test/gen-tools-endpoints.mjs && node test/catalog-identity.mjs && node test/tools.test.mjs && node test/smoke.mjs && node test/openapi-parity.mjs && node test/body-mode-parity.mjs && node test/readme-parity.mjs && node test/firewall.mjs && node test/registry-manifests.mjs",
     "prepublishOnly": "npm test && node test/publish-provenance.mjs",
     "check:openapi-parity": "node test/openapi-parity.mjs",
+    "check:body-mode-parity": "node test/body-mode-parity.mjs",
     "check:firewall": "node test/firewall.mjs",
     "check:registry": "node test/registry-manifests.mjs",
     "check:publish-provenance": "node test/publish-provenance.mjs"
