@@ -3,7 +3,7 @@
   "name": "io.github.TwitterAPIs/twitterapis-mcp",
   "title": "TwitterAPIs",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "websiteUrl": "https://www.twitterapis.com/mcp",
   "repository": {
     "url": "https://github.com/TwitterAPIs/twitterapis-mcp",
@@ -13,7 +13,7 @@
     {
       "registryType": "npm",
       "identifier": "@twitterapis/mcp",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "transport": {
         "type": "stdio"
       },

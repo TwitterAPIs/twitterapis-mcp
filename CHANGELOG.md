@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.7 (2026-08-16)
+
+### Added
+
+- **`twitter_spaces_info`** (GET /twitter/spaces/info): metadata and the participant roster for one X Space, live or ended. Returns title, lifecycle state (`Scheduled` / `NotStarted` / `Running` / `Ended`), content type (`audio`, or `visual_audio` when the host enabled video), the host profile, topics, the wrapper tweet, scheduled and actual start/end times, peak live listener count, replay view count, and the admin, speaker and listener rosters. Takes the Space id from a `x.com/i/spaces/<id>` URL. Two things worth knowing before you read a response as wrong: X does NOT retain the per-person listener roster once a Space ends, so `listeners` comes back empty for an ended Space while `total_live_listeners` (peak concurrent) and `total_replay_watched` still reflect the real audience, and `admins` and `speakers` do survive; and every timestamp is a millisecond-epoch number, because X sends `started_at` as a number and `ended_at` as a string in the same payload and both are normalised so you can subtract them directly. Returns metadata only, not the Space audio.
+- **`twitter_article_update_cover_media`** (POST /twitter/article/update_cover_media): attach an already-uploaded image as a draft or published article's cover, completing the article write set. This attaches, it does not upload: call `twitter_media_upload` first and pass the `media_id` it returns. `media_category` defaults to `DraftTweetImage`, which is what X's own article editor sends. 78 tools now: 48 reads and 30 writes.
+
 ## 0.7.6 (2026-08-16)
 
 ### Added

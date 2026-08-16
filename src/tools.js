@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 76 tools (47 reads, 29 writes).
+// Catalog: 78 tools (48 reads, 30 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -464,6 +464,23 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
+  },
+  {
+    name: "twitter_spaces_info",
+    path: "/twitter/spaces/info",
+    description:
+      "Get metadata and the participant roster for one X Space by id, live or ended: title, lifecycle state (Scheduled, NotStarted, Running or Ended), host, topics, scheduled and actual start/end times, peak live listener count, replay view count, and the admin, speaker and listener rosters. Returns metadata only, NOT the Space audio. Note that X does not retain the per-person listener roster once a Space ends, so listeners comes back empty for an ended Space while total_live_listeners and total_replay_watched still reflect the real audience. All timestamps are millisecond-epoch numbers.",
+    shape: {
+      id: z.string().describe(
+        "The Space id: the trailing token of a x.com/i/spaces/<id> URL, e.g. '1RKZzjkoYRAKB'. A '/peek' suffix on the URL is not part of the id.",
+      ),
+      with_listeners: z.string().optional().describe(
+        "Optional. Include the listener roster. Defaults to true. X drops this roster once a Space ends, so it is empty for an ended Space regardless of this flag.",
+      ),
+      with_replays: z.string().optional().describe(
+        "Optional. Include replay availability and related metadata. Defaults to true.",
       ),
     },
   },
@@ -1155,6 +1172,37 @@ export const TOOLS = [
     description:
       "Start a new DRAFT article ('Note') AS your authenticated account. No input required. Returns the new article's id (pass this to twitter_article_update_title / twitter_article_update_content / twitter_article_publish / twitter_article_delete) and its full article object. Requires an authenticated session with write capability behind your key.",
     shape: {
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_article_update_cover_media",
+    path: "/twitter/article/update_cover_media",
+    method: "POST",
+    write: true,
+    description:
+      "Attach an ALREADY-UPLOADED image as the cover of a DRAFT or PUBLISHED article, AS your authenticated account. This does NOT upload: call twitter_media_upload first and pass the media_id it returns. Provide the article's id (from twitter_article_create or twitter_article_list). Requires an authenticated session with write capability behind your key. Returns the updated article object with cover_media populated.",
+    shape: {
+      id: z.string().describe(
+        "The article's entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789').",
+      ),
+      media_id: z.string().describe(
+        "The media id returned by twitter_media_upload for the image to use as the cover.",
+      ),
+      media_category: z.string().optional().describe(
+        "Optional. X's media category for the upload. Defaults to 'DraftTweetImage', which is what X's own article editor sends for a cover image. Only set this if you know X expects a different category.",
+      ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
       ),
