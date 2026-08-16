@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.6 (2026-08-16)
+
+### Added
+
+- **`twitter_user_status`** (GET /twitter/user/status): check whether a Twitter/X account is alive, suspended, or deleted. Returns `status` as one of `alive` / `suspended` / `not_found` / `unavailable`, plus the numeric `id` when the account is alive and X's own `reason` when it gives one. Use it instead of `twitter_user_info` when the question is whether an account still exists: user info answers a suspended account, a deleted account, and a handle that never existed all the same way, so it cannot tell a ban from a typo. Every outcome is a successful response, so read the `status` field rather than treating a suspension as an error. A protected (private) account counts as alive. 76 tools now: 47 reads and 29 writes.
+
 ## 0.7.5 (2026-08-16)
 
 ### Fixed

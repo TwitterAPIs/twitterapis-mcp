@@ -20,8 +20,10 @@ const writes = TOOLS.filter((t) => t.write);
 // Keep the exact counts, they are what catches an accidentally DELETED tool,
 // which no other gate here would notice. Bump them deliberately in the same
 // commit that adds or removes a tool.
-const EXPECTED_TOOLS = 75;
-const EXPECTED_READS = 46;
+// Bumped 75 -> 76 on 2026-08-16 with twitter_user_status (GET /user/status), per
+// the rule directly above: bump deliberately, in the same commit as the tool.
+const EXPECTED_TOOLS = 76;
+const EXPECTED_READS = 47;
 const EXPECTED_WRITES = 29;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
