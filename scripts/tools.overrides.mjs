@@ -398,6 +398,23 @@ export const TOOL_OVERRIDES = [
   },
   // ── Reads: trends ──────────────────────────────────────────────────────────
   {
+    name: "twitter_spaces_info",
+    endpoint: "/spaces/info",
+    description:
+      "Get metadata and the participant roster for one X Space by id, live or ended: title, lifecycle state (Scheduled, NotStarted, Running or Ended), host, topics, scheduled and actual start/end times, peak live listener count, replay view count, and the admin, speaker and listener rosters. Returns metadata only, NOT the Space audio. Note that X does not retain the per-person listener roster once a Space ends, so listeners comes back empty for an ended Space while total_live_listeners and total_replay_watched still reflect the real audience. All timestamps are millisecond-epoch numbers.",
+    args: [
+      { name: "id",
+        describe:
+          "The Space id: the trailing token of a x.com/i/spaces/<id> URL, e.g. '1RKZzjkoYRAKB'. A '/peek' suffix on the URL is not part of the id." },
+      { name: "with_listeners", optional: true,
+        describe:
+          "Optional. Include the listener roster. Defaults to true. X drops this roster once a Space ends, so it is empty for an ended Space regardless of this flag." },
+      { name: "with_replays", optional: true,
+        describe:
+          "Optional. Include replay availability and related metadata. Defaults to true." },
+    ],
+  },
+  {
     name: "twitter_trends",
     endpoint: "/trends",
     description:
@@ -831,6 +848,25 @@ export const TOOL_OVERRIDES = [
     description:
       "Start a new DRAFT article ('Note') AS your authenticated account. No input required. Returns the new article's id (pass this to twitter_article_update_title / twitter_article_update_content / twitter_article_publish / twitter_article_delete) and its full article object. Requires an authenticated session with write capability behind your key.",
     args: [
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_update_cover_media",
+    endpoint: "/article/update_cover_media",
+    write: true,
+    description:
+      "Attach an ALREADY-UPLOADED image as the cover of a DRAFT or PUBLISHED article, AS your authenticated account. This does NOT upload: call twitter_media_upload first and pass the media_id it returns. Provide the article's id (from twitter_article_create or twitter_article_list). Requires an authenticated session with write capability behind your key. Returns the updated article object with cover_media populated.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789')." },
+      { name: "media_id",
+        describe:
+          "The media id returned by twitter_media_upload for the image to use as the cover." },
+      { name: "media_category", optional: true,
+        describe:
+          "Optional. X's media category for the upload. Defaults to 'DraftTweetImage', which is what X's own article editor sends for a cover image. Only set this if you know X expects a different category." },
       "@INLINE",
     ],
   },

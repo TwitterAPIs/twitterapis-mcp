@@ -1,5 +1,5 @@
 {
-  "toolCount": 76,
+  "toolCount": 78,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -26,6 +26,7 @@
     "twitter_tweet_thread",
     "twitter_tweet_retweeters",
     "twitter_list_members",
+    "twitter_spaces_info",
     "twitter_trends",
     "twitter_trends_locations",
     "twitter_account_me",
@@ -56,6 +57,7 @@
     "twitter_media_upload",
     "twitter_media_status",
     "twitter_article_create",
+    "twitter_article_update_cover_media",
     "twitter_article_update_title",
     "twitter_article_update_content",
     "twitter_article_publish",
@@ -998,6 +1000,43 @@
         },
         "required": [
           "list_id"
+        ]
+      }
+    },
+    "twitter_spaces_info": {
+      "name": "twitter_spaces_info",
+      "path": "/twitter/spaces/info",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get metadata and the participant roster for one X Space by id, live or ended: title, lifecycle state (Scheduled, NotStarted, Running or Ended), host, topics, scheduled and actual start/end times, peak live listener count, replay view count, and the admin, speaker and listener rosters. Returns metadata only, NOT the Space audio. Note that X does not retain the per-person listener roster once a Space ends, so listeners comes back empty for an ended Space while total_live_listeners and total_replay_watched still reflect the real audience. All timestamps are millisecond-epoch numbers.",
+      "args": [
+        "id",
+        "with_listeners",
+        "with_replays"
+      ],
+      "required": [
+        "id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The Space id: the trailing token of a x.com/i/spaces/<id> URL, e.g. '1RKZzjkoYRAKB'. A '/peek' suffix on the URL is not part of the id."
+          },
+          "with_listeners": {
+            "description": "Optional. Include the listener roster. Defaults to true. X drops this roster once a Space ends, so it is empty for an ended Space regardless of this flag.",
+            "type": "string"
+          },
+          "with_replays": {
+            "description": "Optional. Include replay availability and related metadata. Defaults to true.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
         ]
       }
     },
@@ -2286,6 +2325,65 @@
             "type": "string"
           }
         }
+      }
+    },
+    "twitter_article_update_cover_media": {
+      "name": "twitter_article_update_cover_media",
+      "path": "/twitter/article/update_cover_media",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Attach an ALREADY-UPLOADED image as the cover of a DRAFT or PUBLISHED article, AS your authenticated account. This does NOT upload: call twitter_media_upload first and pass the media_id it returns. Provide the article's id (from twitter_article_create or twitter_article_list). Requires an authenticated session with write capability behind your key. Returns the updated article object with cover_media populated.",
+      "args": [
+        "id",
+        "media_id",
+        "media_category",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "id",
+        "media_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The article's entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789')."
+          },
+          "media_id": {
+            "type": "string",
+            "description": "The media id returned by twitter_media_upload for the image to use as the cover."
+          },
+          "media_category": {
+            "description": "Optional. X's media category for the upload. Defaults to 'DraftTweetImage', which is what X's own article editor sends for a cover image. Only set this if you know X expects a different category.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "media_id"
+        ]
       }
     },
     "twitter_article_update_title": {

@@ -53,6 +53,10 @@
       "description": "Read what is trending on Twitter/X right now, worldwide or for a single country, plus the full set of locations trends are available for."
     },
     {
+      "name": "Spaces",
+      "description": "Read an X Space by id: title, host, speakers, topics, timing and audience counts, for a Space that is scheduled, running or already ended."
+    },
+    {
       "name": "Write Actions",
       "description": "Act on behalf of an authenticated account: like, retweet, bookmark, and follow, each with its undo. Billed at $0.0008 per call, the same as a standard read."
     },
@@ -8388,6 +8392,344 @@
         }
       }
     },
+    "/spaces/info": {
+      "get": {
+        "operationId": "spaces-info",
+        "summary": "Space Info",
+        "description": "Look up a single X Space by its id and get back its title, lifecycle state, host, topics, timing, audience counts and its admin, speaker and listener roster. Works for a Space that is scheduled, running or already ended. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Spaces"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/spaces/info?id=1RKZzjkoYRAKB\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/spaces/info\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"id\": \"1RKZzjkoYRAKB\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/spaces/info\");\nurl.search = new URLSearchParams({ id: \"1RKZzjkoYRAKB\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metadata and participant roster for one X Space, live or ended.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "space": {
+                      "type": "object",
+                      "description": "The Space, or null with a 404 when the id resolves to nothing.",
+                      "additionalProperties": true
+                    },
+                    "space.id": {
+                      "type": "string",
+                      "description": "The Space id, echoed back."
+                    },
+                    "space.title": {
+                      "type": "string",
+                      "description": "The Space title as set by the host."
+                    },
+                    "space.state": {
+                      "type": "string",
+                      "description": "X's lifecycle value: Scheduled, NotStarted, Running or Ended."
+                    },
+                    "space.content_type": {
+                      "type": "string",
+                      "description": "audio for an audio-only Space, visual_audio when the host enabled video."
+                    },
+                    "space.media_key": {
+                      "type": "string",
+                      "description": "X's internal media key for the Space recording."
+                    },
+                    "space.created_at": {
+                      "type": "object",
+                      "description": "Millisecond epoch. Every timestamp on this object is a number, including ended_at, which X itself sends as a string.",
+                      "additionalProperties": true
+                    },
+                    "space.scheduled_start": {
+                      "type": "object",
+                      "description": "Millisecond epoch the host scheduled the Space to begin. 0 when absent.",
+                      "additionalProperties": true
+                    },
+                    "space.started_at": {
+                      "type": "object",
+                      "description": "Millisecond epoch the Space actually began. 0 when it has not started.",
+                      "additionalProperties": true
+                    },
+                    "space.ended_at": {
+                      "type": "object",
+                      "description": "Millisecond epoch the Space ended. 0 while it is still running.",
+                      "additionalProperties": true
+                    },
+                    "space.total_live_listeners": {
+                      "type": "object",
+                      "description": "Peak concurrent listeners while the Space was live.",
+                      "additionalProperties": true
+                    },
+                    "space.total_replay_watched": {
+                      "type": "object",
+                      "description": "Cumulative replay views after the Space ended.",
+                      "additionalProperties": true
+                    },
+                    "space.is_space_available_for_replay": {
+                      "type": "boolean",
+                      "description": "Whether a replay is available."
+                    },
+                    "space.is_space_available_for_clipping": {
+                      "type": "boolean",
+                      "description": "Whether clipping is permitted."
+                    },
+                    "space.topics": {
+                      "type": "object",
+                      "description": "Topics the host tagged, each { topic_id, name }.",
+                      "additionalProperties": true
+                    },
+                    "space.creator": {
+                      "type": "object",
+                      "description": "The host's full user profile.",
+                      "additionalProperties": true
+                    },
+                    "space.tweet": {
+                      "type": "object",
+                      "description": "The wrapper tweet X mints so the Space can be shared, or null.",
+                      "additionalProperties": true
+                    },
+                    "space.community_id": {
+                      "type": "string",
+                      "description": "Set when the Space is hosted inside a Community, otherwise null."
+                    },
+                    "space.mentioned_user_ids": {
+                      "type": "object",
+                      "description": "User ids X lists as mentioned by the Space. Ids only, not profiles.",
+                      "additionalProperties": true
+                    },
+                    "space.admins": {
+                      "type": "object",
+                      "description": "Hosts and co-hosts, each { user_id, screen_name, display_name, avatar_url, periscope_user_id, is_verified, is_muted_by_admin, is_muted_by_guest, community_role, start }.",
+                      "additionalProperties": true
+                    },
+                    "space.speakers": {
+                      "type": "object",
+                      "description": "Speakers, same shape as admins.",
+                      "additionalProperties": true
+                    },
+                    "space.listeners": {
+                      "type": "object",
+                      "description": "Listeners, same shape as admins. Empty for an ended Space: X drops this roster once a Space finishes, while the audience counts above survive.",
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "example": {
+                  "space": {
+                    "id": "1RKZzjkoYRAKB",
+                    "title": "TIME TO BUILD!",
+                    "state": "Ended",
+                    "content_type": "visual_audio",
+                    "media_key": "28_2042268179733643265",
+                    "created_at": 1775749652198,
+                    "scheduled_start": 1775840400000,
+                    "started_at": 1775840398722,
+                    "ended_at": 1775842790853,
+                    "updated_at": 1775842791870,
+                    "total_live_listeners": 264,
+                    "total_replay_watched": 6290,
+                    "is_space_available_for_replay": true,
+                    "is_space_available_for_clipping": true,
+                    "is_locked": false,
+                    "is_muted": false,
+                    "is_employee_only": false,
+                    "no_incognito": false,
+                    "disallow_join": false,
+                    "is_subscribed": false,
+                    "max_admin_capacity": 3,
+                    "max_guest_sessions": 10,
+                    "narrow_cast_space_type": 0,
+                    "conversation_controls": 0,
+                    "topics": [
+                      {
+                        "topic_id": "848920371311001600",
+                        "name": "Technology"
+                      },
+                      {
+                        "topic_id": "857879302733418496",
+                        "name": "Entrepreneurship"
+                      }
+                    ],
+                    "creator": {
+                      "id": "825531272621654016",
+                      "username": "TheBestOfAdam",
+                      "name": "Adam Soccolich"
+                    },
+                    "tweet": {
+                      "id": "2042648800989233184",
+                      "text": "https://t.co/TARX17sERY"
+                    },
+                    "community_id": "1471580197908586507",
+                    "mentioned_user_ids": [
+                      "1254214946751049729"
+                    ],
+                    "admins": [
+                      {
+                        "user_id": "825531272621654016",
+                        "screen_name": "TheBestOfAdam",
+                        "display_name": "Adam Soccolich",
+                        "avatar_url": "https://pbs.twimg.com/profile_images/...",
+                        "periscope_user_id": "1WLERGNWdqRQb",
+                        "is_verified": true,
+                        "is_muted_by_admin": false,
+                        "is_muted_by_guest": false,
+                        "community_role": "Moderator",
+                        "start": 1775840398860
+                      }
+                    ],
+                    "speakers": [],
+                    "listeners": []
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "The Space id, the trailing token in a x.com/i/spaces/<id> URL. 5-32 alphanumeric characters.",
+            "schema": {
+              "type": "string",
+              "description": "The Space id, the trailing token in a x.com/i/spaces/<id> URL. 5-32 alphanumeric characters.",
+              "example": "1RKZzjkoYRAKB"
+            },
+            "example": "1RKZzjkoYRAKB"
+          },
+          {
+            "name": "with_listeners",
+            "in": "query",
+            "required": false,
+            "description": "Include the listener roster. Defaults to true. X does not retain this roster after a Space ends, so it comes back empty for an ended Space regardless of this flag.",
+            "schema": {
+              "type": "boolean",
+              "description": "Include the listener roster. Defaults to true. X does not retain this roster after a Space ends, so it comes back empty for an ended Space regardless of this flag.",
+              "example": "true"
+            },
+            "example": "true"
+          },
+          {
+            "name": "with_replays",
+            "in": "query",
+            "required": false,
+            "description": "Include replay availability and related metadata. Defaults to true.",
+            "schema": {
+              "type": "boolean",
+              "description": "Include replay availability and related metadata. Defaults to true.",
+              "example": "true"
+            },
+            "example": "true"
+          }
+        ]
+      }
+    },
     "/media/upload": {
       "post": {
         "operationId": "media-upload",
@@ -10980,6 +11322,226 @@
                 "required": [
                   "id",
                   "title"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/article/update_cover_media": {
+      "post": {
+        "operationId": "article-update-cover-media",
+        "summary": "Update Article Cover Image",
+        "description": "Set the cover image on an article you own, identified by its entity id. This attaches media you have already uploaded; it does not upload anything itself, so call media/upload first and pass the media_id it returns. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "tags": [
+          "Articles"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/article/update_cover_media\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"media_id\": \"2088949698573090816\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/article/update_cover_media\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"media_id\": \"2088949698573090816\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/article/update_cover_media\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", media_id: \"2088949698573090816\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attach an uploaded image as an article's cover.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the cover image was attached."
+                    },
+                    "article": {
+                      "type": "object",
+                      "description": "The updated article, full shape, with cover_media now populated: id, rest_id, title, preview_text, lifecycle, content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting, tweet_id, public_url.",
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "article": {
+                    "id": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4",
+                    "rest_id": "2086650228950683648",
+                    "title": "Why we rebuilt our onboarding from scratch",
+                    "preview_text": "",
+                    "lifecycle": "Draft",
+                    "content_state": {
+                      "blocks": [],
+                      "entityMap": []
+                    },
+                    "cover_media": {
+                      "id": "QXBpTWVkaWE6...",
+                      "media_id": "2088949698573090816",
+                      "media_key": "3_2088949698573090816",
+                      "original_img_url": "https://pbs.twimg.com/media/....jpg",
+                      "original_img_width": 1600,
+                      "original_img_height": 900,
+                      "color_palette": []
+                    },
+                    "media_entities": [],
+                    "author": {
+                      "id": "44196397",
+                      "username": "elonmusk",
+                      "name": "Elon Musk"
+                    },
+                    "created_at_secs": 1786400000,
+                    "modified_at_secs": 1786400300,
+                    "first_published_at_secs": null,
+                    "visibility_setting": null,
+                    "tweet_id": null,
+                    "public_url": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "The article's base64 entity id, returned by article/create or article/list (the id field, not rest_id).",
+                    "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
+                  },
+                  "media_id": {
+                    "type": "string",
+                    "description": "The media id returned by media/upload for the image you want to use as the cover.",
+                    "example": "2088949698573090816"
+                  },
+                  "media_category": {
+                    "type": "string",
+                    "description": "X's media category for the upload. Defaults to DraftTweetImage, which is what the X article editor itself sends. Only override this if you know X expects a different category for your media.",
+                    "example": "DraftTweetImage"
+                  }
+                },
+                "required": [
+                  "id",
+                  "media_id"
                 ]
               }
             }
@@ -14799,6 +15361,34 @@
                       }
                     }
                   }
+                }
+              },
+              "symbols": {
+                "type": "array",
+                "description": "Cashtag entities ($TSLA-style) in the tweet text.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "description": "The cashtag text without the leading $."
+                    },
+                    "indices": {
+                      "type": "array",
+                      "description": "Start/end character offsets in the tweet text.",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              },
+              "timestamps": {
+                "type": "array",
+                "description": "Date/time entities X extracts from the tweet text. Forwarded verbatim from X rather than remapped, so the member shape is whatever X sends and may gain fields without notice. Treat it as opaque unless you have verified the shape yourself.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
                 }
               },
               "urls": {

@@ -91,7 +91,7 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-76 tools: 47 reads and 29 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`); the 14 monitoring tools are also free (account administration, not metered reads).
+78 tools: 48 reads and 30 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`); the 14 monitoring tools are also free (account administration, not metered reads).
 
 Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **most write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark, monitor/webhook delete) are annotated `destructiveHint: true` so MCP clients can prompt before running them. The **monitoring** tools (see below) are the one exception: they administer your twitterapis.com account, not an X session, so they need only your API key, no linked session and no inline credentials.
 
@@ -133,6 +133,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_bookmark_folder_timeline` | Tweets inside one of your bookmark folders, by `folder_id` _(session)_ |
 | `twitter_dm_list` | Your DM conversations (inbox), read-only _(session)_ |
 | `twitter_dm_conversation` | Messages in one DM conversation, read-only _(session)_ |
+| `twitter_spaces_info` | Metadata and participant roster for one X Space, live or ended (by Space `id`) |
 | `twitter_trends` | Current top trends for a location (by `country` or `woeid`) |
 | `twitter_trends_locations` | Every location X has trends for, each with its WOEID |
 | `twitter_account_me` | Your twitterapis.com account: credits, usage, email (free) |
@@ -160,6 +161,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 |---|---|
 | `twitter_article_create` | Start a new draft article, returns its `id` |
 | `twitter_article_update_title` | Set a draft or published article's title |
+| `twitter_article_update_cover_media` | Attach an already-uploaded image as an article's cover (`media_id` from `twitter_media_upload`) |
 | `twitter_article_update_content` | Replace a draft or published article's body (Draft.js `content_state` you build) |
 | `twitter_article_publish` | Publish a draft, posting a **real public announcement tweet** (not fully reversible) |
 | `twitter_article_unpublish` | Revert a published article to draft (leaves the announcement tweet up) |
@@ -265,7 +267,7 @@ count: 50
 
 ## Pricing
 
-Calls are billed to your twitterapis.com account. Almost every endpoint is $0.0008/call: all reads (search, profiles, tweets, followers, likes) plus the simple write actions (like, retweet, bookmark, follow and their undos, delete). At the read rate that works out to $0.04 per 1,000 tweets, since each call returns about 20 tweets. The premium endpoints cost a little more: tweet creation, sending a DM (`twitter_dm_send`), and DM reads (`twitter_dm_list`, `twitter_dm_conversation`) at $0.0016/call, full tweet history (`twitter_user_tweets_complete`) at $0.0024/call, a full tweet thread (`twitter_tweet_thread`) at $0.004/call, and the article-editing writes (`twitter_article_create`, `twitter_article_update_title`, `twitter_article_update_content`, `twitter_article_publish`, `twitter_article_unpublish`) at $0.0016/call (`twitter_article_get`, `twitter_article_list`, and `twitter_article_delete` stay at the standard $0.0008/call). Your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing).
+Calls are billed to your twitterapis.com account. Almost every endpoint is $0.0008/call: all reads (search, profiles, tweets, followers, likes) plus the simple write actions (like, retweet, bookmark, follow and their undos, delete). At the read rate that works out to $0.04 per 1,000 tweets, since each call returns about 20 tweets. The premium endpoints cost a little more: tweet creation, sending a DM (`twitter_dm_send`), and DM reads (`twitter_dm_list`, `twitter_dm_conversation`) at $0.0016/call, full tweet history (`twitter_user_tweets_complete`) at $0.0024/call, a full tweet thread (`twitter_tweet_thread`) at $0.004/call, and the article-editing writes (`twitter_article_create`, `twitter_article_update_title`, `twitter_article_update_cover_media`, `twitter_article_update_content`, `twitter_article_publish`, `twitter_article_unpublish`) at $0.0016/call (`twitter_article_get`, `twitter_article_list`, and `twitter_article_delete` stay at the standard $0.0008/call). Your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing).
 
 ## Links
 
@@ -278,7 +280,7 @@ Calls are billed to your twitterapis.com account. Almost every endpoint is $0.00
 
 **Do I need an X (Twitter) developer account?** No. Get an API key at [twitterapis.com/signup](https://www.twitterapis.com/signup); there is no application or approval step.
 
-**Is it read-only?** No. 47 read tools work with just your API key; 29 write actions (post, like, retweet, follow, DM, media upload, article create/edit/publish/delete, monitor/webhook create/update/delete) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD, which is account administration and needs only your API key.
+**Is it read-only?** No. 48 read tools work with just your API key; 30 write actions (post, like, retweet, follow, DM, media upload, article create/edit/publish/delete, monitor/webhook create/update/delete) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD, which is account administration and needs only your API key.
 
 **Which clients are supported?** Claude Desktop, Cursor, Windsurf, and VS Code (Copilot agent mode), or any Model Context Protocol client.
 
