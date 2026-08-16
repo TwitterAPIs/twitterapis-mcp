@@ -156,6 +156,17 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    name: "twitter_user_status",
+    endpoint: "/user/status",
+    description:
+      "Check whether a Twitter/X account is alive, suspended, or deleted. Returns a status field that is one of 'alive', 'suspended', 'not_found', or 'unavailable', plus the numeric id when the account is alive and X's own reason when it gives one. Use this instead of twitter_user_info when the QUESTION is whether the account still exists: user info answers a suspended account, a deleted account, and a handle that never existed all the same way, so it cannot tell a ban from a typo. Every outcome here is a successful response, so read the status field rather than treating a suspension as an error. A protected (private) account counts as alive, since protection is a visibility setting and not an account state.",
+    args: [
+      { name: "userName",
+        describe:
+          "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama')." },
+    ],
+  },
+  {
     name: "twitter_user_about",
     endpoint: "/user/user_about",
     description:
