@@ -65,6 +65,10 @@
       "description": "Create, edit, publish, and read X's long-form Articles (X's internal name: Notes). Publishing posts a real announcement tweet; reading a published article is a public call that needs no session."
     },
     {
+      "name": "Grok",
+      "description": "Ask X's own in-app Grok a question and get the answer back with the pages it cited. Grok reads X in real time, so it answers about posts and accounts a general model has never seen. Runs as your account, returns one buffered JSON document rather than a stream, and stores nothing: you pass prior turns back yourself."
+    },
+    {
       "name": "Monitoring",
       "description": "Watch an X account for new posts and get them pushed to your own webhook, HMAC-signed, retried for 21 minutes on failure. Polls on a shared interval and never spends your read credits: monitor and webhook management are free account administration, not metered reads."
     }
@@ -12828,6 +12832,498 @@
                 "required": [
                   "id"
                 ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/grok/chat": {
+      "post": {
+        "operationId": "grok-chat",
+        "summary": "Grok Chat",
+        "description": "Send a prompt to X's in-app Grok as the account behind your session and get back one complete JSON document: the answer text, the web pages Grok cited while writing it, and the searches it ran to find them. Grok reads X in real time, so it answers about posts and accounts a general-purpose model has never seen. Send a bare post URL as the message and you get a structured summary of that post instead, including what Grok reads out of its attached images. Billed at $0.0040 per answer. Cost: $0.0040 per call.",
+        "tags": [
+          "Grok"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.004,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/grok/chat\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"message\": \"What are people on X saying about the WWDC keynote today?\", \"mode\": \"auto\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/grok/chat\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"message\": \"What are people on X saying about the WWDC keynote today?\", \"mode\": \"auto\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/grok/chat\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ message: \"What are people on X saying about the WWDC keynote today?\", mode: \"auto\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Continue a conversation",
+            "source": "# We store nothing, so turn 2 replays turn 1 and passes the conversation id back.\ncurl -X POST \"https://api.twitterapis.com/twitter/grok/chat\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"conversation_id\": \"2088999211077345534\",\n    \"messages\": [\n      { \"role\": \"user\", \"content\": \"What are people on X saying about the WWDC keynote today?\" },\n      { \"role\": \"assistant\", \"content\": \"Reaction is running positive on the on-device model work.\" }\n    ],\n    \"message\": \"Which developer accounts are driving that?\"\n  }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Continue a conversation",
+            "source": "import os\nimport requests\n\nKEY = os.environ[\"TWITTERAPIS_KEY\"]\nURL = \"https://api.twitterapis.com/twitter/grok/chat\"\nHEADERS = {\"Authorization\": f\"Bearer {KEY}\"}\n\nfirst = requests.post(\n    URL,\n    headers=HEADERS,\n    json={\"message\": \"What are people on X saying about the WWDC keynote today?\"},\n)\nfirst.raise_for_status()\nturn1 = first.json()\n\n# Nothing is stored on our side, so you carry the history forward yourself.\nsecond = requests.post(\n    URL,\n    headers=HEADERS,\n    json={\n        \"conversation_id\": turn1[\"conversation_id\"],\n        \"messages\": [\n            {\"role\": \"user\", \"content\": \"What are people on X saying about the WWDC keynote today?\"},\n            {\n                \"role\": \"assistant\",\n                \"content\": turn1[\"answer\"],\n                \"response_id\": turn1[\"response_id\"],\n                \"parent_response_id\": turn1[\"user_response_id\"],\n            },\n        ],\n        \"message\": \"Which developer accounts are driving that?\",\n    },\n)\nsecond.raise_for_status()\nprint(second.json()[\"answer\"])"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Continue a conversation",
+            "source": "const URL = \"https://api.twitterapis.com/twitter/grok/chat\";\nconst headers = {\n  Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n  \"Content-Type\": \"application/json\",\n};\n\nconst first = await (\n  await fetch(URL, {\n    method: \"POST\",\n    headers,\n    body: JSON.stringify({ message: \"What are people on X saying about the WWDC keynote today?\" }),\n  })\n).json();\n\n// Nothing is stored on our side, so you carry the history forward yourself.\nconst second = await (\n  await fetch(URL, {\n    method: \"POST\",\n    headers,\n    body: JSON.stringify({\n      conversation_id: first.conversation_id,\n      messages: [\n        { role: \"user\", content: \"What are people on X saying about the WWDC keynote today?\" },\n        {\n          role: \"assistant\",\n          content: first.answer,\n          response_id: first.response_id,\n          parent_response_id: first.user_response_id,\n        },\n      ],\n      message: \"Which developer accounts are driving that?\",\n    }),\n  })\n).json();\n\nconsole.log(second.answer);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ask X's Grok a question and get the answer plus the pages it cited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when Grok returned answer text. A call that produced no readable answer does not reach you as ok: false, it returns 422 and is not billed."
+                    },
+                    "conversation_id": {
+                      "type": "string",
+                      "description": "The conversation this turn belongs to, whether you supplied it or we opened it. Pass it back on the next call to continue. Null only if X returned no id."
+                    },
+                    "response_id": {
+                      "type": "string",
+                      "description": "The id of GROK's turn (X's agentChatItemId). Pass it back as response_id on that turn inside messages[] to thread the next request exactly."
+                    },
+                    "user_response_id": {
+                      "type": "string",
+                      "description": "The id of the turn YOU just sent (X's userChatItemId). Its counterpart to response_id when you replay history."
+                    },
+                    "answer": {
+                      "type": "string",
+                      "description": "Grok's answer as one complete string. Reasoning and tool chatter are stripped out; this is the reply a person would read."
+                    },
+                    "citations": {
+                      "type": "object",
+                      "description": "The pages Grok read while answering, each { url, domain, title, snippet }. domain is derived from url on our side; X does not send it. title is NOT always present and comes back null when X omits it, so do not filter on it. One answer can cite results from several searches: they are merged in the order they arrived and de-duplicated by url, so you get every distinct source once.",
+                      "additionalProperties": true
+                    },
+                    "citation_count": {
+                      "type": "integer",
+                      "description": "Length of citations, after de-duplication. Convenient for the common case of checking whether a domain appeared at all."
+                    },
+                    "tool_calls": {
+                      "type": "object",
+                      "description": "What Grok actually ran to answer, each { id, tool, args }. The observed tool is web_search, whose args carry the query string and the number of results asked for. This is the search Grok chose, not the prompt you sent.",
+                      "additionalProperties": true
+                    },
+                    "requested_model": {
+                      "type": "string",
+                      "description": "The model id we asked X for, derived from your mode: grok-4-auto, grok-3-latest, or grok-4."
+                    },
+                    "model": {
+                      "type": "string",
+                      "description": "The model that ACTUALLY answered. auto resolves on X's side, so asking for grok-4-auto commonly comes back as grok-4. Read this one when you care which model produced the text."
+                    },
+                    "mode": {
+                      "type": "string",
+                      "description": "The mode this call ran in: auto, fast, or expert. Echoed back so an unrecognised mode value is visible rather than silent."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "conversation_id": "2088999211077345534",
+                  "response_id": "2089001859230978049",
+                  "user_response_id": "2089001859230978048",
+                  "answer": "Reaction on X is running positive on the on-device model work and negative on the pricing. The liveblog thread and several developer accounts flag the new background-execution API as the change most people expect to ship against first.",
+                  "citations": [
+                    {
+                      "url": "https://x.com/verge/status/2089000000000000001",
+                      "domain": "x.com",
+                      "title": "The Verge on X",
+                      "snippet": "Everything announced in the keynote, in order."
+                    },
+                    {
+                      "url": "https://www.theverge.com/wwdc-keynote-liveblog",
+                      "domain": "theverge.com",
+                      "title": "WWDC keynote liveblog",
+                      "snippet": "Live updates as the keynote runs."
+                    },
+                    {
+                      "url": "https://news.ycombinator.com/item?id=41234567",
+                      "domain": "news.ycombinator.com",
+                      "title": null,
+                      "snippet": "Developer discussion of the background-execution API."
+                    }
+                  ],
+                  "citation_count": 3,
+                  "tool_calls": [
+                    {
+                      "id": "5f2b8c1a-9d34-4c77-b0e2-6a1f7c3d8e90",
+                      "tool": "web_search",
+                      "args": {
+                        "query": "WWDC keynote reaction developers",
+                        "num_results": "15"
+                      }
+                    }
+                  ],
+                  "requested_model": "grok-4-auto",
+                  "model": "grok-4",
+                  "mode": "auto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "The prompt. A question, an instruction, or a bare post URL (https://x.com/<user>/status/<id>), which returns a summary of that post. Required unless you send messages[] whose last entry is a user turn. Maximum 20,000 characters; longer prompts are rejected with 400 before any Grok call is made, so an over-length prompt never costs you anything.",
+                    "example": "What are people on X saying about the WWDC keynote today?"
+                  },
+                  "messages": {
+                    "type": "string",
+                    "description": "JSON array of prior turns, oldest first, sent in the request body. Each entry takes either { role: \"user\" | \"assistant\", content } or X's own { sender: 1 | 2, message }, where 1 is you and 2 is Grok, plus the optional response_id and parent_response_id we returned on earlier replies. Anything not explicitly marked as Grok is treated as a user turn. If you omit message, the last entry must be a user turn and becomes the prompt. Maximum 100 prior turns.",
+                    "example": "[{\"role\":\"user\",\"content\":\"Who won the game?\"},{\"role\":\"assistant\",\"content\":\"The Celtics, 112-108.\"}]"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "auto, fast, or expert. auto lets X pick the model, fast is grok-3-latest, expert is grok-4 and thinks for longer. The raw model ids grok-3-latest and grok-4 are accepted as aliases. Anything unrecognised falls back to auto, which is also the default.",
+                    "example": "auto"
+                  },
+                  "conversation_id": {
+                    "type": "string",
+                    "description": "Continue an existing conversation, using the conversation_id from an earlier reply. Omit it and we open a fresh conversation for you and return its id.",
+                    "example": "2088999211077345534"
+                  },
+                  "image_count": {
+                    "type": "integer",
+                    "description": "How many images Grok may generate if the prompt calls for it. Clamped to 0 through 4; the default is 4, which is X's own. Set it to 0 for a text-only answer.",
+                    "example": "4"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/grok/config": {
+      "get": {
+        "operationId": "grok-config",
+        "summary": "Grok Config",
+        "description": "Read the Grok settings for the account behind your session: whether X has enabled Grok for it, the reasons if not, and the model options it is allowed to choose between. Grok eligibility belongs to the X account rather than to us, so this runs as your session and not off our pool. Call it once before your first chat request. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Grok"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/grok/config\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/grok/config\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/grok/config\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Check whether your account can use Grok, and which models it may pick.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "eligible": {
+                      "type": "boolean",
+                      "description": "True when X has Grok enabled for the account behind your session. Read it together with ineligible_reasons: false with an empty reasons array means we could not read the config, not that X refused."
+                    },
+                    "ineligible_reasons": {
+                      "type": "object",
+                      "description": "X's own reason strings, passed through unchanged because we cannot improve on X's reason for refusing its own feature. Empty when the account is eligible, and also empty in the could-not-read case above.",
+                      "additionalProperties": true
+                    },
+                    "free_access_enabled": {
+                      "type": "boolean",
+                      "description": "True when X is currently granting this account Grok access without a paid tier."
+                    },
+                    "default_mode": {
+                      "type": "string",
+                      "description": "The mode X has set as this account's default, in X's own spelling, for example Normal. This is X's label, not one of the auto/fast/expert values Grok Chat takes."
+                    },
+                    "default_model_option_id": {
+                      "type": "string",
+                      "description": "The model id X defaults this account to, for example grok-4-auto."
+                    },
+                    "grok_version": {
+                      "type": "string",
+                      "description": "The Grok version string X reports for this account."
+                    },
+                    "modes": {
+                      "type": "object",
+                      "description": "The map Grok Chat's mode parameter uses: { auto: grok-4-auto, fast: grok-3-latest, expert: grok-4 }. Constant, returned here so you do not have to keep the mapping table in your own code.",
+                      "additionalProperties": true
+                    },
+                    "model_options": {
+                      "type": "object",
+                      "description": "One entry per model X offers this account: id, name (Auto, Fast, Expert), description, mode (MODEL_MODE_AUTO, MODEL_MODE_FAST or MODEL_MODE_EXPERT), is_enabled, is_analyze_enabled, is_enhance_enabled. Empty when the config could not be read.",
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "example": {
+                  "eligible": true,
+                  "ineligible_reasons": [],
+                  "free_access_enabled": false,
+                  "default_mode": "Normal",
+                  "default_model_option_id": "grok-4-auto",
+                  "grok_version": "grok-4-auto",
+                  "modes": {
+                    "auto": "grok-4-auto",
+                    "fast": "grok-3-latest",
+                    "expert": "grok-4"
+                  },
+                  "model_options": [
+                    {
+                      "id": "grok-4-auto",
+                      "name": "Auto",
+                      "description": "Picks the model that suits the question.",
+                      "mode": "MODEL_MODE_AUTO",
+                      "is_enabled": true,
+                      "is_analyze_enabled": false,
+                      "is_enhance_enabled": false
+                    },
+                    {
+                      "id": "grok-3-latest",
+                      "name": "Fast",
+                      "description": "Answers quickly.",
+                      "mode": "MODEL_MODE_FAST",
+                      "is_enabled": true,
+                      "is_analyze_enabled": true,
+                      "is_enhance_enabled": true
+                    },
+                    {
+                      "id": "grok-4",
+                      "name": "Expert",
+                      "description": "Thinks for longer before answering.",
+                      "mode": "MODEL_MODE_EXPERT",
+                      "is_enabled": true,
+                      "is_analyze_enabled": false,
+                      "is_enhance_enabled": false
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
               }
             }
           }
