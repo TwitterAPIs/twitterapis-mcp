@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.8 (2026-08-16)
+
+### Added
+
+- **`twitter_grok_chat`** (POST /twitter/grok/chat): ask X's own Grok a question as your authenticated account and get one complete JSON reply with the answer plus the sources it cited. Unlike a general LLM, Grok reads X in real time, so it can answer about what is being said right now, and passing a bare tweet or status URL as the message returns a structured summary of that post. Citations come back as `{url, title, snippet}`, merged and de-duplicated across every search Grok ran in that answer, and `title` is not always present. The response also reports the model that ACTUALLY answered, which can differ from the mode you asked for. Buffered, not streamed. STATELESS: nothing is stored on our side, so to continue a conversation you pass the prior turns back in `messages[]` with the `conversation_id`. $0.004 per answer, the same tier as `twitter_tweet_thread`, priced on our connection-holding cost rather than on model tokens, since the inference runs on your own X account.
+- **`twitter_grok_config`** (GET /twitter/grok/config): whether the authenticated account can use Grok, X's own reasons when it cannot, and the model options available. Eligibility is a property of the X ACCOUNT rather than of the API key, so ask it about the same account you intend to run `twitter_grok_chat` as. Free. 80 tools now: 49 reads and 31 writes.
+
 ## 0.7.7 (2026-08-16)
 
 ### Added

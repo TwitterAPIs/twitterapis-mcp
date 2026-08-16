@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 78 tools (48 reads, 30 writes).
+// Catalog: 80 tools (49 reads, 31 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -481,6 +481,63 @@ export const TOOLS = [
       ),
       with_replays: z.string().optional().describe(
         "Optional. Include replay availability and related metadata. Defaults to true.",
+      ),
+    },
+  },
+  {
+    name: "twitter_grok_chat",
+    path: "/twitter/grok/chat",
+    method: "POST",
+    write: true,
+    description:
+      "Ask X's own Grok a question AS your authenticated account, and get ONE complete JSON reply with the answer plus the sources it cited. Unlike a general LLM, Grok reads X in real time, so it can answer about what is being said right now, and passing a bare tweet or status URL as the message returns a structured summary of that post. Returns answer text, citations (url, title, snippet) merged and de-duplicated across every search Grok ran, the searches themselves, and the model that ACTUALLY answered (which can differ from the one you asked for). Buffered, not streamed. STATELESS: nothing is stored, so to continue a conversation pass the prior turns back in messages[] along with conversation_id. Requires an authenticated session for the acting account.",
+    shape: {
+      message: z.string().optional().describe(
+        "The prompt, for a single-turn question. A bare tweet or status URL is a first-class input and comes back as a summary of that post. Provide either this or messages[].",
+      ),
+      messages: z.string().optional().describe(
+        "Prior turns for a multi-turn conversation, oldest first, each { role: 'user' | 'grok', content: '...' }. The endpoint stores nothing, so the full history you want Grok to see must travel in this array. Provide either this or message.",
+      ),
+      conversation_id: z.string().optional().describe(
+        "Conversation id returned by a previous call. Omit on the first turn and one is created for you.",
+      ),
+      mode: z.string().optional().describe(
+        "Which Grok to use: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports the model that actually answered, which can differ from the mode requested.",
+      ),
+      image_count: z.number().int().optional().describe(
+        "How many images Grok may generate if the prompt calls for one. Defaults to the value X's own client sends. Set 0 for a text-only answer.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_grok_config",
+    path: "/twitter/grok/config",
+    description:
+      "Check whether the authenticated account can use Grok, and which models it may pick. Returns eligibility, X's own reasons when it is NOT eligible (passed through verbatim, since we cannot know X's policy), whether free access is enabled, and the available model options. Eligibility is a property of the X ACCOUNT rather than of the API key, so ask this about the same account you intend to run twitter_grok_chat as. Free.",
+    shape: {
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
       ),
     },
   },

@@ -415,6 +415,40 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    name: "twitter_grok_chat",
+    endpoint: "/grok/chat",
+    write: true,
+    description:
+      "Ask X's own Grok a question AS your authenticated account, and get ONE complete JSON reply with the answer plus the sources it cited. Unlike a general LLM, Grok reads X in real time, so it can answer about what is being said right now, and passing a bare tweet or status URL as the message returns a structured summary of that post. Returns answer text, citations (url, title, snippet) merged and de-duplicated across every search Grok ran, the searches themselves, and the model that ACTUALLY answered (which can differ from the one you asked for). Buffered, not streamed. STATELESS: nothing is stored, so to continue a conversation pass the prior turns back in messages[] along with conversation_id. Requires an authenticated session for the acting account.",
+    args: [
+      { name: "message", optional: true,
+        describe:
+          "The prompt, for a single-turn question. A bare tweet or status URL is a first-class input and comes back as a summary of that post. Provide either this or messages[]." },
+      { name: "messages", optional: true,
+        describe:
+          "Prior turns for a multi-turn conversation, oldest first, each { role: 'user' | 'grok', content: '...' }. The endpoint stores nothing, so the full history you want Grok to see must travel in this array. Provide either this or message." },
+      { name: "conversation_id", optional: true,
+        describe:
+          "Conversation id returned by a previous call. Omit on the first turn and one is created for you." },
+      { name: "mode", optional: true,
+        describe:
+          "Which Grok to use: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports the model that actually answered, which can differ from the mode requested." },
+      { name: "image_count", optional: true,
+        describe:
+          "How many images Grok may generate if the prompt calls for one. Defaults to the value X's own client sends. Set 0 for a text-only answer." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_grok_config",
+    endpoint: "/grok/config",
+    description:
+      "Check whether the authenticated account can use Grok, and which models it may pick. Returns eligibility, X's own reasons when it is NOT eligible (passed through verbatim, since we cannot know X's policy), whether free access is enabled, and the available model options. Eligibility is a property of the X ACCOUNT rather than of the API key, so ask this about the same account you intend to run twitter_grok_chat as. Free.",
+    args: [
+      "@INLINE",
+    ],
+  },
+  {
     name: "twitter_trends",
     endpoint: "/trends",
     description:
