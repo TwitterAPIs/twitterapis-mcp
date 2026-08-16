@@ -385,6 +385,27 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    name: "twitter_tweet_quotes",
+    endpoint: "/tweet/quotes",
+    description:
+      "List the tweets that QUOTE a specific tweet, cursor-paginated as full tweet objects, so you get the commentary people attached rather than just a number. Different from twitter_tweet_retweeters (a plain retweet carries no text) and from twitter_tweet_replies (a reply is not a quote). IMPORTANT, state this to the user whenever you report a number from it: this endpoint is SEARCH-BACKED, because X exposes no dedicated quote-tweets operation, so it runs the query quoted_tweet_id:<id> against X's search index. The returned 'count' is therefore how many quotes THIS SEARCH returned, never the tweet's true total; the authoritative total is 'quote_count' on the tweet object from twitter_tweet_detail, and the two WILL differ because of index lag and because deleted, protected, suspended and region-withheld quotes are absent from search. Every response carries 'source' (always \"search\"), 'search_query' (the exact query sent), and 'quote_matched' (how many returned tweets demonstrably quote the requested id). quote_matched equal to count means every row is genuine; quote_matched 0 on a NON-EMPTY page means X stopped honouring the operator and the rows are junk, so discard that page rather than reporting it.",
+    args: [
+      "@TWEET_REF",
+      { name: "product", enum: ["Latest","Top"],
+        describe:
+          "Search ordering. 'Latest' (default) is reverse-chronological and cheap. 'Top' is X's ranked ordering and is materially slower upstream. Any other value falls back to Latest rather than changing what the tool means." },
+      { name: "strict", type: "boolean",
+        describe:
+          "Set true to DROP every returned row that does not demonstrably quote the requested tweet, instead of only counting them in quote_matched. Default false, because X does not embed the quoted original on every search result, so strict trades a false-positive risk for a false-negative one. Billing follows what you receive, so rows dropped by strict are not charged." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max quote tweets to request for this page. Defaults to 20 and is clamped to 1-100 by the underlying search, so a larger number returns at most 100 rather than erroring." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
     name: "twitter_list_members",
     endpoint: "/list/members",
     description:
@@ -412,6 +433,95 @@ export const TOOL_OVERRIDES = [
       { name: "with_replays", optional: true,
         describe:
           "Optional. Include replay availability and related metadata. Defaults to true." },
+    ],
+  },
+  // ── Reads: communities ─────────────────────────────────────────────────────
+  // Five PUBLIC POOLED reads. They are served by our account pool rather than by
+  // the caller's session, which is why every one of these descriptions states
+  // that role / can_join / is_pinned / viewer_relationship_type come back null:
+  // those four describe the account that made the upstream call, and on a pooled
+  // read that is a rotating account the customer has never heard of. A model
+  // that is not told this will report them to a user as a broken field.
+  {
+    name: "twitter_community_info",
+    endpoint: "/community/info",
+    description:
+      "Get the metadata for one X Community by its numeric id: name, description, member_count, moderator_count, join_policy, invites_policy, the join question, primary topic, search tags, the posted rules, both the custom and the default banner plus a resolved banner_url, the permalink, the admin and creator profiles, and the facepile member ids. The community id is the digits in a x.com/i/communities/<id> URL. IMPORTANT: role, can_join, is_pinned and viewer_relationship_type are ALWAYS null here and that is deliberate, not an error, because they describe the account that made the call and this is a pooled read served by a rotating account. rules[].description is also always null: X sends only the rule id and name on this payload. Use twitter_community_members for the roster and twitter_community_tweets for the posts.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id." },
+    ],
+  },
+  {
+    name: "twitter_community_members",
+    endpoint: "/community/members",
+    description:
+      "List the member roster of an X Community, cursor-paginated, with each row carrying that member's own role in the community: 'Admin', 'Moderator' or 'Member'. Rows are { user, role }. The user object is deliberately REDUCED (id, username, name, profile_image_url, is_blue_verified, verified, is_protected) because X's roster operation sends no bio, no follower or following counts and no created_at; call twitter_user_info with an id when the full profile is needed. Note that the role on a member ROW is NOT caller-relative and is returned in full, unlike the role field on the community object itself. Admins and moderators are interleaved through this list at arbitrary positions, so do NOT derive a moderator list by filtering the first page: use twitter_community_moderators. Paging is a bare next_cursor with no total count from X; stop when members comes back empty or has_more is false.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max roster rows to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns 100 rather than erroring." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. Absence of next_cursor is the only end-of-list signal X gives on this operation." },
+    ],
+  },
+  {
+    name: "twitter_community_moderators",
+    endpoint: "/community/moderators",
+    description:
+      "List the moderators and admins of an X Community, cursor-paginated, in the same { user, role } row shape twitter_community_members returns (the array is also called members, deliberately, so the two cannot drift apart). This is a SEPARATE upstream operation, not a filter over the member roster, and that matters for correctness: moderators sit at arbitrary positions inside the full roster, so filtering one page of twitter_community_members would return 'the moderators among the first 20 members' while looking like a complete answer. Read each row's role rather than assuming every row is a Moderator, since admins appear here too. Paging is a bare next_cursor with no total count from X.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max rows to return for this page. Defaults to 20 and is clamped to 1-100." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
+    name: "twitter_community_tweets",
+    endpoint: "/community/tweets",
+    description:
+      "Read an X Community's own post timeline, cursor-paginated as full tweet objects, with the community's PINNED post returned as its own separate 'pinned' field rather than as an item inside 'tweets'. That split is not cosmetic: X delivers the pinned post under a different timeline instruction and does not repeat it in the feed, so a client that iterates only 'tweets' silently loses it, and it is very often the community's rules post, the single most useful item in the response. To build one flat list, read 'pinned' first if non-null, then 'tweets' (the pinned post is excluded from 'tweets', so there is no duplicate). ranking_mode is a REAL upstream parameter, not a local sort. Use twitter_advanced_search instead when the search should span all of X rather than one community.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'." },
+      { name: "ranking_mode", enum: ["Recency","Relevance"],
+        describe:
+          "Ordering, sent to X as a real request parameter. 'Recency' is the default and the only value confirmed against a live capture. 'Relevance' is accepted because X's own community tab offers exactly two orderings, but it is NOT confirmed live, so do not depend on it. Any other value is rejected with a 400." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max posts to return for this page. Defaults to 20 and is clamped to 1-100." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
+    name: "twitter_community_memberships",
+    endpoint: "/community/memberships",
+    description:
+      "The INVERSE community lookup: given a numeric X USER id, list the communities that account belongs to, cursor-paginated. Every other community tool starts from a community; this one starts from an account, which makes it the tool for profiling which audiences a person sits inside. Each row is the FULL community object (the same shape twitter_community_info returns, with member counts, rules, topic, policies, admin and creator), so no follow-up call per community is needed. Takes a numeric user id ONLY, not a @handle: resolve a handle with twitter_user_info first, because resolving it here would silently cost a second call. An EMPTY communities array is a real, successful answer (the account is in no communities), not a not-found. As on twitter_community_info, role / can_join / is_pinned / viewer_relationship_type are always null on every community returned, because this is a pooled read.",
+    args: [
+      { name: "user_id",
+        describe:
+          "Numeric X user id, e.g. '1281109705495130113'. NOT a @handle and NOT a community id. Resolve a handle to its id with twitter_user_info first." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max communities to return for this page. Defaults to 20 and is clamped to 1-100." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
     ],
   },
   {

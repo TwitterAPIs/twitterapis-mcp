@@ -22,8 +22,11 @@ const writes = TOOLS.filter((t) => t.write);
 // commit that adds or removes a tool.
 // Bumped 75 -> 76 on 2026-08-16 with twitter_user_status (GET /user/status), per
 // the rule directly above: bump deliberately, in the same commit as the tool.
-const EXPECTED_TOOLS = 80;
-const EXPECTED_READS = 49;
+// Bumped 80 -> 86 on 2026-08-16 with the five community reads
+// (twitter_community_info / _members / _moderators / _tweets / _memberships) and
+// twitter_tweet_quotes, all GET reads, so writes are unchanged at 31.
+const EXPECTED_TOOLS = 86;
+const EXPECTED_READS = 55;
 const EXPECTED_WRITES = 31;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
