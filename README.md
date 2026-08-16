@@ -91,7 +91,7 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-80 tools: 49 reads and 31 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`); the 14 monitoring tools are also free (account administration, not metered reads).
+86 tools: 55 reads and 31 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`); the 14 monitoring tools are also free (account administration, not metered reads).
 
 Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **most write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark, monitor/webhook delete) are annotated `destructiveHint: true` so MCP clients can prompt before running them. The **monitoring** tools (see below) are the one exception: they administer your twitterapis.com account, not an X session, so they need only your API key, no linked session and no inline credentials.
 
@@ -123,6 +123,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_tweet_replies` | Replies to a tweet |
 | `twitter_tweet_thread` | Full author thread (connected tweet chain by same author) |
 | `twitter_tweet_retweeters` | Accounts that retweeted a tweet |
+| `twitter_tweet_quotes` | Tweets that quote a tweet, with their text. Search-backed, so `count` is what search returned, not the tweet's true `quote_count` |
 | `twitter_list_members` | Members of a Twitter/X List |
 | `twitter_home_timeline` | Your authenticated account's Home timeline _(session)_ |
 | `twitter_bookmarks` | Your authenticated account's bookmarks _(session)_ |
@@ -134,6 +135,11 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_dm_list` | Your DM conversations (inbox), read-only _(session)_ |
 | `twitter_dm_conversation` | Messages in one DM conversation, read-only _(session)_ |
 | `twitter_spaces_info` | Metadata and participant roster for one X Space, live or ended (by Space `id`) |
+| `twitter_community_info` | One X Community by numeric id: name, counts, join policy, rules, topic, banners, admin |
+| `twitter_community_members` | A community's member roster, each row carrying that member's `Admin` / `Moderator` / `Member` role |
+| `twitter_community_moderators` | A community's moderators and admins, from its own upstream operation (not a filter over the roster) |
+| `twitter_community_tweets` | A community's post timeline, with the pinned post returned as its own `pinned` field |
+| `twitter_community_memberships` | The inverse lookup: every community a given numeric `user_id` belongs to |
 | `twitter_grok_chat` | Ask X's own Grok, grounded in live X data, and get the answer plus the sources it cited |
 | `twitter_grok_config` | Whether the authenticated account can use Grok, and which models it may pick |
 | `twitter_trends` | Current top trends for a location (by `country` or `woeid`) |
@@ -282,7 +288,7 @@ Calls are billed to your twitterapis.com account. Almost every endpoint is $0.00
 
 **Do I need an X (Twitter) developer account?** No. Get an API key at [twitterapis.com/signup](https://www.twitterapis.com/signup); there is no application or approval step.
 
-**Is it read-only?** No. 49 read tools work with just your API key; 31 write actions (post, like, retweet, follow, DM, media upload, article create/edit/publish/delete, monitor/webhook create/update/delete) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD, which is account administration and needs only your API key.
+**Is it read-only?** No. 55 read tools work with just your API key; 31 write actions (post, like, retweet, follow, DM, media upload, article create/edit/publish/delete, monitor/webhook create/update/delete) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD, which is account administration and needs only your API key.
 
 **Which clients are supported?** Claude Desktop, Cursor, Windsurf, and VS Code (Copilot agent mode), or any Model Context Protocol client.
 

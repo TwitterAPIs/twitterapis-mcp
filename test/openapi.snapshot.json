@@ -57,6 +57,10 @@
       "description": "Read an X Space by id: title, host, speakers, topics, timing and audience counts, for a Space that is scheduled, running or already ended."
     },
     {
+      "name": "Communities",
+      "description": "Read an X Community: its metadata and rules, its member and moderator rosters, its own post timeline including the pinned post, and the inverse relation, every community a given account belongs to. These are pooled reads served by our account pool, so the four fields that describe the CALLER's own relationship to a community (role, can_join, is_pinned, viewer_relationship_type) always come back null."
+    },
+    {
       "name": "Write Actions",
       "description": "Act on behalf of an authenticated account: like, retweet, bookmark, and follow, each with its undo. Billed at $0.0008 per call, the same as a standard read."
     },
@@ -1992,6 +1996,297 @@
               "example": "20"
             },
             "example": "20"
+          }
+        ]
+      }
+    },
+    "/tweet/quotes": {
+      "get": {
+        "operationId": "tweet-quotes",
+        "summary": "Tweet Quotes",
+        "description": "Fetch the quote tweets of a given tweet, cursor-paginated as full tweet objects, so you can read the commentary people attached rather than just count it. This endpoint is search-backed rather than served by a dedicated X operation, and every response says so in-band via source, search_query and quote_matched. Cost: $0.0008 per call.",
+        "tags": [
+          "Tweet Details"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/tweet/quotes?id=1759123456789012345\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/tweet/quotes\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"id\": \"1759123456789012345\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/tweet/quotes\");\nurl.search = new URLSearchParams({ id: \"1759123456789012345\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/tweet/quotes?id=1759123456789012345&cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.tweets | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.tweets[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/tweet/quotes\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"id\": \"1759123456789012345\", \"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"tweets\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { id: \"1759123456789012345\", cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/tweet/quotes\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.tweets ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page through the tweets that quote a tweet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tweets": {
+                      "type": "array",
+                      "description": "Quote tweets for this page, as full tweet objects. Each one that X embedded the original on carries the requested tweet under quoted_tweet.",
+                      "items": {
+                        "$ref": "#/components/schemas/Tweet"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of tweets returned in this page. This is what the SEARCH returned, never the tweet's true quote total, which is quote_count on the tweet object (see Tweet Detail). The two will differ because of search-index lag and because deleted, protected and withheld quotes are not in the index."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page. Pass it straight back as ?cursor=. Null when there is no further page."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when this page returned tweets and carried a usable next_cursor. False on the final page."
+                    },
+                    "source": {
+                      "type": "string",
+                      "description": "Always \"search\". Present so a caller comparing these numbers against X's UI knows this endpoint is served by X's search index and not by a dedicated quote-tweets operation."
+                    },
+                    "search_query": {
+                      "type": "string",
+                      "description": "The exact query sent upstream, quoted_tweet_id:<id>, so a surprising result is debuggable without reading our source."
+                    },
+                    "quote_matched": {
+                      "type": "integer",
+                      "description": "How many of the returned tweets demonstrably quote the requested id, read off each tweet's embedded quoted_tweet. Equal to count means every row is a genuine quote. Zero on a non-empty page means X stopped honouring the search operator and the rows are junk that merely contain the number."
+                    }
+                  }
+                },
+                "example": {
+                  "count": 2,
+                  "next_cursor": "DAADDAABCgABF...",
+                  "has_more": true,
+                  "tweets": [
+                    {
+                      "id": "1759987654321098765",
+                      "text": "This is the clearest write-up of the problem I have read all year.",
+                      "created_at": "Tue Feb 20 16:02:11 +0000 2026",
+                      "author": {
+                        "id": "9921",
+                        "username": "devjane",
+                        "name": "Jane"
+                      },
+                      "is_quote": true,
+                      "quoted_tweet": {
+                        "id": "1759123456789012345",
+                        "text": "Launching today."
+                      },
+                      "favorite_count": 41
+                    },
+                    {
+                      "id": "1759988812345678901",
+                      "text": "Adding one caveat to this.",
+                      "created_at": "Tue Feb 20 16:20:44 +0000 2026",
+                      "author": {
+                        "id": "3310",
+                        "username": "buildlogs",
+                        "name": "Build Logs"
+                      },
+                      "is_quote": true,
+                      "quoted_tweet": {
+                        "id": "1759123456789012345",
+                        "text": "Launching today."
+                      },
+                      "favorite_count": 7
+                    }
+                  ],
+                  "source": "search",
+                  "search_query": "quoted_tweet_id:1759123456789012345",
+                  "quote_matched": 2
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the tweet whose quotes you want. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the tweet whose quotes you want. Provide either id or url.",
+              "example": "1759123456789012345"
+            },
+            "example": "1759123456789012345"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "description": "Full status URL of the tweet whose quotes you want. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Full status URL of the tweet whose quotes you want. Provide either id or url.",
+              "example": "https://x.com/naval/status/1759123456789012345"
+            },
+            "example": "https://x.com/naval/status/1759123456789012345"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor."
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to request for this page. Defaults to 20 and is clamped to 1-100 by the underlying search, so a larger number returns at most 100 rather than erroring.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to request for this page. Defaults to 20 and is clamped to 1-100 by the underlying search, so a larger number returns at most 100 rather than erroring.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "product",
+            "in": "query",
+            "required": false,
+            "description": "Search ordering: Latest (default, reverse-chronological) or Top (X's ranked ordering, materially slower upstream). Any other value falls back to Latest rather than changing what the endpoint means.",
+            "schema": {
+              "type": "string",
+              "description": "Search ordering: Latest (default, reverse-chronological) or Top (X's ranked ordering, materially slower upstream). Any other value falls back to Latest rather than changing what the endpoint means.",
+              "example": "Latest"
+            },
+            "example": "Latest"
+          },
+          {
+            "name": "strict",
+            "in": "query",
+            "required": false,
+            "description": "Set to true to drop every returned row that does not demonstrably quote the requested tweet, instead of only counting them in quote_matched. Default false, because X does not embed the quoted original on every search result, so strict mode can hide real quotes.",
+            "schema": {
+              "type": "boolean",
+              "description": "Set to true to drop every returned row that does not demonstrably quote the requested tweet, instead of only counting them in quote_matched. Default false, because X does not embed the quoted original on every search result, so strict mode can hide real quotes.",
+              "example": "false"
+            },
+            "example": "false"
           }
         ]
       }
@@ -8730,6 +9025,1406 @@
               "example": "true"
             },
             "example": "true"
+          }
+        ]
+      }
+    },
+    "/community/info": {
+      "get": {
+        "operationId": "community-info",
+        "summary": "Community Info",
+        "description": "Look up a single X Community by its numeric id and get back its name, description, member and moderator counts, join and invite policies, join question, primary topic, search tags, posted rules, both banners, permalink, admin and creator profiles, and the facepile member ids. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Communities"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/community/info?community_id=1493446837214187523\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/community/info\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"community_id\": \"1493446837214187523\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/community/info\");\nurl.search = new URLSearchParams({ community_id: \"1493446837214187523\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metadata, rules and banners for one X Community.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "community": {
+                      "type": "object",
+                      "description": "The community, or null with a 404 when the id resolves to nothing.",
+                      "additionalProperties": true
+                    },
+                    "community.id": {
+                      "type": "string",
+                      "description": "Numeric community id as a string."
+                    },
+                    "community.name": {
+                      "type": "string",
+                      "description": "The community's display name."
+                    },
+                    "community.description": {
+                      "type": "string",
+                      "description": "The community's description text."
+                    },
+                    "community.created_at": {
+                      "type": "object",
+                      "description": "Millisecond epoch the community was created. 0 when X did not send it.",
+                      "additionalProperties": true
+                    },
+                    "community.member_count": {
+                      "type": "object",
+                      "description": "Total members.",
+                      "additionalProperties": true
+                    },
+                    "community.moderator_count": {
+                      "type": "object",
+                      "description": "Total moderators.",
+                      "additionalProperties": true
+                    },
+                    "community.join_policy": {
+                      "type": "string",
+                      "description": "How the community admits members, passed through from X. Observed values: Open and RestrictedJoinRequestsRequireModeratorApproval."
+                    },
+                    "community.invites_policy": {
+                      "type": "string",
+                      "description": "Who may invite, passed through from X. Observed value: MemberInvitesAllowed."
+                    },
+                    "community.is_nsfw": {
+                      "type": "boolean",
+                      "description": "Whether the community is flagged not-safe-for-work. Defaults to false when X does not send the field."
+                    },
+                    "community.question": {
+                      "type": "string",
+                      "description": "The join-screen prompt applicants answer, when the community sets one."
+                    },
+                    "community.primary_topic": {
+                      "type": "object",
+                      "description": "The single topic X assigns the community, as { topic_id, name }. Null when absent. X spells the name topic_name on the wire; it is normalised to name so a consumer reading Spaces topics and Community topics does not have to care.",
+                      "additionalProperties": true
+                    },
+                    "community.search_tags": {
+                      "type": "object",
+                      "description": "The community's search tags, as plain strings.",
+                      "additionalProperties": true
+                    },
+                    "community.rules": {
+                      "type": "object",
+                      "description": "The community's posted rules, each { id, name, description }. X sends only the rule id and name on this surface, so description is null on every rule: X's own UI shows longer rule text that this payload does not carry, and it is not invented here.",
+                      "additionalProperties": true
+                    },
+                    "community.banner_url": {
+                      "type": "string",
+                      "description": "The banner a client should actually render: the custom banner when the community set one, otherwise X's default. Computed for you, because both banners are always present and picking the wrong one silently shows every community the same stock gradient."
+                    },
+                    "community.custom_banner": {
+                      "type": "object",
+                      "description": "The community's own banner as { url, width, height }, or null.",
+                      "additionalProperties": true
+                    },
+                    "community.default_banner": {
+                      "type": "object",
+                      "description": "X's stock banner as { url, width, height }. Present even when a custom banner exists.",
+                      "additionalProperties": true
+                    },
+                    "community.permalink": {
+                      "type": "string",
+                      "description": "The x.com/i/communities/<id> link."
+                    },
+                    "community.admin": {
+                      "type": "object",
+                      "description": "The community admin's full user profile.",
+                      "additionalProperties": true
+                    },
+                    "community.creator": {
+                      "type": "object",
+                      "description": "The community creator's full user profile. Frequently the same account as admin, but do not assume it always is.",
+                      "additionalProperties": true
+                    },
+                    "community.members_facepile_ids": {
+                      "type": "object",
+                      "description": "User ids of the members X puts in the community facepile preview. Ids only. Use Community Members for the actual roster.",
+                      "additionalProperties": true
+                    },
+                    "community.role": {
+                      "type": "string",
+                      "description": "ALWAYS NULL on this endpoint. It is the role of the ACCOUNT THAT MADE THE CALL, and these are pooled reads served by a rotating pool account, so any value here would describe a stranger. The key is kept rather than removed so it is visible that X sends this field and we decline to answer it."
+                    },
+                    "community.can_join": {
+                      "type": "boolean",
+                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It answers whether the CALLING account may join."
+                    },
+                    "community.is_pinned": {
+                      "type": "boolean",
+                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It answers whether the CALLING account pinned this community."
+                    },
+                    "community.viewer_relationship_type": {
+                      "type": "string",
+                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It is the viewer relationship, and the viewer is the pool account."
+                    }
+                  }
+                },
+                "example": {
+                  "community": {
+                    "id": "1828843041869713562",
+                    "name": "Build In Public - SaaS",
+                    "description": "Founders shipping in the open.",
+                    "created_at": 1724865134102,
+                    "member_count": 392,
+                    "moderator_count": 1,
+                    "join_policy": "RestrictedJoinRequestsRequireModeratorApproval",
+                    "invites_policy": "MemberInvitesAllowed",
+                    "is_nsfw": false,
+                    "question": "What are you currently building?",
+                    "primary_topic": {
+                      "topic_id": "303",
+                      "name": "Software"
+                    },
+                    "search_tags": [
+                      "saas",
+                      "buildinpublic",
+                      "founders"
+                    ],
+                    "rules": [
+                      {
+                        "id": "1828843041869713570",
+                        "name": "Be useful, not promotional",
+                        "description": null
+                      }
+                    ],
+                    "banner_url": "https://pbs.twimg.com/community_banner_img/...",
+                    "custom_banner": {
+                      "url": "https://pbs.twimg.com/community_banner_img/...",
+                      "width": 1500,
+                      "height": 500
+                    },
+                    "default_banner": {
+                      "url": "https://pbs.twimg.com/semantic_core_img/...",
+                      "width": 1500,
+                      "height": 500
+                    },
+                    "permalink": "https://x.com/i/communities/1828843041869713562",
+                    "admin": {
+                      "id": "1281109705495130113",
+                      "username": "pizzaboy",
+                      "name": "Dan Holdsworth"
+                    },
+                    "creator": {
+                      "id": "1281109705495130113",
+                      "username": "pizzaboy",
+                      "name": "Dan Holdsworth"
+                    },
+                    "members_facepile_ids": [
+                      "1281109705495130113",
+                      "44196397"
+                    ],
+                    "role": null,
+                    "can_join": null,
+                    "is_pinned": null,
+                    "viewer_relationship_type": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "community_id",
+            "in": "query",
+            "required": true,
+            "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL. Digits only, no leading zero.",
+            "schema": {
+              "type": "string",
+              "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL. Digits only, no leading zero.",
+              "example": "1493446837214187523"
+            },
+            "example": "1493446837214187523"
+          }
+        ]
+      }
+    },
+    "/community/members": {
+      "get": {
+        "operationId": "community-members",
+        "summary": "Community Members",
+        "description": "Fetch the member roster of an X Community, cursor-paginated, with each row carrying that member's own role in the community: Admin, Moderator or Member. Admins and moderators appear in this list alongside ordinary members and are not grouped, so do not derive a moderator list by filtering the first page. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Communities"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/community/members?community_id=1493446837214187523\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/community/members\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"community_id\": \"1493446837214187523\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/community/members\");\nurl.search = new URLSearchParams({ community_id: \"1493446837214187523\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/community/members?community_id=1493446837214187523&cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.members | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.members[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/community/members\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"community_id\": \"1493446837214187523\", \"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"members\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { community_id: \"1493446837214187523\", cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/community/members\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.members ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page through a community's member roster, each row carrying that member's role.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "members": {
+                      "type": "object",
+                      "description": "Roster rows for this page, each { user, role }.",
+                      "additionalProperties": true
+                    },
+                    "members[].user": {
+                      "type": "object",
+                      "description": "A REDUCED user profile: id, username, name, profile_image_url, is_blue_verified, verified, is_protected. It is smaller than the object User Info returns, on purpose, because X's roster operation sends no bio, no follower or following counts, no location, no website and no created_at. Those keys are ABSENT rather than null, so you can never mistake not-asked-for for zero.",
+                      "additionalProperties": true
+                    },
+                    "members[].user.id": {
+                      "type": "string",
+                      "description": "Numeric user id as a string."
+                    },
+                    "members[].user.username": {
+                      "type": "string",
+                      "description": "Handle without the leading @."
+                    },
+                    "members[].user.name": {
+                      "type": "string",
+                      "description": "Display name."
+                    },
+                    "members[].user.profile_image_url": {
+                      "type": "string",
+                      "description": "Avatar URL. X sends the _normal size on this operation and it is passed through unchanged rather than rewritten to a larger variant that X did not send."
+                    },
+                    "members[].user.is_blue_verified": {
+                      "type": "boolean",
+                      "description": "Blue (paid) verification."
+                    },
+                    "members[].user.verified": {
+                      "type": "boolean",
+                      "description": "Legacy (official or notable) verification. A different thing from is_blue_verified; never conflate them."
+                    },
+                    "members[].user.is_protected": {
+                      "type": "boolean",
+                      "description": "Whether the account is protected (locked)."
+                    },
+                    "members[].role": {
+                      "type": "string",
+                      "description": "THAT MEMBER's role in this community: Admin, Moderator or Member. This one is NOT caller-relative, unlike the role field on the community object itself, and it is the reason this endpoint exists. Null when X did not label the row, which is not the same as Member: a roster we cannot role-label has unknown roles, and reading null as Member would deny moderators."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page, or null when X sent none. Absence of this cursor is the only end-of-list signal X gives on this operation."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when this page returned rows and carried a usable next_cursor. Computed here; X sends no has_more of its own on this operation."
+                    }
+                  }
+                },
+                "example": {
+                  "members": [
+                    {
+                      "user": {
+                        "id": "1281109705495130113",
+                        "username": "pizzaboy",
+                        "name": "Dan Holdsworth",
+                        "profile_image_url": "https://pbs.twimg.com/profile_images/..._normal.png",
+                        "is_blue_verified": true,
+                        "verified": false,
+                        "is_protected": false
+                      },
+                      "role": "Admin"
+                    },
+                    {
+                      "user": {
+                        "id": "44196397",
+                        "username": "devjane",
+                        "name": "Jane",
+                        "profile_image_url": "https://pbs.twimg.com/profile_images/..._normal.png",
+                        "is_blue_verified": false,
+                        "verified": false,
+                        "is_protected": false
+                      },
+                      "role": "Member"
+                    }
+                  ],
+                  "next_cursor": "RG9uZUZvck5vd0N1cnNvcg==",
+                  "has_more": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "community_id",
+            "in": "query",
+            "required": true,
+            "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL.",
+            "schema": {
+              "type": "string",
+              "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL.",
+              "example": "1493446837214187523"
+            },
+            "example": "1493446837214187523"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call."
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Page size. Defaults to 20 and is clamped to 1-100, so count=500 returns 100 rather than erroring. A non-numeric value is a 400.",
+            "schema": {
+              "type": "integer",
+              "description": "Page size. Defaults to 20 and is clamped to 1-100, so count=500 returns 100 rather than erroring. A non-numeric value is a 400.",
+              "example": "20"
+            },
+            "example": "20"
+          }
+        ]
+      }
+    },
+    "/community/moderators": {
+      "get": {
+        "operationId": "community-moderators",
+        "summary": "Community Moderators",
+        "description": "Fetch the moderators and admins of an X Community, cursor-paginated, in the same row shape Community Members returns. This is a separate upstream operation rather than a filter over the member roster, because moderators are interleaved through that roster at arbitrary positions. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Communities"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/community/moderators?community_id=1493446837214187523\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/community/moderators\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"community_id\": \"1493446837214187523\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/community/moderators\");\nurl.search = new URLSearchParams({ community_id: \"1493446837214187523\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/community/moderators?community_id=1493446837214187523&cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.members | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.members[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/community/moderators\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"community_id\": \"1493446837214187523\", \"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"members\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { community_id: \"1493446837214187523\", cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/community/moderators\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.members ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page through a community's moderators and admins.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "members": {
+                      "type": "object",
+                      "description": "Moderator rows for this page, each { user, role }. The key is members, not moderators: the row shape is identical to Community Members on purpose, so one type serves both endpoints and the two cannot drift.",
+                      "additionalProperties": true
+                    },
+                    "members[].user": {
+                      "type": "object",
+                      "description": "The same REDUCED user profile Community Members returns: id, username, name, profile_image_url, is_blue_verified, verified, is_protected. No bio, no follower counts, no created_at, because X's roster operation does not send them.",
+                      "additionalProperties": true
+                    },
+                    "members[].role": {
+                      "type": "string",
+                      "description": "That account's role in this community, expected to be Moderator or Admin here. Like the role on a Community Members row, this one is NOT caller-relative and is returned in full: it describes that account, is identical for every caller, and is the content of the endpoint. It is returned rather than assumed constant, so a moderator roster that starts carrying a mixed role set surfaces instead of being silently flattened. Null when X did not label the row, which is not the same as Member."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page, or null when X sent none."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when this page returned rows and carried a usable next_cursor. Computed here; X sends no has_more of its own."
+                    }
+                  }
+                },
+                "example": {
+                  "members": [
+                    {
+                      "user": {
+                        "id": "1281109705495130113",
+                        "username": "pizzaboy",
+                        "name": "Dan Holdsworth",
+                        "profile_image_url": "https://pbs.twimg.com/profile_images/..._normal.png",
+                        "is_blue_verified": true,
+                        "verified": false,
+                        "is_protected": false
+                      },
+                      "role": "Admin"
+                    },
+                    {
+                      "user": {
+                        "id": "3310215544",
+                        "username": "buildlogs",
+                        "name": "Build Logs",
+                        "profile_image_url": "https://pbs.twimg.com/profile_images/..._normal.png",
+                        "is_blue_verified": true,
+                        "verified": false,
+                        "is_protected": false
+                      },
+                      "role": "Moderator"
+                    }
+                  ],
+                  "next_cursor": null,
+                  "has_more": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "community_id",
+            "in": "query",
+            "required": true,
+            "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL.",
+            "schema": {
+              "type": "string",
+              "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL.",
+              "example": "1493446837214187523"
+            },
+            "example": "1493446837214187523"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call."
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Page size. Defaults to 20 and is clamped to 1-100. A non-numeric value is a 400.",
+            "schema": {
+              "type": "integer",
+              "description": "Page size. Defaults to 20 and is clamped to 1-100. A non-numeric value is a 400.",
+              "example": "20"
+            },
+            "example": "20"
+          }
+        ]
+      }
+    },
+    "/community/tweets": {
+      "get": {
+        "operationId": "community-tweets",
+        "summary": "Community Tweets",
+        "description": "Fetch the post timeline of an X Community, cursor-paginated as full tweet objects, with optional ordering control. The community's pinned post is returned as its own field rather than mixed into the feed, because X delivers it under a different timeline instruction and does not repeat it in the feed. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Communities"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/community/tweets?community_id=1493446837214187523\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/community/tweets\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"community_id\": \"1493446837214187523\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/community/tweets\");\nurl.search = new URLSearchParams({ community_id: \"1493446837214187523\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/community/tweets?community_id=1493446837214187523&cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.tweets | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.tweets[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/community/tweets\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"community_id\": \"1493446837214187523\", \"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"tweets\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { community_id: \"1493446837214187523\", cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/community/tweets\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.tweets ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page through a community's post timeline, with the pinned post returned separately.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pinned": {
+                      "type": "object",
+                      "description": "The community's PINNED post as a full tweet object, or null when the community has none. It is its own field and is NOT included in tweets: X delivers it under a separate timeline instruction and does not repeat it in the feed, so a parser that reads only the feed drops it without a trace. In the captured community it was the rules post, which is usually the single most useful item in the response. A client that wants one flat list should read pinned first, then tweets.",
+                      "additionalProperties": true
+                    },
+                    "tweets": {
+                      "type": "array",
+                      "description": "The community's posts for this page, as full tweet objects. The pinned post is excluded, so a flat list is pinned followed by tweets with no duplicate. X attaches a caller-relative community moderation state to each tweet upstream; it is never extracted, because on a pooled read it would describe our rotating pool account rather than you.",
+                      "items": {
+                        "$ref": "#/components/schemas/Tweet"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page, or null when there is none. Pass it back as ?cursor=."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when this page returned tweets and carried a usable next_cursor. False on the final page."
+                    }
+                  }
+                },
+                "example": {
+                  "pinned": {
+                    "id": "1926022758195921145",
+                    "text": "Community rules: be useful, no unsolicited DMs, no engagement bait.",
+                    "created_at": "Fri May 23 09:14:02 +0000 2026",
+                    "author": {
+                      "id": "1281109705495130113",
+                      "username": "pizzaboy",
+                      "name": "Dan Holdsworth"
+                    },
+                    "favorite_count": 118
+                  },
+                  "tweets": [
+                    {
+                      "id": "1926104411223344556",
+                      "text": "Shipped the billing rewrite this morning. Numbers in the thread.",
+                      "created_at": "Fri May 23 14:41:19 +0000 2026",
+                      "author": {
+                        "id": "44196397",
+                        "username": "devjane",
+                        "name": "Jane"
+                      },
+                      "favorite_count": 26,
+                      "reply_count": 4
+                    }
+                  ],
+                  "next_cursor": "DAABCgABF...",
+                  "has_more": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "community_id",
+            "in": "query",
+            "required": true,
+            "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL.",
+            "schema": {
+              "type": "string",
+              "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL.",
+              "example": "1493446837214187523"
+            },
+            "example": "1493446837214187523"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call."
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Page size. Defaults to 20 and is clamped to 1-100. A non-numeric value is a 400.",
+            "schema": {
+              "type": "integer",
+              "description": "Page size. Defaults to 20 and is clamped to 1-100. A non-numeric value is a 400.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "ranking_mode",
+            "in": "query",
+            "required": false,
+            "description": "Ordering, sent to X as a real upstream parameter rather than applied as a local sort. Recency is the default and the only value confirmed against a live capture. Relevance is accepted because X's own community tab offers exactly two orderings, but it has not been confirmed live, so do not depend on it. Any other value is a 400.",
+            "schema": {
+              "type": "string",
+              "description": "Ordering, sent to X as a real upstream parameter rather than applied as a local sort. Recency is the default and the only value confirmed against a live capture. Relevance is accepted because X's own community tab offers exactly two orderings, but it has not been confirmed live, so do not depend on it. Any other value is a 400.",
+              "example": "Recency"
+            },
+            "example": "Recency"
+          }
+        ]
+      }
+    },
+    "/community/memberships": {
+      "get": {
+        "operationId": "community-memberships",
+        "summary": "Community Memberships",
+        "description": "The inverse relation: given a numeric X user id, list the communities that account belongs to, cursor-paginated. Each row is the FULL community object, the same shape Community Info returns, so profiling an account's community footprint takes one call per page rather than a follow-up lookup per community. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Communities"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/community/memberships?user_id=1281109705495130113\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/community/memberships\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"user_id\": \"1281109705495130113\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/community/memberships\");\nurl.search = new URLSearchParams({ user_id: \"1281109705495130113\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/community/memberships?user_id=1281109705495130113&cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.communities | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.communities[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/community/memberships\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"user_id\": \"1281109705495130113\", \"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"communities\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { user_id: \"1281109705495130113\", cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/community/memberships\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.communities ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List every community a given account belongs to.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "communities": {
+                      "type": "object",
+                      "description": "The communities this account belongs to, for this page. Each entry is the FULL community object, identical in shape to what Community Info returns, so a client that renders one can render the other. Deduplicated by id.",
+                      "additionalProperties": true
+                    },
+                    "communities[].id": {
+                      "type": "string",
+                      "description": "Numeric community id as a string."
+                    },
+                    "communities[].name": {
+                      "type": "string",
+                      "description": "The community's display name."
+                    },
+                    "communities[].description": {
+                      "type": "string",
+                      "description": "The community's description text."
+                    },
+                    "communities[].created_at": {
+                      "type": "object",
+                      "description": "Millisecond epoch the community was created. 0 when X did not send it.",
+                      "additionalProperties": true
+                    },
+                    "communities[].member_count": {
+                      "type": "object",
+                      "description": "Total members.",
+                      "additionalProperties": true
+                    },
+                    "communities[].moderator_count": {
+                      "type": "object",
+                      "description": "Total moderators.",
+                      "additionalProperties": true
+                    },
+                    "communities[].join_policy": {
+                      "type": "string",
+                      "description": "How the community admits members, passed through from X. Observed values: Open and RestrictedJoinRequestsRequireModeratorApproval."
+                    },
+                    "communities[].invites_policy": {
+                      "type": "string",
+                      "description": "Who may invite, passed through from X. Observed value: MemberInvitesAllowed."
+                    },
+                    "communities[].is_nsfw": {
+                      "type": "boolean",
+                      "description": "Whether the community is flagged not-safe-for-work. Defaults to false when X does not send the field."
+                    },
+                    "communities[].question": {
+                      "type": "string",
+                      "description": "The join-screen prompt applicants answer, when the community sets one."
+                    },
+                    "communities[].primary_topic": {
+                      "type": "object",
+                      "description": "The single topic X assigns the community, as { topic_id, name }. Null when absent. X spells the name topic_name on the wire; it is normalised to name so a consumer reading Spaces topics and Community topics does not have to care.",
+                      "additionalProperties": true
+                    },
+                    "communities[].search_tags": {
+                      "type": "object",
+                      "description": "The community's search tags, as plain strings.",
+                      "additionalProperties": true
+                    },
+                    "communities[].rules": {
+                      "type": "object",
+                      "description": "The community's posted rules, each { id, name, description }. X sends only the rule id and name on this surface, so description is null on every rule: X's own UI shows longer rule text that this payload does not carry, and it is not invented here.",
+                      "additionalProperties": true
+                    },
+                    "communities[].banner_url": {
+                      "type": "string",
+                      "description": "The banner a client should actually render: the custom banner when the community set one, otherwise X's default. Computed for you, because both banners are always present and picking the wrong one silently shows every community the same stock gradient."
+                    },
+                    "communities[].custom_banner": {
+                      "type": "object",
+                      "description": "The community's own banner as { url, width, height }, or null.",
+                      "additionalProperties": true
+                    },
+                    "communities[].default_banner": {
+                      "type": "object",
+                      "description": "X's stock banner as { url, width, height }. Present even when a custom banner exists.",
+                      "additionalProperties": true
+                    },
+                    "communities[].permalink": {
+                      "type": "string",
+                      "description": "The x.com/i/communities/<id> link."
+                    },
+                    "communities[].admin": {
+                      "type": "object",
+                      "description": "The community admin's full user profile.",
+                      "additionalProperties": true
+                    },
+                    "communities[].creator": {
+                      "type": "object",
+                      "description": "The community creator's full user profile. Frequently the same account as admin, but do not assume it always is.",
+                      "additionalProperties": true
+                    },
+                    "communities[].members_facepile_ids": {
+                      "type": "object",
+                      "description": "User ids of the members X puts in the community facepile preview. Ids only. Use Community Members for the actual roster.",
+                      "additionalProperties": true
+                    },
+                    "communities[].role": {
+                      "type": "string",
+                      "description": "ALWAYS NULL on this endpoint. It is the role of the ACCOUNT THAT MADE THE CALL, and these are pooled reads served by a rotating pool account, so any value here would describe a stranger. The key is kept rather than removed so it is visible that X sends this field and we decline to answer it."
+                    },
+                    "communities[].can_join": {
+                      "type": "boolean",
+                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It answers whether the CALLING account may join."
+                    },
+                    "communities[].is_pinned": {
+                      "type": "boolean",
+                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It answers whether the CALLING account pinned this community."
+                    },
+                    "communities[].viewer_relationship_type": {
+                      "type": "string",
+                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It is the viewer relationship, and the viewer is the pool account."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page, or null when there is none."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when this page returned communities and carried a usable next_cursor. False on the final page."
+                    }
+                  }
+                },
+                "example": {
+                  "communities": [
+                    {
+                      "id": "1828843041869713562",
+                      "name": "Build In Public - SaaS",
+                      "description": "Founders shipping in the open.",
+                      "created_at": 1724865134102,
+                      "member_count": 392,
+                      "moderator_count": 1,
+                      "join_policy": "RestrictedJoinRequestsRequireModeratorApproval",
+                      "invites_policy": "MemberInvitesAllowed",
+                      "is_nsfw": false,
+                      "question": "What are you currently building?",
+                      "primary_topic": {
+                        "topic_id": "303",
+                        "name": "Software"
+                      },
+                      "search_tags": [
+                        "saas",
+                        "buildinpublic"
+                      ],
+                      "rules": [
+                        {
+                          "id": "1828843041869713570",
+                          "name": "Be useful, not promotional",
+                          "description": null
+                        }
+                      ],
+                      "banner_url": "https://pbs.twimg.com/community_banner_img/...",
+                      "permalink": "https://x.com/i/communities/1828843041869713562",
+                      "members_facepile_ids": [
+                        "1281109705495130113"
+                      ],
+                      "role": null,
+                      "can_join": null,
+                      "is_pinned": null,
+                      "viewer_relationship_type": null
+                    }
+                  ],
+                  "next_cursor": null,
+                  "has_more": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": true,
+            "description": "The numeric X user id, NOT a handle and NOT a community id. Resolve a @handle to an id with User Info first; doing that resolution silently here would turn one billed read into two.",
+            "schema": {
+              "type": "string",
+              "description": "The numeric X user id, NOT a handle and NOT a community id. Resolve a @handle to an id with User Info first; doing that resolution silently here would turn one billed read into two.",
+              "example": "1281109705495130113"
+            },
+            "example": "1281109705495130113"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call."
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Page size. Defaults to 20 and is clamped to 1-100. A non-numeric value is a 400.",
+            "schema": {
+              "type": "integer",
+              "description": "Page size. Defaults to 20 and is clamped to 1-100. A non-numeric value is a 400.",
+              "example": "20"
+            },
+            "example": "20"
           }
         ]
       }
