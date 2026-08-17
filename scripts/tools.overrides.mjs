@@ -417,6 +417,57 @@ export const TOOL_OVERRIDES = [
       "@PAGINATION",
     ],
   },
+  // TWO LIST FEEDS, TWO CAPABILITIES, NOT TWO SPELLINGS OF ONE. The names read
+  // like versions of each other and they are not: list/tweets is SEARCH-BACKED,
+  // so it can answer a time-ranged or reply-filtered question and carries no
+  // retweets; list/timeline is X's OWN native List feed, so it carries retweets
+  // and X's ordering and accepts no filters at all, only paging. Their PARAMETER
+  // SETS are what separates them, which is why each description below states the
+  // trade and names the other tool: a model handed only the names will pick one
+  // at random and silently answer a different question than the user asked.
+  {
+    name: "twitter_list_tweets",
+    endpoint: "/list/tweets",
+    description:
+      "Read the posts written by the members of a public Twitter/X List, newest first, through X's search index. This is the FILTERABLE List feed: it accepts since and until date bounds and an include_replies toggle. It does NOT return retweets, and search-index lag applies, so a post made moments ago can be missing for a short while. Use twitter_list_timeline instead when you want the List exactly as X shows it, retweets and native ordering included, and accept that it takes no filters. Paginate with cursor. The list_id appears in the X.com list URL (x.com/i/lists/<list_id>).",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>. The List must be public." },
+      { name: "since",
+        describe:
+          "Optional. Only posts on or after this date, as YYYY-MM-DD (e.g. \"2026-08-01\"). Any other format is rejected with a 400." },
+      { name: "until",
+        describe:
+          "Optional. Only posts BEFORE this date, as YYYY-MM-DD. EXCLUSIVE, matching X's own until: search operator, so a post made on the until date is not returned. Any other format is rejected with a 400." },
+      { name: "include_replies", type: "boolean",
+        describe:
+          "Optional. Whether to include replies written by List members. Pass the string \"true\" or \"false\"; defaults to true when omitted. Any other value is rejected with a 400 rather than read as false." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
+    name: "twitter_list_timeline",
+    endpoint: "/list/timeline",
+    description:
+      "Read a public Twitter/X List's NATIVE feed, the same posts and the same ordering the List shows on x.com, including members' retweets. It takes only list_id, count and cursor: no date range and no reply filter exist on this endpoint, because a native timeline cannot honour search operators. Use twitter_list_tweets when you need a date range or want replies filtered out, and accept that it drops retweets in exchange. Paginate with cursor until the tweets array comes back empty.",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>. The List must be public." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
   // ── Reads: trends ──────────────────────────────────────────────────────────
   {
     name: "twitter_spaces_info",
@@ -869,6 +920,77 @@ export const TOOL_OVERRIDES = [
       proxy:
         "Deliberately not a tool arg. The catalog routes a caller-supplied proxy through the x-proxy-url REQUEST HEADER instead (see the proxy_url arg in @INLINE), because a proxy URL routinely embeds user:pass credentials and a query-string param would write those into every URL and access log along the path.",
     },
+  },
+  // ── Writes: Lists (create a List, curate its membership) ───────────────────
+  // These run on the CUSTOMER'S REGISTERED X SESSION, never on a pooled account,
+  // because a List belongs to a specific account: a pooled write would mutate a
+  // rotation account's Lists, which nobody asked for and nobody could read back.
+  // Register once with twitter_customer_session, or pass auth_token and ct0 per
+  // call via @INLINE.
+  //
+  // jsonBody deliberately UNSET, and this was checked rather than copied: the
+  // backend handlers (listAddMemberRoute / listRemoveMemberRoute /
+  // listCreateRoute in twitterapis-backend scraper/src/server/routes/
+  // list-write.ts) read every field through resolveBodyParam, the dual-mode
+  // query-or-body helper, so query-string args work. The backend's own
+  // route-body-modes.json manifest classifies all three as mode "either", which
+  // is what test/body-mode-parity.mjs asserts against.
+  //
+  // ON member_count: X returns a populated errors[] on 100% of SUCCESSFUL calls
+  // to these three ops, so a caller cannot use the error array to decide whether
+  // the write applied. The List's member_count, read back from X after the
+  // write, is the check that works, which is why every description below points
+  // a model at it instead of at ok alone.
+  {
+    name: "twitter_list_add_member",
+    endpoint: "/list/add_member",
+    write: true,
+    description:
+      "Add one account to a Twitter/X List that YOUR registered X session owns, by numeric list id and numeric user id. Use it to curate a List from code, for example adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. Read member_count to confirm the change landed: it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List is not yours) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reverse with twitter_list_remove_member.",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric id of the List you own. Found in the list URL: x.com/i/lists/<list_id>." },
+      { name: "user_id",
+        describe:
+          "Numeric user id of the account to add. Resolve a handle to a user_id first with twitter_user_info." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_list_remove_member",
+    endpoint: "/list/remove_member",
+    write: true, destructive: true,
+    description:
+      "Remove one account from a Twitter/X List that YOUR registered X session owns, by numeric list id and numeric user id. Use it to prune a curated List, for example dropping accounts that have gone quiet. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. Read member_count to confirm the removal landed: it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was never a member, the List is not yours) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reverse with twitter_list_add_member.",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric id of the List you own. Found in the list URL: x.com/i/lists/<list_id>." },
+      { name: "user_id",
+        describe:
+          "Numeric user id of the account to remove. Resolve a handle to a user_id first with twitter_user_info." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_list_create",
+    endpoint: "/list/create",
+    write: true,
+    description:
+      "Create a new Twitter/X List owned by YOUR registered X session, with a name and an optional description and privacy flag. This is the starting point for building a List from code: create it here, then fill it with twitter_list_add_member using the list id this returns. Returns ok, action, the new list_id, member_count, and the full list object X returned. A List is PUBLIC unless you explicitly ask for a private one, and a private List is not readable by the public List read tools (twitter_list_members, twitter_list_tweets, twitter_list_timeline).",
+    args: [
+      { name: "name", minLength: 1,
+        describe:
+          "Display name for the new List, e.g. \"Founders\". Required; an empty or whitespace-only name is rejected with a 400." },
+      { name: "description",
+        describe:
+          "Optional. Description shown on the List, e.g. \"People building in public\". Defaults to empty." },
+      { name: "is_private", type: "boolean",
+        describe:
+          "Optional. Pass the string \"true\" to create a PRIVATE List. Defaults to false (public), because a public List can be made private later while a leak cannot be undone. Note a private List is not readable by the public List read tools." },
+      "@INLINE",
+    ],
   },
   // ── Session bootstrap + media: link an X account to your key, then act as it ─
   // Once a session is linked (via twitter_customer_session or twitter_user_login)
