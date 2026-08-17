@@ -33,6 +33,8 @@
     "check:body-mode-parity": "node test/body-mode-parity.mjs",
     "check:firewall": "node test/firewall.mjs",
     "check:registry": "node test/registry-manifests.mjs",
+    "bundle": "npx -y @anthropic-ai/mcpb@2.1.2 pack .",
+    "check:mcpb": "npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json",
     "check:publish-provenance": "node test/publish-provenance.mjs"
   },
   "dependencies": {

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/schemas/mcpb-manifest-v0.3.schema.json",
+  "manifest_version": "0.3",
+  "name": "twitterapis-mcp",
+  "display_name": "TwitterAPIs",
+  "version": "0.9.1",
+  "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
+  "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
+  "author": {
+    "name": "twitterapis.com",
+    "url": "https://www.twitterapis.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TwitterAPIs/twitterapis-mcp"
+  },
+  "homepage": "https://www.twitterapis.com/mcp",
+  "documentation": "https://www.twitterapis.com/docs",
+  "support": "https://www.twitterapis.com/contact",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "twitter",
+    "x",
+    "twitter-api",
+    "x-api"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "src/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/src/index.js"
+      ],
+      "env": {
+        "TWITTERAPIS_KEY": "${user_config.twitterapis_key}",
+        "TWITTERAPIS_BASE_URL": "${user_config.twitterapis_base_url}",
+        "TWITTERAPIS_TIMEOUT_MS": "${user_config.twitterapis_timeout_ms}"
+      }
+    }
+  },
+  "user_config": {
+    "twitterapis_key": {
+      "type": "string",
+      "title": "TwitterAPIs API key",
+      "description": "Your twitterapis.com API key. Create one at https://www.twitterapis.com/dashboard. Every tool call authenticates with it, and usage is billed per call against that key.",
+      "sensitive": true,
+      "required": true
+    },
+    "twitterapis_base_url": {
+      "type": "string",
+      "title": "API base URL",
+      "description": "Only set this if you were given a different endpoint. Defaults to https://api.twitterapis.com.",
+      "sensitive": false,
+      "required": false,
+      "default": "https://api.twitterapis.com"
+    },
+    "twitterapis_timeout_ms": {
+      "type": "number",
+      "title": "Request timeout (ms)",
+      "description": "Per-request timeout in milliseconds. Raise it if you page through large follower lists on a slow connection.",
+      "required": false,
+      "default": 30000
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}
