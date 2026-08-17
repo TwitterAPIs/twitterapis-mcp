@@ -1,5 +1,6 @@
 // registry-manifests.mjs — fail-closed gate over the three registry descriptors
-// (server.json, smithery.yaml, glama.json). Wired into `npm test`.
+// (server.json, smithery.yaml, glama.json) AND over every other file that keeps
+// its own copy of the package version. Wired into `npm test`.
 //
 // WHY THIS EXISTS. Adding server.json puts the package version in a SECOND place.
 // The same fact in two files always drifts, so it gets a gate or it gets
@@ -7,6 +8,19 @@
 // on silently: a config field with no description shows the user a bare variable
 // name, and a wrong required-flag means the server starts with no API key and
 // fails on the first tool call instead of at install time.
+//
+// The version now lives in FIVE places: package.json, server.json twice (top
+// level and the npm package entry), and package-lock.json twice (top level and
+// packages[""]). Every one of them is checked here. This is deliberately ONE
+// gate rather than one gate per file: a second test file on the same subject is
+// how the checks themselves drift apart.
+//
+// The lockfile half was added after it drifted for real. package.json read 0.9.0
+// while both lockfile fields read 0.7.4, a version npm was never even served,
+// and it survived because nothing in the suite opened package-lock.json. A
+// stale lockfile version is not cosmetic: `npm ci` and any consumer reading the
+// lockfile see the wrong version for a tree that is several releases ahead.
+// Regenerate with `npm install --package-lock-only`, never by hand-editing JSON.
 //
 // It further enforces the tenant firewall on these files specifically, because
 // they are PUBLIC surfaces submitted to third-party directories, and a firewall
@@ -127,6 +141,43 @@ check(existsSync(resolve(ROOT, "glama.json")), "glama.json is missing");
 const glama = JSON.parse(read("glama.json"));
 check(Array.isArray(glama.maintainers) && glama.maintainers.length > 0, "glama.json: no maintainers");
 
+// ── package-lock.json ───────────────────────────────────────────────────────
+// The lockfile carries its own copy of the package identity, and npm only
+// refreshes it when something prompts npm to write it. A version bump that
+// touches package.json alone leaves both of these fields behind.
+check(existsSync(resolve(ROOT, "package-lock.json")), "package-lock.json is missing");
+const lock = JSON.parse(read("package-lock.json"));
+
+check(
+  lock.version === pkg.version,
+  `package-lock.json version ${lock.version} != package.json version ${pkg.version} ` +
+    `(regenerate with: npm install --package-lock-only)`,
+);
+check(
+  lock.name === pkg.name,
+  `package-lock.json name ${lock.name} != package.json name ${pkg.name}`,
+);
+
+// lockfileVersion 2 and 3 repeat the root package under packages[""], and the
+// two copies can disagree with each other as well as with package.json, so the
+// absence of that entry on a v2+ lockfile is itself the failure, not a skip.
+const lockRoot = lock.packages?.[""];
+check(
+  lockRoot != null,
+  `package-lock.json: lockfileVersion ${lock.lockfileVersion} has no packages[""] entry to check`,
+);
+if (lockRoot) {
+  check(
+    lockRoot.version === pkg.version,
+    `package-lock.json packages[""] version ${lockRoot.version} != package.json version ${pkg.version} ` +
+      `(regenerate with: npm install --package-lock-only)`,
+  );
+  check(
+    lockRoot.name === pkg.name,
+    `package-lock.json packages[""] name ${lockRoot.name} != package.json name ${pkg.name}`,
+  );
+}
+
 // ── tenant firewall on all three ────────────────────────────────────────────
 // Bare case-insensitive substrings, never word boundaries: \bforkoff\b misses
 // officialForkoff, which is exactly the string that must not appear here.
@@ -144,6 +195,7 @@ if (fail.length) {
   process.exit(1);
 }
 console.log(
-  `✓ registry-manifests: server.json + smithery.yaml + glama.json consistent at v${pkg.version}, ` +
+  `✓ registry-manifests: server.json + smithery.yaml + glama.json + package-lock.json ` +
+    `consistent at v${pkg.version} (5 version copies agree), ` +
     `env vars match src/index.js, firewall clean`,
 );
