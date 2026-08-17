@@ -8285,6 +8285,442 @@
         ]
       }
     },
+    "/list/tweets": {
+      "get": {
+        "operationId": "list-tweets",
+        "summary": "List Tweets",
+        "description": "Fetch posts written by the members of a public List through X's search index. Supports since and until date bounds and an include_replies toggle. Does not include retweets. Cost: $0.0008 per call.",
+        "tags": [
+          "List Data"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/list/tweets?list_id=1234567890123456789&since=2026-08-01\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/list/tweets\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"list_id\": \"1234567890123456789\", \"since\": \"2026-08-01\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/list/tweets\");\nurl.search = new URLSearchParams({ list_id: \"1234567890123456789\", since: \"2026-08-01\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read a public List's posts, filterable by date range and replies.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tweets": {
+                      "type": "array",
+                      "description": "Posts from this List's members for this page, newest first.",
+                      "items": {
+                        "$ref": "#/components/schemas/Tweet"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of items returned in this page."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    }
+                  }
+                },
+                "example": {
+                  "tweets": [
+                    {
+                      "id": "1899887766554433221",
+                      "text": "Shipping the thing we said we would ship.",
+                      "created_at": "2026-08-14T09:12:44.000Z",
+                      "author": {
+                        "id": "745273",
+                        "username": "naval"
+                      }
+                    }
+                  ],
+                  "next_cursor": "DAABCgABF..."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "list_id",
+            "in": "query",
+            "required": true,
+            "description": "Numeric ID of the public List.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the public List.",
+              "example": "1234567890123456789"
+            },
+            "example": "1234567890123456789"
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "Only posts on or after this date, as YYYY-MM-DD.",
+            "schema": {
+              "type": "string",
+              "description": "Only posts on or after this date, as YYYY-MM-DD.",
+              "example": "2026-08-01"
+            },
+            "example": "2026-08-01"
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "Only posts before this date, as YYYY-MM-DD. Exclusive, matching X's until: operator.",
+            "schema": {
+              "type": "string",
+              "description": "Only posts before this date, as YYYY-MM-DD. Exclusive, matching X's until: operator.",
+              "example": "2026-08-15"
+            },
+            "example": "2026-08-15"
+          },
+          {
+            "name": "include_replies",
+            "in": "query",
+            "required": false,
+            "description": "Whether to include replies written by List members. Default true.",
+            "schema": {
+              "type": "boolean",
+              "description": "Whether to include replies written by List members. Default true.",
+              "example": "false"
+            },
+            "example": "false"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response."
+            }
+          }
+        ]
+      }
+    },
+    "/list/timeline": {
+      "get": {
+        "operationId": "list-timeline",
+        "summary": "List Timeline",
+        "description": "Fetch a public List's feed as X itself serves it, using the native List timeline. Includes members' retweets and X's own ordering. Paged only, with no date or reply filters. Cost: $0.0008 per call.",
+        "tags": [
+          "List Data"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/list/timeline?list_id=1234567890123456789\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/list/timeline\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"list_id\": \"1234567890123456789\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/list/timeline\");\nurl.search = new URLSearchParams({ list_id: \"1234567890123456789\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read a public List's native X timeline, retweets included.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tweets": {
+                      "type": "array",
+                      "description": "Posts from X's native List timeline for this page.",
+                      "items": {
+                        "$ref": "#/components/schemas/Tweet"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of items returned in this page."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    }
+                  }
+                },
+                "example": {
+                  "tweets": [
+                    {
+                      "id": "1899887766554433222",
+                      "text": "Reposting this because it deserves a second look.",
+                      "created_at": "2026-08-14T10:03:19.000Z",
+                      "author": {
+                        "id": "745273",
+                        "username": "naval"
+                      }
+                    }
+                  ],
+                  "next_cursor": "DAABCgABF..."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "list_id",
+            "in": "query",
+            "required": true,
+            "description": "Numeric ID of the public List.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the public List.",
+              "example": "1234567890123456789"
+            },
+            "example": "1234567890123456789"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response."
+            }
+          }
+        ]
+      }
+    },
     "/trends": {
       "get": {
         "operationId": "trends",
@@ -10775,6 +11211,617 @@
             "example": "1899999999999999999"
           }
         ]
+      }
+    },
+    "/list/add_member": {
+      "post": {
+        "operationId": "list-add-member",
+        "summary": "Add List Member",
+        "description": "Add an account to a List owned by your registered X session. Returns the List's member_count as proof the membership change landed. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/list/add_member\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{{\"list_id\": \"1234567890123456789\", \"user_id\": \"745273\"}}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/list/add_member\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"list_id\": \"1234567890123456789\", \"user_id\": \"745273\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/list/add_member\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ list_id: \"1234567890123456789\", user_id: \"745273\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Add one account to a Twitter/X List you own.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the membership change applied."
+                    },
+                    "action": {
+                      "type": "string",
+                      "description": "The membership action performed."
+                    },
+                    "list_id": {
+                      "type": "string",
+                      "description": "The List the write targeted."
+                    },
+                    "user_id": {
+                      "type": "string",
+                      "description": "The account the write targeted."
+                    },
+                    "member_count": {
+                      "type": "object",
+                      "description": "The List's member count after the write, read back from X as proof. Null when X returned no list object, which is the not-applied signal.",
+                      "additionalProperties": true
+                    },
+                    "list": {
+                      "type": "object",
+                      "description": "The List object X returned after the write.",
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "action": "add_member",
+                  "list_id": "1234567890123456789",
+                  "user_id": "745273",
+                  "member_count": 42,
+                  "list": {
+                    "id": "1234567890123456789",
+                    "name": "Founders",
+                    "member_count": 42
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "list_id": {
+                    "type": "string",
+                    "description": "Numeric ID of the List you own.",
+                    "example": "1234567890123456789"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "description": "Numeric ID of the account to add.",
+                    "example": "745273"
+                  }
+                },
+                "required": [
+                  "list_id",
+                  "user_id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list/remove_member": {
+      "post": {
+        "operationId": "list-remove-member",
+        "summary": "Remove List Member",
+        "description": "Remove an account from a List owned by your registered X session. Returns the List's member_count as proof the membership change landed. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/list/remove_member\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{{\"list_id\": \"1234567890123456789\", \"user_id\": \"745273\"}}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/list/remove_member\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"list_id\": \"1234567890123456789\", \"user_id\": \"745273\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/list/remove_member\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ list_id: \"1234567890123456789\", user_id: \"745273\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove one account from a Twitter/X List you own.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the membership change applied."
+                    },
+                    "action": {
+                      "type": "string",
+                      "description": "The membership action performed."
+                    },
+                    "list_id": {
+                      "type": "string",
+                      "description": "The List the write targeted."
+                    },
+                    "user_id": {
+                      "type": "string",
+                      "description": "The account the write targeted."
+                    },
+                    "member_count": {
+                      "type": "object",
+                      "description": "The List's member count after the write, read back from X as proof. Null when X returned no list object, which is the not-applied signal.",
+                      "additionalProperties": true
+                    },
+                    "list": {
+                      "type": "object",
+                      "description": "The List object X returned after the write.",
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "action": "remove_member",
+                  "list_id": "1234567890123456789",
+                  "user_id": "745273",
+                  "member_count": 41,
+                  "list": {
+                    "id": "1234567890123456789",
+                    "name": "Founders",
+                    "member_count": 41
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "list_id": {
+                    "type": "string",
+                    "description": "Numeric ID of the List you own.",
+                    "example": "1234567890123456789"
+                  },
+                  "user_id": {
+                    "type": "string",
+                    "description": "Numeric ID of the account to remove.",
+                    "example": "745273"
+                  }
+                },
+                "required": [
+                  "list_id",
+                  "user_id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list/create": {
+      "post": {
+        "operationId": "list-create",
+        "summary": "Create List",
+        "description": "Create a List owned by your registered X session, with a name and an optional description and privacy flag. Populate it afterwards with Add List Member. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/list/create\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{{\"name\": \"Founders\"}}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/list/create\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"name\": \"Founders\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/list/create\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ name: \"Founders\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Create a new Twitter/X List owned by your session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the List was created."
+                    },
+                    "list": {
+                      "type": "object",
+                      "description": "The List object X returned, including its new numeric id.",
+                      "additionalProperties": true
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "list": {
+                    "id": "1234567890123456789",
+                    "name": "Founders",
+                    "description": "People building in public.",
+                    "member_count": 0
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Display name for the new List.",
+                    "example": "Founders"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Optional description shown on the List.",
+                    "example": "People building in public."
+                  },
+                  "is_private": {
+                    "type": "boolean",
+                    "description": "Whether the List is private. Private Lists are not readable by the public List read endpoints.",
+                    "example": "false"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        }
       }
     },
     "/tweet/favorite": {

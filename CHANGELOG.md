@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.9.0 (2026-08-17)
+
+### Added
+
+- **The X List operation family, 5 tools** (task #2251). Two reads that look like two spellings of one capability and are not:
+  - **`twitter_list_tweets`** (GET /twitter/list/tweets): posts written by the members of a public List, newest first, read through X's SEARCH INDEX. This is the filterable half of the List feed: it accepts `since` and `until` date bounds (`until` is EXCLUSIVE, matching X's own `until:` operator) and an `include_replies` toggle. It does not carry retweets, and search-index lag applies, so a post made moments ago can be missing for a short while.
+  - **`twitter_list_timeline`** (GET /twitter/list/timeline): the same List as X's OWN native feed, carrying members' retweets and X's List ordering. It takes only `list_id`, `count` and `cursor`, because a native timeline cannot honour search operators, so no date range and no reply filter exist on it.
+
+  The two are separated by their PARAMETER SETS, not by their names, and each tool description says so and names the other, so a model picking between them cannot silently answer a different question than the one asked. A regression check in `test/tools.test.mjs` pins the difference so a later edit cannot harmonise it away.
+
+  Three writes that run on the CUSTOMER'S REGISTERED X SESSION rather than a pooled account, because a List belongs to a specific account:
+  - **`twitter_list_create`** (POST /twitter/list/create): create a List with a `name` and an optional `description` and `is_private`. A List is public unless you explicitly ask otherwise, and a private List is not readable by the public List read tools.
+  - **`twitter_list_add_member`** and **`twitter_list_remove_member`** (POST /twitter/list/add_member, /twitter/list/remove_member): add or remove one account on a List you own. Both return the List's `member_count` read back from X after the write, which is the field to check rather than `ok` alone: X returns a populated `errors[]` on 100% of successful calls to these ops, so the error array cannot tell you whether your write applied, while the count can. `member_count` is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed.
+
+  All 5 cost $0.0008 per call. Register a session once with `twitter_customer_session`, or pass `auth_token` and `ct0` per call, for the three writes. Their backend handlers read every field through the dual-mode query-or-body helper, verified against the backend's own route-body-modes manifest by `test/body-mode-parity.mjs`, so none of them sets `jsonBody`. The catalog is now **91 tools: 57 reads and 34 write actions**.
+
+## 0.8.0 (2026-08-17)
+
+### Added
+
+- **6 new reads: X Communities and tweet quotes.** `twitter_community_info` (one Community by numeric id: name, counts, join policy, rules, topic, banners, admin), `twitter_community_members` (the member roster, each row carrying that member's `Admin` / `Moderator` / `Member` role), `twitter_community_moderators` (moderators and admins from their own upstream operation, not a filter over the roster), `twitter_community_tweets` (the post timeline, with the pinned post returned as its own `pinned` field), `twitter_community_memberships` (the inverse lookup: every Community a given numeric `user_id` belongs to), and `twitter_tweet_quotes` (tweets that quote a tweet, with their text). The five Community reads are served by the account pool rather than by your session, which is why `role`, `can_join`, `is_pinned` and `viewer_relationship_type` come back null on them: those four describe the account that made the upstream call, and on a pooled read that is a rotating account you have never heard of. `twitter_tweet_quotes` is search-backed, so its `count` is what search returned rather than the tweet's true `quote_count`. The catalog moved to **86 tools: 55 reads and 31 write actions**. (This entry was written on 2026-08-17: the 0.8.0 release bumped the package version and shipped the tools but left no changelog entry behind it.)
+
 ## 0.7.8 (2026-08-16)
 
 ### Added

@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 86 tools (55 reads, 31 writes).
+// Catalog: 91 tools (57 reads, 34 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -490,6 +490,49 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+    },
+  },
+  {
+    name: "twitter_list_tweets",
+    path: "/twitter/list/tweets",
+    description:
+      "Read the posts written by the members of a public Twitter/X List, newest first, through X's search index. This is the FILTERABLE List feed: it accepts since and until date bounds and an include_replies toggle. It does NOT return retweets, and search-index lag applies, so a post made moments ago can be missing for a short while. Use twitter_list_timeline instead when you want the List exactly as X shows it, retweets and native ordering included, and accept that it takes no filters. Paginate with cursor. The list_id appears in the X.com list URL (x.com/i/lists/<list_id>).",
+    shape: {
+      list_id: z.string().describe(
+        "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>. The List must be public.",
+      ),
+      since: z.string().optional().describe(
+        "Optional. Only posts on or after this date, as YYYY-MM-DD (e.g. \"2026-08-01\"). Any other format is rejected with a 400.",
+      ),
+      until: z.string().optional().describe(
+        "Optional. Only posts BEFORE this date, as YYYY-MM-DD. EXCLUSIVE, matching X's own until: search operator, so a post made on the until date is not returned. Any other format is rejected with a 400.",
+      ),
+      include_replies: z.string().optional().describe(
+        "Optional. Whether to include replies written by List members. Pass the string \"true\" or \"false\"; defaults to true when omitted. Any other value is rejected with a 400 rather than read as false.",
+      ),
+      count: z.number().int().min(1).max(100).optional().describe(
+        "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+      ),
+    },
+  },
+  {
+    name: "twitter_list_timeline",
+    path: "/twitter/list/timeline",
+    description:
+      "Read a public Twitter/X List's NATIVE feed, the same posts and the same ordering the List shows on x.com, including members' retweets. It takes only list_id, count and cursor: no date range and no reply filter exist on this endpoint, because a native timeline cannot honour search operators. Use twitter_list_tweets when you need a date range or want replies filtered out, and accept that it drops retweets in exchange. Paginate with cursor until the tweets array comes back empty.",
+    shape: {
+      list_id: z.string().describe(
+        "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>. The List must be public.",
+      ),
+      count: z.number().int().min(1).max(100).optional().describe(
+        "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
       ),
     },
   },
@@ -1207,6 +1250,94 @@ export const TOOLS = [
     shape: {
       user_id: z.string().describe(
         "Numeric user id of the account to unfollow.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_list_add_member",
+    path: "/twitter/list/add_member",
+    method: "POST",
+    write: true,
+    description:
+      "Add one account to a Twitter/X List that YOUR registered X session owns, by numeric list id and numeric user id. Use it to curate a List from code, for example adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. Read member_count to confirm the change landed: it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List is not yours) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reverse with twitter_list_remove_member.",
+    shape: {
+      list_id: z.string().describe(
+        "Numeric id of the List you own. Found in the list URL: x.com/i/lists/<list_id>.",
+      ),
+      user_id: z.string().describe(
+        "Numeric user id of the account to add. Resolve a handle to a user_id first with twitter_user_info.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_list_remove_member",
+    path: "/twitter/list/remove_member",
+    method: "POST",
+    write: true,
+    destructive: true,
+    description:
+      "Remove one account from a Twitter/X List that YOUR registered X session owns, by numeric list id and numeric user id. Use it to prune a curated List, for example dropping accounts that have gone quiet. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. Read member_count to confirm the removal landed: it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was never a member, the List is not yours) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reverse with twitter_list_add_member.",
+    shape: {
+      list_id: z.string().describe(
+        "Numeric id of the List you own. Found in the list URL: x.com/i/lists/<list_id>.",
+      ),
+      user_id: z.string().describe(
+        "Numeric user id of the account to remove. Resolve a handle to a user_id first with twitter_user_info.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_list_create",
+    path: "/twitter/list/create",
+    method: "POST",
+    write: true,
+    description:
+      "Create a new Twitter/X List owned by YOUR registered X session, with a name and an optional description and privacy flag. This is the starting point for building a List from code: create it here, then fill it with twitter_list_add_member using the list id this returns. Returns ok, action, the new list_id, member_count, and the full list object X returned. A List is PUBLIC unless you explicitly ask for a private one, and a private List is not readable by the public List read tools (twitter_list_members, twitter_list_tweets, twitter_list_timeline).",
+    shape: {
+      name: z.string().min(1).describe(
+        "Display name for the new List, e.g. \"Founders\". Required; an empty or whitespace-only name is rejected with a 400.",
+      ),
+      description: z.string().optional().describe(
+        "Optional. Description shown on the List, e.g. \"People building in public\". Defaults to empty.",
+      ),
+      is_private: z.string().optional().describe(
+        "Optional. Pass the string \"true\" to create a PRIVATE List. Defaults to false (public), because a public List can be made private later while a leak cannot be undone. Note a private List is not readable by the public List read tools.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",

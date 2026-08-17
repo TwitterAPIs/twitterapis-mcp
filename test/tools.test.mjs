@@ -25,9 +25,12 @@ const writes = TOOLS.filter((t) => t.write);
 // Bumped 80 -> 86 on 2026-08-16 with the five community reads
 // (twitter_community_info / _members / _moderators / _tweets / _memberships) and
 // twitter_tweet_quotes, all GET reads, so writes are unchanged at 31.
-const EXPECTED_TOOLS = 86;
-const EXPECTED_READS = 55;
-const EXPECTED_WRITES = 31;
+// Bumped 86 -> 91 on 2026-08-17 with the X List operation family: two reads
+// (twitter_list_tweets, twitter_list_timeline) and three writes
+// (twitter_list_add_member, twitter_list_remove_member, twitter_list_create).
+const EXPECTED_TOOLS = 91;
+const EXPECTED_READS = 57;
+const EXPECTED_WRITES = 34;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -95,8 +98,32 @@ check("account tools use /account/* path", ["twitter_account_me", "twitter_accou
 check("dm_send present and is a write", TOOLS.find((t) => t.name === "twitter_dm_send")?.method === "POST" && TOOLS.find((t) => t.name === "twitter_dm_send")?.write === true);
 
 // The destructive (reversing) writes are flagged for client warnings.
-const DESTRUCTIVE = ["twitter_delete_tweet", "twitter_unfavorite_tweet", "twitter_unretweet", "twitter_unbookmark_tweet", "twitter_unfollow_user", "twitter_article_unpublish", "twitter_article_delete", "twitter_monitor_delete", "twitter_monitor_webhook_delete"];
+const DESTRUCTIVE = ["twitter_delete_tweet", "twitter_unfavorite_tweet", "twitter_unretweet", "twitter_unbookmark_tweet", "twitter_unfollow_user", "twitter_article_unpublish", "twitter_article_delete", "twitter_monitor_delete", "twitter_monitor_webhook_delete", "twitter_list_remove_member"];
 check("destructive writes flagged", DESTRUCTIVE.every((n) => TOOLS.find((t) => t.name === n)?.destructive === true));
+
+// The X List family (task #2251): two reads that look like two spellings of one
+// capability and are not, plus three session-backed writes. The two reads must
+// stay DIFFERENT in their parameter sets, which is the only thing that separates
+// them: list/tweets is search-backed so it carries since/until/include_replies,
+// list/timeline is X's native feed so it carries none of the three. A future
+// edit that "harmonises" them would silently make one answer the other's
+// question, so the difference is pinned here rather than left to prose.
+check("list read family present and read-only", ["twitter_list_members", "twitter_list_tweets", "twitter_list_timeline"].every((n) => {
+  const t = TOOLS.find((x) => x.name === n);
+  return t && !t.write && !t.method;
+}));
+check("list/tweets is the filterable (search-backed) feed", (() => {
+  const t = TOOLS.find((x) => x.name === "twitter_list_tweets");
+  return t && ["list_id", "since", "until", "include_replies", "count", "cursor"].every((a) => a in t.shape);
+})());
+check("list/timeline takes NO filters, only list_id + paging", (() => {
+  const t = TOOLS.find((x) => x.name === "twitter_list_timeline");
+  return t && JSON.stringify(Object.keys(t.shape)) === JSON.stringify(["list_id", "count", "cursor"]);
+})());
+check("list writes are POST writes on the customer's own session (inline creds exposed)", ["twitter_list_add_member", "twitter_list_remove_member", "twitter_list_create"].every((n) => {
+  const t = TOOLS.find((x) => x.name === n);
+  return t && t.method === "POST" && t.write === true && !t.jsonBody && t.shape.auth_token && t.shape.ct0;
+}));
 
 // Monitoring family (task #14/#488): the first tools in this catalog that carry
 // a REST path parameter (/monitor/{id}, /webhook/{id}, /webhook/{id}/test) and

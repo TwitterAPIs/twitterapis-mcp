@@ -1,5 +1,5 @@
 {
-  "toolCount": 86,
+  "toolCount": 91,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -27,6 +27,8 @@
     "twitter_tweet_retweeters",
     "twitter_tweet_quotes",
     "twitter_list_members",
+    "twitter_list_tweets",
+    "twitter_list_timeline",
     "twitter_spaces_info",
     "twitter_community_info",
     "twitter_community_members",
@@ -59,6 +61,9 @@
     "twitter_unbookmark_tweet",
     "twitter_follow_user",
     "twitter_unfollow_user",
+    "twitter_list_add_member",
+    "twitter_list_remove_member",
+    "twitter_list_create",
     "twitter_customer_session",
     "twitter_customer_session_delete",
     "twitter_user_login",
@@ -1056,6 +1061,99 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "list_id"
+        ]
+      }
+    },
+    "twitter_list_tweets": {
+      "name": "twitter_list_tweets",
+      "path": "/twitter/list/tweets",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Read the posts written by the members of a public Twitter/X List, newest first, through X's search index. This is the FILTERABLE List feed: it accepts since and until date bounds and an include_replies toggle. It does NOT return retweets, and search-index lag applies, so a post made moments ago can be missing for a short while. Use twitter_list_timeline instead when you want the List exactly as X shows it, retweets and native ordering included, and accept that it takes no filters. Paginate with cursor. The list_id appears in the X.com list URL (x.com/i/lists/<list_id>).",
+      "args": [
+        "list_id",
+        "since",
+        "until",
+        "include_replies",
+        "count",
+        "cursor"
+      ],
+      "required": [
+        "list_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "description": "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>. The List must be public."
+          },
+          "since": {
+            "description": "Optional. Only posts on or after this date, as YYYY-MM-DD (e.g. \"2026-08-01\"). Any other format is rejected with a 400.",
+            "type": "string"
+          },
+          "until": {
+            "description": "Optional. Only posts BEFORE this date, as YYYY-MM-DD. EXCLUSIVE, matching X's own until: search operator, so a post made on the until date is not returned. Any other format is rejected with a 400.",
+            "type": "string"
+          },
+          "include_replies": {
+            "description": "Optional. Whether to include replies written by List members. Pass the string \"true\" or \"false\"; defaults to true when omitted. Any other value is rejected with a 400 rather than read as false.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "list_id"
+        ]
+      }
+    },
+    "twitter_list_timeline": {
+      "name": "twitter_list_timeline",
+      "path": "/twitter/list/timeline",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Read a public Twitter/X List's NATIVE feed, the same posts and the same ordering the List shows on x.com, including members' retweets. It takes only list_id, count and cursor: no date range and no reply filter exist on this endpoint, because a native timeline cannot honour search operators. Use twitter_list_tweets when you need a date range or want replies filtered out, and accept that it drops retweets in exchange. Paginate with cursor until the tweets array comes back empty.",
+      "args": [
+        "list_id",
+        "count",
+        "cursor"
+      ],
+      "required": [
+        "list_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "description": "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>. The List must be public."
+          },
+          "count": {
+            "description": "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
             "type": "string"
           }
         },
@@ -2439,6 +2537,172 @@
         },
         "required": [
           "user_id"
+        ]
+      }
+    },
+    "twitter_list_add_member": {
+      "name": "twitter_list_add_member",
+      "path": "/twitter/list/add_member",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Add one account to a Twitter/X List that YOUR registered X session owns, by numeric list id and numeric user id. Use it to curate a List from code, for example adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. Read member_count to confirm the change landed: it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List is not yours) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reverse with twitter_list_remove_member.",
+      "args": [
+        "list_id",
+        "user_id",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "list_id",
+        "user_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "description": "Numeric id of the List you own. Found in the list URL: x.com/i/lists/<list_id>."
+          },
+          "user_id": {
+            "type": "string",
+            "description": "Numeric user id of the account to add. Resolve a handle to a user_id first with twitter_user_info."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "list_id",
+          "user_id"
+        ]
+      }
+    },
+    "twitter_list_remove_member": {
+      "name": "twitter_list_remove_member",
+      "path": "/twitter/list/remove_member",
+      "method": "POST",
+      "write": true,
+      "destructive": true,
+      "jsonBody": false,
+      "description": "Remove one account from a Twitter/X List that YOUR registered X session owns, by numeric list id and numeric user id. Use it to prune a curated List, for example dropping accounts that have gone quiet. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. Read member_count to confirm the removal landed: it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was never a member, the List is not yours) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reverse with twitter_list_add_member.",
+      "args": [
+        "list_id",
+        "user_id",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "list_id",
+        "user_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "description": "Numeric id of the List you own. Found in the list URL: x.com/i/lists/<list_id>."
+          },
+          "user_id": {
+            "type": "string",
+            "description": "Numeric user id of the account to remove. Resolve a handle to a user_id first with twitter_user_info."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "list_id",
+          "user_id"
+        ]
+      }
+    },
+    "twitter_list_create": {
+      "name": "twitter_list_create",
+      "path": "/twitter/list/create",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Create a new Twitter/X List owned by YOUR registered X session, with a name and an optional description and privacy flag. This is the starting point for building a List from code: create it here, then fill it with twitter_list_add_member using the list id this returns. Returns ok, action, the new list_id, member_count, and the full list object X returned. A List is PUBLIC unless you explicitly ask for a private one, and a private List is not readable by the public List read tools (twitter_list_members, twitter_list_tweets, twitter_list_timeline).",
+      "args": [
+        "name",
+        "description",
+        "is_private",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "name"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name for the new List, e.g. \"Founders\". Required; an empty or whitespace-only name is rejected with a 400."
+          },
+          "description": {
+            "description": "Optional. Description shown on the List, e.g. \"People building in public\". Defaults to empty.",
+            "type": "string"
+          },
+          "is_private": {
+            "description": "Optional. Pass the string \"true\" to create a PRIVATE List. Defaults to false (public), because a public List can be made private later while a leak cannot be undone. Note a private List is not readable by the public List read tools.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
         ]
       }
     },
