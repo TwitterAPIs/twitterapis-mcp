@@ -163,6 +163,101 @@ check(existsSync(resolve(ROOT, "glama.json")), "glama.json is missing");
 const glama = JSON.parse(read("glama.json"));
 check(Array.isArray(glama.maintainers) && glama.maintainers.length > 0, "glama.json: no maintainers");
 
+// ── manifest.json + .mcpbignore (the MCPB bundle surface) ───────────────────
+// Smithery no longer lists a stdio server from a repo file. Its current publish
+// path takes either a hosted Streamable HTTP URL or an uploaded .mcpb bundle,
+// and this package is stdio-only with no hosted endpoint, so the bundle is the
+// only route. manifest.json is what `mcpb pack` reads to build it.
+//
+// That makes the bundle a SECOND public distribution surface with DIFFERENT
+// default contents from the npm tarball. npm ships only the `files` allowlist;
+// `mcpb pack` starts from the whole working directory. MEASURED before
+// .mcpbignore existed: a test pack shipped .claude/RESUME.md, test/ and
+// scripts/, which carry foreign-tenant identity strings. The npm firewall gate
+// could not see any of it, because none of those files are on the npm publish
+// surface. Hence the deny-list assertions below.
+check(existsSync(resolve(ROOT, "manifest.json")), "manifest.json is missing (mcpb bundle cannot be built)");
+const mcpb = JSON.parse(read("manifest.json"));
+
+for (const k of ["manifest_version", "name", "version", "description", "author", "server"]) {
+  check(mcpb[k] != null, `manifest.json: missing required field "${k}"`);
+}
+// THE SIXTH COPY OF THE VERSION. Same drift rule as the other five.
+check(
+  mcpb.version === pkg.version,
+  `manifest.json version ${mcpb.version} != package.json version ${pkg.version}`,
+);
+// $schema must match the declared manifest_version, or the file validates
+// against a spec it does not claim to follow.
+check(
+  typeof mcpb.$schema === "string" && mcpb.$schema.includes(`v${mcpb.manifest_version}.schema.json`),
+  `manifest.json: $schema ${mcpb.$schema} does not match manifest_version ${mcpb.manifest_version}`,
+);
+check(mcpb.server?.type === "node", "manifest.json: server.type must be node");
+// The entry point must be a file that EXISTS, not a plausible path. A bundle
+// whose entry_point is wrong packs fine and fails at first launch.
+check(
+  typeof mcpb.server?.entry_point === "string" && existsSync(resolve(ROOT, mcpb.server.entry_point)),
+  `manifest.json: server.entry_point "${mcpb.server?.entry_point}" does not exist`,
+);
+check(mcpb.server?.mcp_config?.command === "node", "manifest.json: mcp_config.command must be node");
+
+// Same derive-from-source rule as server.json: every env var the server READS
+// must be wired here, and nothing may be wired that it ignores.
+{
+  const src = read("src/index.js");
+  const used = new Set([...src.matchAll(/process\.env\.([A-Z0-9_]+)/g)].map((m) => m[1]));
+  const envMap = mcpb.server?.mcp_config?.env ?? {};
+  for (const v of used) {
+    check(envMap[v] != null, `manifest.json: src/index.js reads ${v} but mcp_config.env does not set it`);
+  }
+  for (const d of Object.keys(envMap)) {
+    check(used.has(d), `manifest.json: mcp_config.env sets ${d} but src/index.js never reads it`);
+  }
+  // Every env value must resolve from a DECLARED user_config key, or the
+  // installer collects nothing and the server starts unconfigured.
+  for (const [name, expr] of Object.entries(envMap)) {
+    const ref = /^\$\{user_config\.([a-z0-9_]+)\}$/.exec(String(expr));
+    check(ref != null, `manifest.json: env ${name} is not a \${user_config.*} reference`);
+    if (ref) {
+      check(
+        mcpb.user_config?.[ref[1]] != null,
+        `manifest.json: env ${name} references user_config.${ref[1]}, which is not declared`,
+      );
+    }
+  }
+}
+// The key is mandatory and secret here too. `sensitive` is what stops an
+// installer rendering the API key as plain text on screen.
+{
+  const keyCfg = mcpb.user_config?.twitterapis_key;
+  check(keyCfg != null, "manifest.json: user_config.twitterapis_key is missing");
+  check(keyCfg?.required === true, "manifest.json: twitterapis_key must be required");
+  check(keyCfg?.sensitive === true, "manifest.json: twitterapis_key must be sensitive");
+  for (const [name, cfg] of Object.entries(mcpb.user_config ?? {})) {
+    check(typeof cfg.title === "string" && cfg.title.length > 0, `manifest.json: user_config.${name} has no title`);
+    check(
+      typeof cfg.description === "string" && cfg.description.length > 20,
+      `manifest.json: user_config.${name} needs a real description, installers show it to the user`,
+    );
+  }
+}
+
+// The deny-list. Each entry here was measured leaking into a real pack.
+check(existsSync(resolve(ROOT, ".mcpbignore")), ".mcpbignore is missing, `mcpb pack` would ship test/, scripts/ and .claude/");
+{
+  const ign = read(".mcpbignore")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith("#"));
+  for (const entry of [".claude/", "test/", "scripts/", ".env", "*.mcpb"]) {
+    check(
+      ign.includes(entry),
+      `.mcpbignore: "${entry}" is not excluded, so \`mcpb pack\` would put it in the public bundle`,
+    );
+  }
+}
+
 // ── package-lock.json ───────────────────────────────────────────────────────
 // The lockfile carries its own copy of the package identity, and npm only
 // refreshes it when something prompts npm to write it. A version bump that
@@ -204,7 +299,7 @@ if (lockRoot) {
 // Bare case-insensitive substrings, never word boundaries: \bforkoff\b misses
 // officialForkoff, which is exactly the string that must not appear here.
 const BANNED = ["forkoff", "0x0simba", "simba", "bozad", "getxapi", "redditapis", "users/apple"];
-for (const f of ["server.json", "smithery.yaml", "glama.json"]) {
+for (const f of ["server.json", "smithery.yaml", "glama.json", "manifest.json"]) {
   const body = read(f).toLowerCase();
   for (const term of BANNED) {
     check(!body.includes(term), `${f}: tenant-firewall breach, contains "${term}"`);
@@ -217,7 +312,7 @@ if (fail.length) {
   process.exit(1);
 }
 console.log(
-  `✓ registry-manifests: server.json + smithery.yaml + glama.json + package-lock.json ` +
-    `consistent at v${pkg.version} (5 version copies agree), ` +
-    `env vars match src/index.js, firewall clean`,
+  `✓ registry-manifests: server.json + smithery.yaml + glama.json + manifest.json + package-lock.json ` +
+    `consistent at v${pkg.version} (6 version copies agree), ` +
+    `env vars match src/index.js, mcpb bundle surface denies test/ scripts/ .claude/, firewall clean`,
 );
