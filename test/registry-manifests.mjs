@@ -62,6 +62,28 @@ check(
 check(
   server.version === pkg.version,
   `server.json version ${server.version} != package.json version ${pkg.version}`,
+)
+
+// mcpName IS THE OWNERSHIP PROOF, and nothing pinned it until 2026-08-17.
+//
+// The official MCP registry does not take our word that we own @twitterapis/mcp.
+// It downloads the tarball FROM NPM and reads `mcpName` out of the package.json
+// inside it. No repo-only change can satisfy that check, which is why a missing
+// mcpName cannot be caught by looking at the working tree alone.
+//
+// MEASURED 2026-08-17: the published 0.9.0 tarball carried NO mcpName at all,
+// while the registry listing sat at 0.6.4. The field was added in an earlier PR
+// that was never merged, so it reached neither main nor any publish, and the
+// listing quietly went three minor versions stale. This assertion is the half
+// that makes that impossible to repeat: the value must exist AND must equal the
+// server name the registry knows us by, or the suite fails before publish.
+check(
+  typeof pkg.mcpName === "string" && pkg.mcpName.length > 0,
+  "package.json: mcpName is missing. The MCP registry reads this from the PUBLISHED tarball to prove we own the npm package; without it a registry publish is rejected.",
+);
+check(
+  pkg.mcpName === server.name,
+  `package.json mcpName "${pkg.mcpName}" != server.json name "${server.name}". They are the same identity and the registry compares them.`,
 );
 const npmPkg = (server.packages ?? []).find((p) => p.registryType === "npm");
 check(npmPkg != null, "server.json: no npm package entry");
