@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.2 (2026-08-18)
+
+### Fixed
+
+- **The server no longer exits at startup when `TWITTERAPIS_KEY` is missing.** A registry connectivity scanner (Smithery, Glama, the official MCP registry, Claude Connectors Directory) spins up the server with no real credential just to enumerate `tools/list`. Exiting before the transport connected made every automated scan fail outright and read as a generic connectivity error, HTTP 405 on Smithery, rather than a missing-key error, which is why this listing scored low on registry capability-quality checks that can only run once a scan succeeds. Tools now register and `tools/list` responds regardless of whether a key is present, verified live with the key stripped from the process env (91 tools returned, was a crash before this fix). An actual tool call made with no key still fails clearly, at the point of the call, with the same style of message the existing 401 branch already used.
+
 ## 0.9.0 (2026-08-17)
 
 ### Added
