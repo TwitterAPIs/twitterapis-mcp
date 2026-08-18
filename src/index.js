@@ -32,11 +32,19 @@ const BASE_URL = (
 ).replace(/\/+$/, "");
 const REQUEST_TIMEOUT_MS = Number(process.env.TWITTERAPIS_TIMEOUT_MS || 30000);
 
+// Lazy validation, not exit-on-boot: an MCP registry scanner (Smithery, Glama,
+// the official registry, Claude Connectors) connects the stdio transport with
+// no real credential to enumerate tools/list. Exiting here before the server
+// ever registers a tool makes that handshake fail outright and reads as a
+// generic connectivity error, not a missing-key error, on the scanner side --
+// confirmed live 2026-08-18 (Smithery: "Initialization failed... could not be
+// automatically scanned", HTTP 405). Warn and continue; a real tool CALL made
+// with no key still fails clearly, at the point of the call, same as it
+// already does for a bad key (see the 401 branch below).
 if (!API_KEY) {
   console.error(
-    "[twitterapis-mcp] Missing TWITTERAPIS_KEY. Get a key at https://www.twitterapis.com/signup and set it in your MCP client config.",
+    "[twitterapis-mcp] Missing TWITTERAPIS_KEY. Get a key at https://www.twitterapis.com/signup and set it in your MCP client config. Tools are registered but every call will fail until it is set.",
   );
-  process.exit(1);
 }
 
 // ── REST call ────────────────────────────────────────────────────────────────
@@ -51,6 +59,15 @@ if (!API_KEY) {
 // before building the query string or body, so a pathParams arg never leaks
 // into either.
 async function callEndpoint(path, args, method = "GET", jsonBody = false, pathParams = []) {
+  if (!API_KEY) {
+    return {
+      isError: true,
+      content: [{
+        type: "text",
+        text: "Missing TWITTERAPIS_KEY (invalid or missing API key, get one at https://www.twitterapis.com/signup and set it in your MCP client config).",
+      }],
+    };
+  }
   // Fill {name} URL segments from args and strip those keys, so a pathParams arg
   // (e.g. a monitor/webhook id) never also leaks into the query string or JSON
   // body. A missing value fails loudly rather than shipping a request that still
