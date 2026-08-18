@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 91 tools (57 reads, 34 writes).
+// Catalog: 94 tools (60 reads, 34 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -494,6 +494,23 @@ export const TOOLS = [
     },
   },
   {
+    name: "twitter_list_followers",
+    path: "/twitter/list/followers",
+    description:
+      "Fetch a public List's followers by its numeric id, cursor-paginated. Followers and members are different sets of people: members are the accounts the List owner added to it, followers are the accounts that subscribed to read it. A List with hundreds of members commonly has only a handful of followers, so a small count here is normal and is not a truncated page. Use twitter_list_members for the member roster instead.",
+    shape: {
+      list_id: z.string().describe(
+        "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>.",
+      ),
+      count: z.number().int().min(1).max(100).optional().describe(
+        "Max items to return for this page. Defaults to 20 and is clamped to 1-100.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. next_cursor is null once X marks the follower list complete.",
+      ),
+    },
+  },
+  {
     name: "twitter_list_tweets",
     path: "/twitter/list/tweets",
     description:
@@ -510,6 +527,9 @@ export const TOOLS = [
       ),
       include_replies: z.string().optional().describe(
         "Optional. Whether to include replies written by List members. Pass the string \"true\" or \"false\"; defaults to true when omitted. Any other value is rejected with a 400 rather than read as false.",
+      ),
+      product: z.enum(["Latest","Top"]).optional().describe(
+        "Which search ranking to read. 'Latest' (default) is reverse-chronological. 'Top' is X's ranked ordering. Any unrecognised value falls back to Latest rather than erroring.",
       ),
       count: z.number().int().min(1).max(100).optional().describe(
         "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring.",
@@ -554,6 +574,20 @@ export const TOOLS = [
     },
   },
   {
+    name: "twitter_community_search",
+    path: "/twitter/community/search",
+    description:
+      "Find X Communities by keyword, cursor-paginated. This is the discovery step the rest of the community family assumes: every other community endpoint starts from a community id, and this is the one that produces one. Each hit is a compact record, id, name, member count, nsfw flag, topic name, banners and the facepile avatars, exactly what X's own search sends and nothing more. Once you have an id, use twitter_community_info or twitter_community_about for detail, twitter_community_members / twitter_community_moderators for the roster, and twitter_community_tweets for its posts.",
+    shape: {
+      query: z.string().describe(
+        "Keyword to search for, 1 to 500 characters, e.g. 'build in public'.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+      ),
+    },
+  },
+  {
     name: "twitter_community_info",
     path: "/twitter/community/info",
     description:
@@ -561,6 +595,17 @@ export const TOOLS = [
     shape: {
       community_id: z.string().describe(
         "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id.",
+      ),
+    },
+  },
+  {
+    name: "twitter_community_about",
+    path: "/twitter/community/about",
+    description:
+      "The About tab for one X Community: its moderators, and a preview of its members, both returned as FULL user profiles with bio, follower and following counts, tweet counts, location, website, banner and join date. twitter_community_members and twitter_community_moderators return a reduced row instead, so this is the endpoint that answers who runs a community in one call rather than one call plus a profile lookup per person. Use twitter_community_info instead for the community's own metadata (name, description, rules, join policy); this endpoint is about the PEOPLE, not the community object.",
+    shape: {
+      community_id: z.string().describe(
+        "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'.",
       ),
     },
   },

@@ -8285,6 +8285,203 @@
         ]
       }
     },
+    "/list/followers": {
+      "get": {
+        "operationId": "list-followers",
+        "summary": "List Followers",
+        "description": "Fetch a public List's followers by its numeric ID, cursor-paginated. Followers and members are different sets of people: members are the accounts the List owner added to it, followers are the accounts that subscribed to read it. A List with hundreds of members commonly has only a handful of followers, so a small count here is normal and is not a truncated page. next_cursor is null once X marks the roster complete. Cost: $0.0008 per call.",
+        "tags": [
+          "List Data"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/list/followers?list_id=1234567890123456789\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/list/followers\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"list_id\": \"1234567890123456789\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/list/followers\");\nurl.search = new URLSearchParams({ list_id: \"1234567890123456789\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page through the accounts that follow a public Twitter/X List.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "description": "Follower user objects for this page.",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of items returned in this page."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    }
+                  }
+                },
+                "example": {
+                  "users": [
+                    {
+                      "id": "745273",
+                      "username": "naval",
+                      "name": "Naval",
+                      "verified": true
+                    }
+                  ],
+                  "next_cursor": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "list_id",
+            "in": "query",
+            "required": true,
+            "description": "Numeric ID of the public List.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the public List.",
+              "example": "1234567890123456789"
+            },
+            "example": "1234567890123456789"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response."
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "schema": {
+              "type": "integer",
+              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "example": "20"
+            },
+            "example": "20"
+          }
+        ]
+      }
+    },
     "/list/tweets": {
       "get": {
         "operationId": "list-tweets",
@@ -8495,6 +8692,18 @@
               "example": "false"
             },
             "example": "false"
+          },
+          {
+            "name": "product",
+            "in": "query",
+            "required": false,
+            "description": "Which search ranking to read: Latest or Top. Default Latest, and any unrecognised value falls back to Latest.",
+            "schema": {
+              "type": "string",
+              "description": "Which search ranking to read: Latest or Top. Default Latest, and any unrecognised value falls back to Latest.",
+              "example": "Top"
+            },
+            "example": "Top"
           },
           {
             "name": "count",
@@ -9469,7 +9678,7 @@
       "get": {
         "operationId": "community-info",
         "summary": "Community Info",
-        "description": "Look up a single X Community by its numeric id and get back its name, description, member and moderator counts, join and invite policies, join question, primary topic, search tags, posted rules, both banners, permalink, admin and creator profiles, and the facepile member ids. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "description": "Look up a single X Community by its numeric id and get back its name, description, member count, join policy, primary topic, posted rules and both banners. This endpoint returns the REDUCED form of the Community object: eight of its 24 fields come back empty here and are populated by Community Memberships instead, which the response table marks field by field. Billed at $0.0008 per call. Cost: $0.0008 per call.",
         "tags": [
           "Communities"
         ],
@@ -9505,116 +9714,12 @@
                   "type": "object",
                   "properties": {
                     "community": {
-                      "type": "object",
-                      "description": "The community, or null with a 404 when the id resolves to nothing.",
-                      "additionalProperties": true
-                    },
-                    "community.id": {
-                      "type": "string",
-                      "description": "Numeric community id as a string."
-                    },
-                    "community.name": {
-                      "type": "string",
-                      "description": "The community's display name."
-                    },
-                    "community.description": {
-                      "type": "string",
-                      "description": "The community's description text."
-                    },
-                    "community.created_at": {
-                      "type": "object",
-                      "description": "Millisecond epoch the community was created. 0 when X did not send it.",
-                      "additionalProperties": true
-                    },
-                    "community.member_count": {
-                      "type": "object",
-                      "description": "Total members.",
-                      "additionalProperties": true
-                    },
-                    "community.moderator_count": {
-                      "type": "object",
-                      "description": "Total moderators.",
-                      "additionalProperties": true
-                    },
-                    "community.join_policy": {
-                      "type": "string",
-                      "description": "How the community admits members, passed through from X. Observed values: Open and RestrictedJoinRequestsRequireModeratorApproval."
-                    },
-                    "community.invites_policy": {
-                      "type": "string",
-                      "description": "Who may invite, passed through from X. Observed value: MemberInvitesAllowed."
-                    },
-                    "community.is_nsfw": {
-                      "type": "boolean",
-                      "description": "Whether the community is flagged not-safe-for-work. Defaults to false when X does not send the field."
-                    },
-                    "community.question": {
-                      "type": "string",
-                      "description": "The join-screen prompt applicants answer, when the community sets one."
-                    },
-                    "community.primary_topic": {
-                      "type": "object",
-                      "description": "The single topic X assigns the community, as { topic_id, name }. Null when absent. X spells the name topic_name on the wire; it is normalised to name so a consumer reading Spaces topics and Community topics does not have to care.",
-                      "additionalProperties": true
-                    },
-                    "community.search_tags": {
-                      "type": "object",
-                      "description": "The community's search tags, as plain strings.",
-                      "additionalProperties": true
-                    },
-                    "community.rules": {
-                      "type": "object",
-                      "description": "The community's posted rules, each { id, name, description }. X sends only the rule id and name on this surface, so description is null on every rule: X's own UI shows longer rule text that this payload does not carry, and it is not invented here.",
-                      "additionalProperties": true
-                    },
-                    "community.banner_url": {
-                      "type": "string",
-                      "description": "The banner a client should actually render: the custom banner when the community set one, otherwise X's default. Computed for you, because both banners are always present and picking the wrong one silently shows every community the same stock gradient."
-                    },
-                    "community.custom_banner": {
-                      "type": "object",
-                      "description": "The community's own banner as { url, width, height }, or null.",
-                      "additionalProperties": true
-                    },
-                    "community.default_banner": {
-                      "type": "object",
-                      "description": "X's stock banner as { url, width, height }. Present even when a custom banner exists.",
-                      "additionalProperties": true
-                    },
-                    "community.permalink": {
-                      "type": "string",
-                      "description": "The x.com/i/communities/<id> link."
-                    },
-                    "community.admin": {
-                      "type": "object",
-                      "description": "The community admin's full user profile.",
-                      "additionalProperties": true
-                    },
-                    "community.creator": {
-                      "type": "object",
-                      "description": "The community creator's full user profile. Frequently the same account as admin, but do not assume it always is.",
-                      "additionalProperties": true
-                    },
-                    "community.members_facepile_ids": {
-                      "type": "object",
-                      "description": "User ids of the members X puts in the community facepile preview. Ids only. Use Community Members for the actual roster.",
-                      "additionalProperties": true
-                    },
-                    "community.role": {
-                      "type": "string",
-                      "description": "ALWAYS NULL on this endpoint. It is the role of the ACCOUNT THAT MADE THE CALL, and these are pooled reads served by a rotating pool account, so any value here would describe a stranger. The key is kept rather than removed so it is visible that X sends this field and we decline to answer it."
-                    },
-                    "community.can_join": {
-                      "type": "boolean",
-                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It answers whether the CALLING account may join."
-                    },
-                    "community.is_pinned": {
-                      "type": "boolean",
-                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It answers whether the CALLING account pinned this community."
-                    },
-                    "community.viewer_relationship_type": {
-                      "type": "string",
-                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It is the viewer relationship, and the viewer is the pool account."
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/Community"
+                        }
+                      ],
+                      "description": "The community, or null with a 404 when the id resolves to nothing. This is the shared Community object, and this endpoint returns the REDUCED form of it: admin, invites_policy, question, search_tags and members_facepile_ids come back empty here, moderator_count comes back 0, and creator comes back with id and name null. Community Memberships returns the same 24 keys populated. Each field's own row says which endpoint fills it."
                     }
                   }
                 },
@@ -9625,24 +9730,25 @@
                     "description": "Founders shipping in the open.",
                     "created_at": 1724865134102,
                     "member_count": 392,
-                    "moderator_count": 1,
+                    "moderator_count": 0,
                     "join_policy": "RestrictedJoinRequestsRequireModeratorApproval",
-                    "invites_policy": "MemberInvitesAllowed",
+                    "invites_policy": null,
                     "is_nsfw": false,
-                    "question": "What are you currently building?",
+                    "question": null,
                     "primary_topic": {
-                      "topic_id": "303",
+                      "topic_id": null,
                       "name": "Software"
                     },
-                    "search_tags": [
-                      "saas",
-                      "buildinpublic",
-                      "founders"
-                    ],
+                    "search_tags": [],
                     "rules": [
                       {
                         "id": "1828843041869713570",
                         "name": "Be useful, not promotional",
+                        "description": "Ship updates and ask real questions. Link drops with no context get removed."
+                      },
+                      {
+                        "id": "1828843041869713571",
+                        "name": "No paid promotion",
                         "description": null
                       }
                     ],
@@ -9657,21 +9763,16 @@
                       "width": 1500,
                       "height": 500
                     },
-                    "permalink": "https://x.com/i/communities/1828843041869713562",
-                    "admin": {
-                      "id": "1281109705495130113",
-                      "username": "pizzaboy",
-                      "name": "Dan Holdsworth"
-                    },
+                    "permalink": null,
+                    "admin": null,
                     "creator": {
-                      "id": "1281109705495130113",
+                      "id": null,
                       "username": "pizzaboy",
-                      "name": "Dan Holdsworth"
+                      "name": null,
+                      "verified": false,
+                      "is_blue_verified": true
                     },
-                    "members_facepile_ids": [
-                      "1281109705495130113",
-                      "44196397"
-                    ],
+                    "members_facepile_ids": [],
                     "role": null,
                     "can_join": null,
                     "is_pinned": null,
@@ -10525,7 +10626,7 @@
       "get": {
         "operationId": "community-memberships",
         "summary": "Community Memberships",
-        "description": "The inverse relation: given a numeric X user id, list the communities that account belongs to, cursor-paginated. Each row is the FULL community object, the same shape Community Info returns, so profiling an account's community footprint takes one call per page rather than a follow-up lookup per community. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "description": "The inverse relation: given a numeric X user id, list the communities that account belongs to, cursor-paginated. Each row is the FULL community object, and it is the most populated form of it this API returns: admin, invites_policy, question, search_tags, members_facepile_ids and a real moderator_count all arrive here and do not on Community Info. Profiling an account's community footprint takes one call per page rather than a follow-up lookup per community. Billed at $0.0008 per call. Cost: $0.0008 per call.",
         "tags": [
           "Communities"
         ],
@@ -10576,116 +10677,11 @@
                   "type": "object",
                   "properties": {
                     "communities": {
-                      "type": "object",
-                      "description": "The communities this account belongs to, for this page. Each entry is the FULL community object, identical in shape to what Community Info returns, so a client that renders one can render the other. Deduplicated by id.",
-                      "additionalProperties": true
-                    },
-                    "communities[].id": {
-                      "type": "string",
-                      "description": "Numeric community id as a string."
-                    },
-                    "communities[].name": {
-                      "type": "string",
-                      "description": "The community's display name."
-                    },
-                    "communities[].description": {
-                      "type": "string",
-                      "description": "The community's description text."
-                    },
-                    "communities[].created_at": {
-                      "type": "object",
-                      "description": "Millisecond epoch the community was created. 0 when X did not send it.",
-                      "additionalProperties": true
-                    },
-                    "communities[].member_count": {
-                      "type": "object",
-                      "description": "Total members.",
-                      "additionalProperties": true
-                    },
-                    "communities[].moderator_count": {
-                      "type": "object",
-                      "description": "Total moderators.",
-                      "additionalProperties": true
-                    },
-                    "communities[].join_policy": {
-                      "type": "string",
-                      "description": "How the community admits members, passed through from X. Observed values: Open and RestrictedJoinRequestsRequireModeratorApproval."
-                    },
-                    "communities[].invites_policy": {
-                      "type": "string",
-                      "description": "Who may invite, passed through from X. Observed value: MemberInvitesAllowed."
-                    },
-                    "communities[].is_nsfw": {
-                      "type": "boolean",
-                      "description": "Whether the community is flagged not-safe-for-work. Defaults to false when X does not send the field."
-                    },
-                    "communities[].question": {
-                      "type": "string",
-                      "description": "The join-screen prompt applicants answer, when the community sets one."
-                    },
-                    "communities[].primary_topic": {
-                      "type": "object",
-                      "description": "The single topic X assigns the community, as { topic_id, name }. Null when absent. X spells the name topic_name on the wire; it is normalised to name so a consumer reading Spaces topics and Community topics does not have to care.",
-                      "additionalProperties": true
-                    },
-                    "communities[].search_tags": {
-                      "type": "object",
-                      "description": "The community's search tags, as plain strings.",
-                      "additionalProperties": true
-                    },
-                    "communities[].rules": {
-                      "type": "object",
-                      "description": "The community's posted rules, each { id, name, description }. X sends only the rule id and name on this surface, so description is null on every rule: X's own UI shows longer rule text that this payload does not carry, and it is not invented here.",
-                      "additionalProperties": true
-                    },
-                    "communities[].banner_url": {
-                      "type": "string",
-                      "description": "The banner a client should actually render: the custom banner when the community set one, otherwise X's default. Computed for you, because both banners are always present and picking the wrong one silently shows every community the same stock gradient."
-                    },
-                    "communities[].custom_banner": {
-                      "type": "object",
-                      "description": "The community's own banner as { url, width, height }, or null.",
-                      "additionalProperties": true
-                    },
-                    "communities[].default_banner": {
-                      "type": "object",
-                      "description": "X's stock banner as { url, width, height }. Present even when a custom banner exists.",
-                      "additionalProperties": true
-                    },
-                    "communities[].permalink": {
-                      "type": "string",
-                      "description": "The x.com/i/communities/<id> link."
-                    },
-                    "communities[].admin": {
-                      "type": "object",
-                      "description": "The community admin's full user profile.",
-                      "additionalProperties": true
-                    },
-                    "communities[].creator": {
-                      "type": "object",
-                      "description": "The community creator's full user profile. Frequently the same account as admin, but do not assume it always is.",
-                      "additionalProperties": true
-                    },
-                    "communities[].members_facepile_ids": {
-                      "type": "object",
-                      "description": "User ids of the members X puts in the community facepile preview. Ids only. Use Community Members for the actual roster.",
-                      "additionalProperties": true
-                    },
-                    "communities[].role": {
-                      "type": "string",
-                      "description": "ALWAYS NULL on this endpoint. It is the role of the ACCOUNT THAT MADE THE CALL, and these are pooled reads served by a rotating pool account, so any value here would describe a stranger. The key is kept rather than removed so it is visible that X sends this field and we decline to answer it."
-                    },
-                    "communities[].can_join": {
-                      "type": "boolean",
-                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It answers whether the CALLING account may join."
-                    },
-                    "communities[].is_pinned": {
-                      "type": "boolean",
-                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It answers whether the CALLING account pinned this community."
-                    },
-                    "communities[].viewer_relationship_type": {
-                      "type": "string",
-                      "description": "ALWAYS NULL on this endpoint, for the same caller-relative reason as role. It is the viewer relationship, and the viewer is the pool account."
+                      "type": "array",
+                      "description": "The communities this account belongs to, for this page. Each entry is the shared Community object, the same 24 keys Community Info returns, so a client that renders one can render the other. It is also the MORE POPULATED of the two: admin, invites_policy, question, search_tags, members_facepile_ids, a real moderator_count and a full creator profile all come back here and do not on Community Info. Deduplicated by id.",
+                      "items": {
+                        "$ref": "#/components/schemas/Community"
+                      }
                     },
                     "next_cursor": {
                       "type": "string",
@@ -10726,7 +10722,17 @@
                         }
                       ],
                       "banner_url": "https://pbs.twimg.com/community_banner_img/...",
-                      "permalink": "https://x.com/i/communities/1828843041869713562",
+                      "permalink": null,
+                      "admin": {
+                        "id": "1281109705495130113",
+                        "username": "pizzaboy",
+                        "name": "Dan Holdsworth"
+                      },
+                      "creator": {
+                        "id": "1281109705495130113",
+                        "username": "pizzaboy",
+                        "name": "Dan Holdsworth"
+                      },
                       "members_facepile_ids": [
                         "1281109705495130113"
                       ],
@@ -10861,6 +10867,434 @@
               "example": "20"
             },
             "example": "20"
+          }
+        ]
+      }
+    },
+    "/community/about": {
+      "get": {
+        "operationId": "community-about",
+        "summary": "Community About",
+        "description": "The About tab for one community: its moderators, and a preview of its members, both returned as FULL user profiles with bio, follower and following counts, tweet counts, location, website, banner and join date. Community Members and Community Moderators return a reduced row instead, so this is the endpoint that answers who runs a community in one call rather than one call plus a profile lookup per person. It is not paginated, because the upstream operation is not. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Communities"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/community/about?community_id=1493446837214187523\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/community/about\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"community_id\": \"1493446837214187523\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/community/about\");\nurl.search = new URLSearchParams({ community_id: \"1493446837214187523\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A community's moderators and a members preview, as full profiles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "moderators": {
+                      "type": "array",
+                      "description": "The community's moderators, as full user profiles. Same object User Info returns.",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "members": {
+                      "type": "array",
+                      "description": "A preview of the community's members, as full user profiles. X caps this at 10 rows on the underlying tab, so treat it as a sample and not a roster.",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "moderators_truncated": {
+                      "type": "boolean",
+                      "description": "True when X indicated there are more moderators than it sent. Read off X's own show-more marker, not inferred from the row count, so a community with exactly as many moderators as fit is reported correctly."
+                    },
+                    "members_truncated": {
+                      "type": "boolean",
+                      "description": "Same, for the members preview. True in practice for any community with more than 10 members. Page the full list with Community Members."
+                    },
+                    "other_sections": {
+                      "type": "array",
+                      "description": "Any section of the About tab this API does not yet model, each carrying id, title, users and more_url. Empty on every community observed so far. It exists so a section X adds later reaches you rather than being silently dropped.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "moderators": [
+                    {
+                      "id": "88403351",
+                      "username": "iuditg",
+                      "name": "Udit Goenka",
+                      "description": "Building in public.",
+                      "followers_count": 60868,
+                      "following_count": 372,
+                      "tweet_count": 46535,
+                      "location": "India",
+                      "url": "https://example.com",
+                      "created_at": "Sun Nov 08 11:49:55 +0000 2009",
+                      "profile_image_url": "https://pbs.twimg.com/profile_images/.../photo_normal.jpg",
+                      "is_blue_verified": true
+                    }
+                  ],
+                  "members": [
+                    {
+                      "id": "2535083002",
+                      "username": "sachikantaraul",
+                      "name": "Sachikanta Raul",
+                      "description": "Indie hacker.",
+                      "followers_count": 41,
+                      "following_count": 300,
+                      "tweet_count": 1204,
+                      "location": "India",
+                      "url": null,
+                      "created_at": "Thu May 08 13:15:44 +0000 2014",
+                      "profile_image_url": "https://pbs.twimg.com/profile_images/.../photo_normal.jpg",
+                      "is_blue_verified": true
+                    }
+                  ],
+                  "moderators_truncated": false,
+                  "members_truncated": true,
+                  "other_sections": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "community_id",
+            "in": "query",
+            "required": true,
+            "description": "The numeric X community id, the digits in x.com/i/communities/<id>.",
+            "schema": {
+              "type": "string",
+              "description": "The numeric X community id, the digits in x.com/i/communities/<id>.",
+              "example": "1493446837214187523"
+            },
+            "example": "1493446837214187523"
+          }
+        ]
+      }
+    },
+    "/community/search": {
+      "get": {
+        "operationId": "community-search",
+        "summary": "Community Search",
+        "description": "Find communities by keyword, cursor-paginated. This is the discovery step the rest of this family assumes: every other community endpoint starts from a community id, and this is the one that produces one. Each hit is a compact record, id, name, member count, nsfw flag, topic name, banners and the facepile avatars, which is exactly what X's search operation sends and nothing more. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Communities"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/community/search?query=build%20in%20public\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/community/search\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"query\": \"build in public\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/community/search\");\nurl.search = new URLSearchParams({ query: \"build in public\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Paginate all pages",
+            "source": "# Walk every page until the collection array comes back empty.\ncursor=\"\"\nwhile : ; do\n  resp=$(curl -s \"https://api.twitterapis.com/twitter/community/search?query=build%20in%20public&cursor=$cursor\" \\\n    -H \"Authorization: Bearer $TWITTERAPIS_KEY\")\n  count=$(echo \"$resp\" | jq '.communities | length')\n  [ \"$count\" -eq 0 ] && break\n  echo \"$resp\" | jq '.communities[]'\n  cursor=$(echo \"$resp\" | jq -r '.next_cursor // \"\"')\n  [ -z \"$cursor\" ] || [ \"$cursor\" = \"null\" ] && break\ndone"
+          },
+          {
+            "lang": "python",
+            "label": "Python: Paginate all pages",
+            "source": "import os\nimport requests\n\ndef paginate():\n    cursor = \"\"\n    while True:\n        resp = requests.get(\n            \"https://api.twitterapis.com/twitter/community/search\",\n            headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n            params={\"query\": \"build in public\", \"cursor\": cursor},\n        )\n        resp.raise_for_status()\n        data = resp.json()\n        items = data.get(\"communities\", [])\n        if not items:\n            break\n        for item in items:\n            yield item\n        cursor = data.get(\"next_cursor\")\n        if not cursor:\n            break\n\nfor item in paginate():\n    print(item)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Paginate all pages",
+            "source": "const params = { query: \"build in public\", cursor: \"\" };\n\nwhile (true) {\n  const url = new URL(\"https://api.twitterapis.com/twitter/community/search\");\n  url.search = new URLSearchParams(params).toString();\n  const resp = await fetch(url, {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  const data = await resp.json();\n  const items = data.communities ?? [];\n  if (items.length === 0) break;\n  for (const item of items) console.log(item);\n  if (!data.next_cursor) break;\n  params.cursor = data.next_cursor;\n}"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search X Communities by keyword.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "communities": {
+                      "type": "array",
+                      "description": "The matching communities for this page. A COMPACT record, not the full Community object Community Info returns: id, name, member_count, is_nsfw, primary_topic, banner_url, custom_banner, default_banner and member_avatar_urls. Take an id from here and call Community Info for the rest.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page, or null when there is none."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when this page returned communities and carried a usable next_cursor."
+                    }
+                  }
+                },
+                "example": {
+                  "communities": [
+                    {
+                      "id": "1493446837214187523",
+                      "name": "Build in Public",
+                      "member_count": 265158,
+                      "is_nsfw": false,
+                      "primary_topic": {
+                        "topic_id": null,
+                        "name": "Entrepreneurship"
+                      },
+                      "banner_url": "https://pbs.twimg.com/community_banner_img/...",
+                      "custom_banner": {
+                        "url": "https://pbs.twimg.com/community_banner_img/...",
+                        "width": 805,
+                        "height": 322
+                      },
+                      "default_banner": {
+                        "url": "https://pbs.twimg.com/media/....jpg",
+                        "width": 1200,
+                        "height": 480
+                      },
+                      "member_avatar_urls": [
+                        "https://pbs.twimg.com/profile_images/.../photo_normal.jpg"
+                      ]
+                    }
+                  ],
+                  "next_cursor": "WzM1Mi4xMzgzLDE5NDM4NDIyMDQwNzU4NjgyMzhd",
+                  "has_more": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "description": "The keyword to search for. 1 to 500 characters.",
+            "schema": {
+              "type": "string",
+              "description": "The keyword to search for. 1 to 500 characters.",
+              "example": "build in public"
+            },
+            "example": "build in public"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call."
+            }
           }
         ]
       }
@@ -11635,7 +12069,7 @@
       "post": {
         "operationId": "list-create",
         "summary": "Create List",
-        "description": "Create a List owned by your registered X session, with a name and an optional description and privacy flag. Populate it afterwards with Add List Member. Cost: $0.0008 per call.",
+        "description": "Create a List owned by your registered X session, with a name and an optional description and privacy flag. Populate it afterwards with Add List Member. Cost: $0.0016 per call.",
         "tags": [
           "Write Actions"
         ],
@@ -11644,7 +12078,7 @@
             "bearerAuth": []
           }
         ],
-        "x-cost-usd": 0.0008,
+        "x-cost-usd": 0.0016,
         "x-codeSamples": [
           {
             "lang": "bash",
@@ -18577,6 +19011,20 @@
             "nullable": true,
             "description": "Handle of the user being replied to; null when not a reply."
           },
+          "display_text_range": {
+            "type": "array",
+            "nullable": true,
+            "description": "The UTF-16 character span [start, end) of the display text inside text. It marks the region a client should render, leaving out the leading @mentions on a reply and the trailing t.co link of attached media or a quoted tweet. Always a pair, for example [0, 144] on a plain tweet and [22, 285] on a reply. Null when X sends no range, or sends one whose members are not finite numbers, so a partial range is never passed off as a complete one.",
+            "items": {
+              "type": "integer",
+              "description": "A UTF-16 character offset into text."
+            }
+          },
+          "is_limited_reply": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether replying to this tweet is restricted. True when X names a reply limitation, false when X names a limitation that is not about replies, and null when X names no limitation at all. Null is what every tweet sampled so far returns. The flag is relative to the account that read the tweet, and these are pooled reads served by a rotating pool account, so a value here describes that account and not yours. It is a different question from the author's own who-can-reply setting, which this field does not report."
+          },
           "entities": {
             "type": "object",
             "description": "Parsed tweet entities. Always present; the arrays are empty when the tweet has none.",
@@ -18950,6 +19398,40 @@
             "type": "string",
             "nullable": true,
             "description": "The user result __typename, for example \"User\" or \"UserUnavailable\"; null when absent."
+          },
+          "is_automated": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "True when the profile carries X's automated-account label, which is how an account declares itself a bot. Null when no such label is on the profile. This field is never set to false by inference, so null means only that X did not label the account, never that a human runs it. Null on every account sampled so far, including accounts that are plainly automated."
+          },
+          "automated_by": {
+            "type": "string",
+            "nullable": true,
+            "description": "Handle of the account that manages this automated account, read from the link on the automated label. Null unless is_automated is true and that label carries a single-segment x.com or twitter.com profile link. Null on every account sampled so far."
+          },
+          "unavailable": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "True when X reports the account as unavailable, for example suspended or withheld. False when X returns an ordinary account result. Null on a trimmed user object that reports no account type at all. It is derived from the same value as type, so the two can never disagree: a type of UserUnavailable always gives true."
+          },
+          "unavailable_message": {
+            "type": "string",
+            "nullable": true,
+            "description": "The message X returns explaining why the account is unavailable, for example the text shown in place of the profile. Null when the account is available or when X sends no message."
+          },
+          "unavailable_reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "The short reason code X returns for an unavailable account, for example Suspended. Null when the account is available or when X sends no reason."
+          },
+          "withheld_in_countries": {
+            "type": "array",
+            "nullable": true,
+            "description": "ISO country codes in which X withholds this account. The empty array and null mean different things and the difference is legally relevant if you republish profiles: an empty array is X stating the account is withheld nowhere, while null is X not telling us. Do not read null as \"not withheld\". Null on every account today, because the block this is read from is one X no longer sends; the read is kept so the field fills in on its own if X restores it.",
+            "items": {
+              "type": "string",
+              "description": "An ISO country code, for example DE."
+            }
           }
         }
       },
@@ -18985,6 +19467,11 @@
           "rank": {
             "type": "integer",
             "description": "1-based position of the trend in X's trending-rank order, assigned before any count truncation."
+          },
+          "meta_description": {
+            "type": "string",
+            "nullable": true,
+            "description": "The context line X shows under a trend, for example \"Trending in United States\" or \"12.4K posts\". Null on every trend today. Trends are read from X's REST trends/place.json, whose trend object carries no context string, so there is nothing to return; the field fills in on its own the day that changes. It is deliberately not synthesised from tweet_volume, because a line written here and presented as X's would be a fabrication."
           }
         }
       },
@@ -19223,6 +19710,139 @@
                 "description": "Link to the parent organization's profile."
               }
             }
+          },
+          "about_profile": {
+            "type": "object",
+            "description": "The profile About card and the \"About this account\" transparency panel grouped into one object, alongside the flat fields above. Every member mirrors a flat field of the same meaning except birthdate, which appears nowhere else in the response. The object itself is always present on a resolved profile; each member is null when X did not send it.",
+            "properties": {
+              "bio": {
+                "type": "string",
+                "nullable": true,
+                "description": "Profile bio text. Same value as the flat description field."
+              },
+              "location": {
+                "type": "string",
+                "nullable": true,
+                "description": "Self-reported location. Same value as the flat location field, and an empty string when the account set none."
+              },
+              "website": {
+                "type": "string",
+                "nullable": true,
+                "description": "Linked website URL. Same value as the flat url field, and an empty string when the account set none."
+              },
+              "birthdate": {
+                "type": "object",
+                "nullable": true,
+                "description": "Birthday from the About card, returned only when the account has one set and makes it visible. Null otherwise. Parts X withholds come back null individually, so a birthday shown as a day and month with no year returns year null.",
+                "properties": {
+                  "day": {
+                    "type": "integer",
+                    "nullable": true,
+                    "description": "Day of the month."
+                  },
+                  "month": {
+                    "type": "integer",
+                    "nullable": true,
+                    "description": "Month number, 1 for January."
+                  },
+                  "year": {
+                    "type": "integer",
+                    "nullable": true,
+                    "description": "Year; null when the account hides it."
+                  },
+                  "visibility": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Who the account shows the birthday to, for example Public, Followers, or Self."
+                  }
+                }
+              },
+              "account_based_in": {
+                "type": "string",
+                "nullable": true,
+                "description": "Country the account is based in, from the transparency panel. Same value as the flat account_based_in field."
+              },
+              "created_via": {
+                "type": "string",
+                "nullable": true,
+                "description": "How the account was created, for example \"United States App Store\" or \"Web\". Same value as the flat created_via field."
+              },
+              "username_changes": {
+                "type": "object",
+                "nullable": true,
+                "description": "Username-change history from the transparency panel. Same value as the flat username_changes field.",
+                "properties": {
+                  "count": {
+                    "type": "integer",
+                    "description": "Number of times the account has changed its username."
+                  },
+                  "last_changed_at": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "When the username was last changed, as the raw epoch-milliseconds string X emits; null when the account has never changed it."
+                  }
+                }
+              },
+              "created_country_accurate": {
+                "type": "boolean",
+                "nullable": true,
+                "description": "Whether X considers account_based_in an accurate reflection of where the account was created."
+              },
+              "location_accurate": {
+                "type": "boolean",
+                "nullable": true,
+                "description": "Whether X considers the self-reported location accurate."
+              },
+              "learn_more_url": {
+                "type": "string",
+                "nullable": true,
+                "description": "X help-center link explaining the transparency data."
+              }
+            }
+          },
+          "identity_label": {
+            "type": "object",
+            "nullable": true,
+            "description": "The identity badge X shows on business and organisation profiles. Three states, and they are not interchangeable: null means X sent no block, so we do not know; an object whose label is null means X sent an empty block, so the account has no identity label; an object with a populated label is a real badge. Null on every account sampled so far.",
+            "properties": {
+              "label": {
+                "type": "object",
+                "nullable": true,
+                "description": "The badge itself. Null when X sent the block but the account carries no label.",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "The label text, for example the organisation name."
+                  },
+                  "badge_url": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "URL of the badge image X renders beside the display name."
+                  },
+                  "url": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Link the badge points to."
+                  },
+                  "url_type": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "The kind of link X attached to the badge."
+                  },
+                  "display_type": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "How X displays the label on the profile."
+                  },
+                  "label_type": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "The label category X assigned, for example a business or government label."
+                  }
+                }
+              }
+            }
           }
         }
       },
@@ -19325,6 +19945,195 @@
           "text": {
             "type": "string",
             "description": "Message body text."
+          }
+        }
+      },
+      "Community": {
+        "type": "object",
+        "description": "An X Community. Returned by Community Info and by Community Memberships, always with the same 24 keys, but NOT with the same fields populated: Community Info is served by a reduced X operation and returns admin, invites_policy, question, search_tags and members_facepile_ids empty, moderator_count as 0, and creator with id and name null. Community Memberships returns all of those filled. Each property below states which endpoint fills it, so a null can be read correctly rather than guessed at.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Numeric community id as a string."
+          },
+          "name": {
+            "type": "string",
+            "description": "The community's display name. Returned identically by both endpoints."
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "The community's description text. Null when the community has not written one, which was 1 of 39 communities sampled. Returned identically by both endpoints."
+          },
+          "created_at": {
+            "type": "integer",
+            "description": "Millisecond epoch the community was created, as an integer rather than an ISO string. 0 when X did not send it. Returned identically by both endpoints."
+          },
+          "member_count": {
+            "type": "integer",
+            "description": "Total members. Returned identically by both endpoints: it matched exactly on all 10 communities read through both on 2026-08-17, including one at 265135 members. Contrast moderator_count, which does not match."
+          },
+          "moderator_count": {
+            "type": "integer",
+            "description": "Total moderators, but only from Community Memberships. COMMUNITY INFO RETURNS 0 HERE FOR EVERY COMMUNITY, including communities that demonstrably have moderators. On 10 communities read through both endpoints on 2026-08-17, Community Memberships returned 1 to 6 and Community Info returned 0 every time, and the Community Moderators roster independently agreed with Community Memberships on all 5 it was checked against. Read a 0 from Community Info as not reported, never as no moderators."
+          },
+          "join_policy": {
+            "type": "string",
+            "nullable": true,
+            "description": "How the community admits members, passed through from X. Observed values: Open and RestrictedJoinRequestsRequireModeratorApproval. Only those two have been seen, which is not the same as those two being the whole set, so the field is passed through as a string rather than narrowed to an enum. Returned identically by both endpoints."
+          },
+          "invites_policy": {
+            "type": "string",
+            "nullable": true,
+            "description": "Who may invite new members, passed through from X. Observed values: MemberInvitesAllowed and ModeratorInvitesAllowed. ONLY COMMUNITY MEMBERSHIPS RETURNS IT. Community Info returns null here for every community, so a null from that endpoint means the operation serving it does not carry the field, NOT that the community has no invite policy. The two cases cannot be told apart from the response alone, which is why it is stated here: on 2026-08-17 this field was non-null on all 10 communities read through Community Memberships and null on the same 10 read through Community Info minutes later. When you need the invite policy, read it from Community Memberships."
+          },
+          "is_nsfw": {
+            "type": "boolean",
+            "description": "Whether the community is flagged not-safe-for-work. Defaults to false when X does not send the field, so an absent flag reads as not flagged rather than as unknown. Returned identically by both endpoints."
+          },
+          "question": {
+            "type": "string",
+            "nullable": true,
+            "description": "The join-screen prompt applicants answer, when the community sets one. Community Info returns null here for every community, including ones that do set a question, so read it from Community Memberships. A null from Community Memberships is the real answer and means the community asks nothing."
+          },
+          "primary_topic": {
+            "type": "object",
+            "nullable": true,
+            "description": "The single topic X assigns the community. Null when the community has no topic. Community Info fills name but leaves topic_id null, so take topic_id from Community Memberships if you need the numeric id. X spells the name topic_name on the wire; it is normalised to name so a consumer reading Spaces topics and Community topics does not have to care.",
+            "properties": {
+              "topic_id": {
+                "type": "string",
+                "nullable": true,
+                "description": "X's numeric topic id as a string, for example 603 for Entrepreneurship. Null on Community Info, which sends the name without the id."
+              },
+              "name": {
+                "type": "string",
+                "nullable": true,
+                "description": "The topic's display name, for example Entrepreneurship or Education. Filled by both endpoints."
+              }
+            }
+          },
+          "search_tags": {
+            "type": "array",
+            "description": "The community's search tags, as plain strings. Community Info returns an empty array for every community, including ones that do have tags, so read this from Community Memberships. An empty array from Community Memberships is the real answer and means the community set none.",
+            "items": {
+              "type": "string",
+              "description": "One search tag, without a leading hash."
+            }
+          },
+          "rules": {
+            "type": "array",
+            "description": "The community's posted rules, in the order X returns them. Returned identically by both endpoints.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Numeric rule id as a string."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The rule's title, which is the line X shows in the community's rule list."
+                },
+                "description": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "The longer body text under the rule's title. Null when the community left it blank, which was 87 of 174 rules sampled on 2026-08-17, so expect roughly half of them to carry only a name. It is left null rather than filled with the rule name."
+                }
+              }
+            }
+          },
+          "banner_url": {
+            "type": "string",
+            "nullable": true,
+            "description": "The banner a client should actually render: the custom banner when the community set one, otherwise X's default. Computed for you, because both banners are always present and picking the wrong one silently shows every community the same stock gradient. Returned identically by both endpoints."
+          },
+          "custom_banner": {
+            "type": "object",
+            "nullable": true,
+            "description": "The community's own banner, or null when the community never set one. Returned identically by both endpoints.",
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "Image URL on pbs.twimg.com."
+              },
+              "width": {
+                "type": "integer",
+                "description": "Image width in pixels."
+              },
+              "height": {
+                "type": "integer",
+                "description": "Image height in pixels."
+              }
+            }
+          },
+          "default_banner": {
+            "type": "object",
+            "nullable": true,
+            "description": "X's stock banner. Present even when a custom banner exists, which is why banner_url is computed rather than left to the caller. Returned identically by both endpoints.",
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "Image URL on pbs.twimg.com."
+              },
+              "width": {
+                "type": "integer",
+                "description": "Image width in pixels."
+              },
+              "height": {
+                "type": "integer",
+                "description": "Image height in pixels."
+              }
+            }
+          },
+          "permalink": {
+            "type": "string",
+            "nullable": true,
+            "description": "ALWAYS NULL, on both endpoints. X's community payload does not carry a permalink URL on either operation, and one is not synthesised here from the id. It was null on every community record sampled on 2026-08-17, through both endpoints. Build the link yourself: https://x.com/i/communities/ followed by the id."
+          },
+          "admin": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "description": "The community admin's full user profile, but only from Community Memberships. COMMUNITY INFO RETURNS NULL HERE FOR EVERY COMMUNITY: a full profile came back on all 10 communities read through Community Memberships on 2026-08-17 and null on the same 10 read through Community Info. If you need the admin and are starting from a community id, page Community Moderators, whose Admin row carries the same account."
+          },
+          "creator": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ],
+            "description": "The community creator's full user profile, but only from Community Memberships. Community Info returns a REDUCED object here with id and name null, carrying the username and the verification flags and nothing else, so treat what Community Info gives you as a handle rather than a profile. Frequently the same account as admin, but do not assume it always is."
+          },
+          "members_facepile_ids": {
+            "type": "array",
+            "description": "User ids of the members X puts in the community facepile preview, ids only. Community Info returns an empty array for every community, so read this from Community Memberships. Use Community Members for the actual roster, which is the right tool whichever endpoint you started from.",
+            "items": {
+              "type": "string",
+              "description": "A numeric user id as a string."
+            }
+          },
+          "role": {
+            "type": "string",
+            "nullable": true,
+            "description": "ALWAYS NULL, on both endpoints. It is the role of the ACCOUNT THAT MADE THE CALL, and these are pooled reads served by a rotating pool account, so any value here would describe a stranger. The key is kept rather than removed so it stays visible that X sends this field and we decline to answer it. For a real per-member role, use Community Members, whose members[].role is about that member and not about the caller."
+          },
+          "can_join": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "ALWAYS NULL, on both endpoints, for the same caller-relative reason as role. It answers whether the CALLING account may join, and the calling account is one of ours. Use join_policy for the community's own admission rule, which is a real answer."
+          },
+          "is_pinned": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "ALWAYS NULL, on both endpoints, for the same caller-relative reason as role. It answers whether the CALLING account pinned this community."
+          },
+          "viewer_relationship_type": {
+            "type": "string",
+            "nullable": true,
+            "description": "ALWAYS NULL, on both endpoints, for the same caller-relative reason as role. It is the viewer relationship, and the viewer is the pool account."
           }
         }
       },

@@ -28,8 +28,8 @@ const writes = TOOLS.filter((t) => t.write);
 // Bumped 86 -> 91 on 2026-08-17 with the X List operation family: two reads
 // (twitter_list_tweets, twitter_list_timeline) and three writes
 // (twitter_list_add_member, twitter_list_remove_member, twitter_list_create).
-const EXPECTED_TOOLS = 91;
-const EXPECTED_READS = 57;
+const EXPECTED_TOOLS = 94;
+const EXPECTED_READS = 60;
 const EXPECTED_WRITES = 34;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);

@@ -1,5 +1,5 @@
 {
-  "toolCount": 91,
+  "toolCount": 94,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -27,10 +27,13 @@
     "twitter_tweet_retweeters",
     "twitter_tweet_quotes",
     "twitter_list_members",
+    "twitter_list_followers",
     "twitter_list_tweets",
     "twitter_list_timeline",
     "twitter_spaces_info",
+    "twitter_community_search",
     "twitter_community_info",
+    "twitter_community_about",
     "twitter_community_members",
     "twitter_community_moderators",
     "twitter_community_tweets",
@@ -1069,6 +1072,45 @@
         ]
       }
     },
+    "twitter_list_followers": {
+      "name": "twitter_list_followers",
+      "path": "/twitter/list/followers",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Fetch a public List's followers by its numeric id, cursor-paginated. Followers and members are different sets of people: members are the accounts the List owner added to it, followers are the accounts that subscribed to read it. A List with hundreds of members commonly has only a handful of followers, so a small count here is normal and is not a truncated page. Use twitter_list_members for the member roster instead.",
+      "args": [
+        "list_id",
+        "count",
+        "cursor"
+      ],
+      "required": [
+        "list_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "description": "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>."
+          },
+          "count": {
+            "description": "Max items to return for this page. Defaults to 20 and is clamped to 1-100.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. next_cursor is null once X marks the follower list complete.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "list_id"
+        ]
+      }
+    },
     "twitter_list_tweets": {
       "name": "twitter_list_tweets",
       "path": "/twitter/list/tweets",
@@ -1082,6 +1124,7 @@
         "since",
         "until",
         "include_replies",
+        "product",
         "count",
         "cursor"
       ],
@@ -1106,6 +1149,14 @@
           "include_replies": {
             "description": "Optional. Whether to include replies written by List members. Pass the string \"true\" or \"false\"; defaults to true when omitted. Any other value is rejected with a 400 rather than read as false.",
             "type": "string"
+          },
+          "product": {
+            "description": "Which search ranking to read. 'Latest' (default) is reverse-chronological. 'Top' is X's ranked ordering. Any unrecognised value falls back to Latest rather than erroring.",
+            "type": "string",
+            "enum": [
+              "Latest",
+              "Top"
+            ]
           },
           "count": {
             "description": "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring.",
@@ -1199,6 +1250,38 @@
         ]
       }
     },
+    "twitter_community_search": {
+      "name": "twitter_community_search",
+      "path": "/twitter/community/search",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Find X Communities by keyword, cursor-paginated. This is the discovery step the rest of the community family assumes: every other community endpoint starts from a community id, and this is the one that produces one. Each hit is a compact record, id, name, member count, nsfw flag, topic name, banners and the facepile avatars, exactly what X's own search sends and nothing more. Once you have an id, use twitter_community_info or twitter_community_about for detail, twitter_community_members / twitter_community_moderators for the roster, and twitter_community_tweets for its posts.",
+      "args": [
+        "query",
+        "cursor"
+      ],
+      "required": [
+        "query"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Keyword to search for, 1 to 500 characters, e.g. 'build in public'."
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
     "twitter_community_info": {
       "name": "twitter_community_info",
       "path": "/twitter/community/info",
@@ -1219,6 +1302,33 @@
           "community_id": {
             "type": "string",
             "description": "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id."
+          }
+        },
+        "required": [
+          "community_id"
+        ]
+      }
+    },
+    "twitter_community_about": {
+      "name": "twitter_community_about",
+      "path": "/twitter/community/about",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "The About tab for one X Community: its moderators, and a preview of its members, both returned as FULL user profiles with bio, follower and following counts, tweet counts, location, website, banner and join date. twitter_community_members and twitter_community_moderators return a reduced row instead, so this is the endpoint that answers who runs a community in one call rather than one call plus a profile lookup per person. Use twitter_community_info instead for the community's own metadata (name, description, rules, join policy); this endpoint is about the PEOPLE, not the community object.",
+      "args": [
+        "community_id"
+      ],
+      "required": [
+        "community_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "community_id": {
+            "type": "string",
+            "description": "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'."
           }
         },
         "required": [

@@ -4,7 +4,17 @@
 
 ### Fixed
 
-- **The server no longer exits at startup when `TWITTERAPIS_KEY` is missing.** A registry connectivity scanner (Smithery, Glama, the official MCP registry, Claude Connectors Directory) spins up the server with no real credential just to enumerate `tools/list`. Exiting before the transport connected made every automated scan fail outright and read as a generic connectivity error, HTTP 405 on Smithery, rather than a missing-key error, which is why this listing scored low on registry capability-quality checks that can only run once a scan succeeds. Tools now register and `tools/list` responds regardless of whether a key is present, verified live with the key stripped from the process env (91 tools returned, was a crash before this fix). An actual tool call made with no key still fails clearly, at the point of the call, with the same style of message the existing 401 branch already used.
+- **The server no longer exits at startup when `TWITTERAPIS_KEY` is missing.** A registry connectivity scanner (Smithery, Glama, the official MCP registry, Claude Connectors Directory) spins up the server with no real credential just to enumerate `tools/list`. Exiting before the transport connected made every automated scan fail outright and read as a generic connectivity error, HTTP 405 on Smithery, rather than a missing-key error, which is why this listing scored low on registry capability-quality checks that can only run once a scan succeeds. Tools now register and `tools/list` responds regardless of whether a key is present, verified live with the key stripped from the process env. An actual tool call made with no key still fails clearly, at the point of the call, with the same style of message the existing 401 branch already used.
+- Refreshing the vendored spec to verify the fix surfaced 3 endpoints the live API had added with no corresponding tool, and a new `product` parameter on an existing one; the openapi-parity gate refuses a build until every spec change is covered, so both are addressed in this same release rather than left drifting.
+
+### Added
+
+- **`twitter_list_followers`**: a public List's followers, a different set from its members.
+- **`twitter_community_search`**: find X Communities by keyword, the discovery step that produces the numeric id the rest of the community family needs.
+- **`twitter_community_about`**: a community's moderators and a member preview as full user profiles, complementing the reduced rows `twitter_community_members` / `twitter_community_moderators` return.
+- **`twitter_list_tweets`** gains a `product` argument (Latest / Top), matching the live API's new search-ranking parameter for that endpoint.
+
+Catalog is now **94 tools: 60 reads and 34 write actions**.
 
 ## 0.9.0 (2026-08-17)
 
