@@ -417,6 +417,23 @@ export const TOOL_OVERRIDES = [
       "@PAGINATION",
     ],
   },
+  {
+    name: "twitter_list_followers",
+    endpoint: "/list/followers",
+    description:
+      "Fetch a public List's followers by its numeric id, cursor-paginated. Followers and members are different sets of people: members are the accounts the List owner added to it, followers are the accounts that subscribed to read it. A List with hundreds of members commonly has only a handful of followers, so a small count here is normal and is not a truncated page. Use twitter_list_members for the member roster instead.",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max items to return for this page. Defaults to 20 and is clamped to 1-100." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. next_cursor is null once X marks the follower list complete." },
+    ],
+  },
   // TWO LIST FEEDS, TWO CAPABILITIES, NOT TWO SPELLINGS OF ONE. The names read
   // like versions of each other and they are not: list/tweets is SEARCH-BACKED,
   // so it can answer a time-ranged or reply-filtered question and carries no
@@ -443,6 +460,9 @@ export const TOOL_OVERRIDES = [
       { name: "include_replies", type: "boolean",
         describe:
           "Optional. Whether to include replies written by List members. Pass the string \"true\" or \"false\"; defaults to true when omitted. Any other value is rejected with a 400 rather than read as false." },
+      { name: "product", enum: ["Latest","Top"],
+        describe:
+          "Which search ranking to read. 'Latest' (default) is reverse-chronological. 'Top' is X's ranked ordering. Any unrecognised value falls back to Latest rather than erroring." },
       { name: "count", type: "int", min: 1, max: 100,
         describe:
           "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring." },
@@ -494,6 +514,20 @@ export const TOOL_OVERRIDES = [
   // read that is a rotating account the customer has never heard of. A model
   // that is not told this will report them to a user as a broken field.
   {
+    name: "twitter_community_search",
+    endpoint: "/community/search",
+    description:
+      "Find X Communities by keyword, cursor-paginated. This is the discovery step the rest of the community family assumes: every other community endpoint starts from a community id, and this is the one that produces one. Each hit is a compact record, id, name, member count, nsfw flag, topic name, banners and the facepile avatars, exactly what X's own search sends and nothing more. Once you have an id, use twitter_community_info or twitter_community_about for detail, twitter_community_members / twitter_community_moderators for the roster, and twitter_community_tweets for its posts.",
+    args: [
+      { name: "query",
+        describe:
+          "Keyword to search for, 1 to 500 characters, e.g. 'build in public'." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
     name: "twitter_community_info",
     endpoint: "/community/info",
     description:
@@ -502,6 +536,17 @@ export const TOOL_OVERRIDES = [
       { name: "community_id",
         describe:
           "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id." },
+    ],
+  },
+  {
+    name: "twitter_community_about",
+    endpoint: "/community/about",
+    description:
+      "The About tab for one X Community: its moderators, and a preview of its members, both returned as FULL user profiles with bio, follower and following counts, tweet counts, location, website, banner and join date. twitter_community_members and twitter_community_moderators return a reduced row instead, so this is the endpoint that answers who runs a community in one call rather than one call plus a profile lookup per person. Use twitter_community_info instead for the community's own metadata (name, description, rules, join policy); this endpoint is about the PEOPLE, not the community object.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'." },
     ],
   },
   {
