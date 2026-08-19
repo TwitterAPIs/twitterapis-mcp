@@ -30,7 +30,30 @@ const API_KEY = process.env.TWITTERAPIS_KEY;
 const BASE_URL = (
   process.env.TWITTERAPIS_BASE_URL || "https://api.twitterapis.com"
 ).replace(/\/+$/, "");
-const REQUEST_TIMEOUT_MS = Number(process.env.TWITTERAPIS_TIMEOUT_MS || 30000);
+
+const DEFAULT_TIMEOUT_MS = 30000;
+// A malformed TWITTERAPIS_TIMEOUT_MS (non-numeric, or <= 0) used to reach
+// setTimeout() unvalidated. Number("30000ms") and Number("60,000") are both
+// NaN, and Node clamps a NaN or sub-1 delay to ~1ms (verified directly:
+// `setTimeout(fn, NaN)` fires in under 1ms), so every tool call aborted
+// almost immediately with "Request failed: timed out after NaNms" -- which
+// reads as a live outage, not the config typo it actually is. An explicit 0
+// or negative value has the same effect with no typo needed at all. Fall
+// back to the documented default on anything that is not a finite, positive
+// number, and say so loudly rather than silently eating every call.
+let REQUEST_TIMEOUT_MS = DEFAULT_TIMEOUT_MS;
+const rawTimeoutEnv = process.env.TWITTERAPIS_TIMEOUT_MS;
+if (rawTimeoutEnv) {
+  const parsed = Number(rawTimeoutEnv);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    REQUEST_TIMEOUT_MS = parsed;
+  } else {
+    console.error(
+      `[twitterapis-mcp] TWITTERAPIS_TIMEOUT_MS="${rawTimeoutEnv}" is not a positive number; ` +
+        `falling back to the default ${DEFAULT_TIMEOUT_MS}ms instead of timing out every call immediately.`,
+    );
+  }
+}
 
 // Lazy validation, not exit-on-boot: an MCP registry scanner (Smithery, Glama,
 // the official registry, Claude Connectors) connects the stdio transport with

@@ -498,10 +498,10 @@ export const TOOL_OVERRIDES = [
       { name: "id",
         describe:
           "The Space id: the trailing token of a x.com/i/spaces/<id> URL, e.g. '1RKZzjkoYRAKB'. A '/peek' suffix on the URL is not part of the id." },
-      { name: "with_listeners", optional: true,
+      { name: "with_listeners", required: false,
         describe:
           "Optional. Include the listener roster. Defaults to true. X drops this roster once a Space ends, so it is empty for an ended Space regardless of this flag." },
-      { name: "with_replays", optional: true,
+      { name: "with_replays", required: false,
         describe:
           "Optional. Include replay availability and related metadata. Defaults to true." },
     ],
@@ -627,19 +627,19 @@ export const TOOL_OVERRIDES = [
     description:
       "Ask X's own Grok a question AS your authenticated account, and get ONE complete JSON reply with the answer plus the sources it cited. Unlike a general LLM, Grok reads X in real time, so it can answer about what is being said right now, and passing a bare tweet or status URL as the message returns a structured summary of that post. Returns answer text, citations (url, title, snippet) merged and de-duplicated across every search Grok ran, the searches themselves, and the model that ACTUALLY answered (which can differ from the one you asked for). Buffered, not streamed. STATELESS: nothing is stored, so to continue a conversation pass the prior turns back in messages[] along with conversation_id. Requires an authenticated session for the acting account.",
     args: [
-      { name: "message", optional: true,
+      { name: "message", required: false,
         describe:
           "The prompt, for a single-turn question. A bare tweet or status URL is a first-class input and comes back as a summary of that post. Provide either this or messages[]." },
-      { name: "messages", optional: true,
+      { name: "messages", required: false,
         describe:
           "Prior turns for a multi-turn conversation, oldest first, each { role: 'user' | 'grok', content: '...' }. The endpoint stores nothing, so the full history you want Grok to see must travel in this array. Provide either this or message." },
-      { name: "conversation_id", optional: true,
+      { name: "conversation_id", required: false,
         describe:
           "Conversation id returned by a previous call. Omit on the first turn and one is created for you." },
-      { name: "mode", optional: true,
+      { name: "mode", required: false,
         describe:
           "Which Grok to use: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports the model that actually answered, which can differ from the mode requested." },
-      { name: "image_count", optional: true,
+      { name: "image_count", required: false,
         describe:
           "How many images Grok may generate if the prompt calls for one. Defaults to the value X's own client sends. Set 0 for a text-only answer." },
       "@INLINE",
@@ -1175,7 +1175,7 @@ export const TOOL_OVERRIDES = [
       { name: "media_id",
         describe:
           "The media id returned by twitter_media_upload for the image to use as the cover." },
-      { name: "media_category", optional: true,
+      { name: "media_category", required: false,
         describe:
           "Optional. X's media category for the upload. Defaults to 'DraftTweetImage', which is what X's own article editor sends for a cover image. Only set this if you know X expects a different category." },
       "@INLINE",
