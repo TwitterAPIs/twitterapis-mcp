@@ -167,6 +167,27 @@ for (const t of TOOL_OVERRIDES) {
       continue;
     }
     exposed.add(a.name);
+
+    // An arg entry with a key this generator never reads is not caught anywhere
+    // else: JS object literals silently accept unknown properties, so a typo'd
+    // or wrong flag (e.g. `optional: true` where the render logic only ever
+    // reads `a.required`) produces no error and no visible effect -- until the
+    // ONE value it happened to coincide with (the spec's own default) changes
+    // out from under it. Found 8 live instances of exactly that: every arg
+    // using `optional: true` rendered `.optional()` in src/tools.js only
+    // because the vendored spec's own required flag for that param already
+    // happened to be false, so the key was doing nothing and nothing detected
+    // it. Fail closed on any key outside this allowlist instead of accepting
+    // it silently.
+    const KNOWN_ARG_KEYS = new Set([
+      "name", "describe", "required", "header", "type", "enum", "min", "max", "minLength", "nullable",
+    ]);
+    for (const k of Object.keys(a)) {
+      if (!KNOWN_ARG_KEYS.has(k)) {
+        bad(`tool ${t.name} arg "${a.name}" sets unrecognized key "${k}" (never read by this generator; did you mean "required: false"?)`);
+      }
+    }
+
     const p = ep.params.get(a.name);
 
     if (!p && !a.header) {

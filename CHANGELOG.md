@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.4 (2026-08-19)
+
+### Fixed
+
+- **A malformed `TWITTERAPIS_TIMEOUT_MS` silently timed out every single tool call.** `Number(process.env.TWITTERAPIS_TIMEOUT_MS || 30000)` had no validation: a non-numeric value (`"30000ms"`, `"60,000"`, a stray comma or unit) parses to `NaN`, and Node's `setTimeout` clamps a `NaN` delay to about 1ms, so the abort controller fired before any real request could complete. Every tool call failed with `Request failed: timed out after NaNms`, which reads as a live API outage rather than the config typo it actually is. An explicit `0` or negative value had the same effect with no typo required at all. The value is now validated as a finite, positive number before use, falls back to the documented 30000ms default otherwise, and logs a clear warning to stderr naming the bad value instead of silently breaking every call.
+- **8 tool args declared `optional: true` in `scripts/tools.overrides.mjs`, a key the generator never reads** (`with_listeners` / `with_replays` on `twitter_spaces_info`, `message` / `messages` / `conversation_id` / `mode` / `image_count` on `twitter_grok_chat`, `media_category` on `twitter_article_update_cover_media`). The render logic only ever checks `a.required`, so `optional: true` was silently a no-op; each of these 8 args happened to render as optional anyway only because the vendored spec's own `required` flag for that param already defaulted to false. A future spec refresh flipping one of those defaults would have silently made the arg required with no warning from any gate. Renamed to `required: false`, the property the generator actually reads. `src/tools.js` is byte-identical before and after (`catalog-identity` confirms), so this closes a live gap without changing today's behavior.
+- **The generator now fails the build on any unrecognized key in a `tools.overrides.mjs` arg entry** (`scripts/gen-tools.mjs`), so the class of bug above can't recur silently. Red-tested: reintroducing `optional: true` on a synthetic arg makes `npm run build:check` fail with `sets unrecognized key "optional" ... did you mean "required: false"?`.
+
 ## 0.9.3 (2026-08-18)
 
 PR #36 (3 new tools + openapi-parity fix) merged after 0.9.2 had already been
