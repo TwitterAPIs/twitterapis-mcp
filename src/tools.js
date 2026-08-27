@@ -1422,6 +1422,14 @@ export const TOOLS = [
     },
   },
   {
+    name: "twitter_customer_session_status",
+    path: "/twitter/customer/session/status",
+    method: "GET",
+    description:
+      "Read back the X account session you registered with twitter_customer_session, without changing it. Returns registered (false if you never registered one), the resolved username and twitter_user_id the session actually maps to, status ('ok', or 'dead' once X has rejected the cookies), created_at, updated_at, last_used_at, and an egress block: source (one of session, sticky_residential, pool_residential, direct), customer_proxy_in_use (true when the proxy_url you registered is the one your writes leave from), and a note explaining that tier. Never returns auth_token, ct0, or any proxy URL. Use it to answer 'am I posting as the account I think I am', 'has my session expired', and 'is the proxy I supplied actually being used' without opening a support ticket. Free, and scoped to your own API key by construction: it takes no account identifier of any kind, so it cannot read another key's session.",
+    shape: {},
+  },
+  {
     name: "twitter_customer_session_delete",
     path: "/twitter/customer/session/delete",
     method: "POST",
