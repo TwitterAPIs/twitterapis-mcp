@@ -1065,6 +1065,21 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    // The read-back counterpart to twitter_customer_session. Deliberately placed
+    // between register and delete so an agent reading the catalog finds the way
+    // to CHECK the thing it just registered before it finds the way to remove
+    // it. Added for support ticket #197: register and revoke existed, but
+    // nothing let the account owner ask "is my session ok" without a human
+    // reading the production database. GET, no args: the key comes from the
+    // auth middleware's context, so the handler cannot be pointed at another
+    // key's session.
+    name: "twitter_customer_session_status",
+    endpoint: "/customer/session/status",
+    description:
+      "Read back the X account session you registered with twitter_customer_session, without changing it. Returns registered (false if you never registered one), the resolved username and twitter_user_id the session actually maps to, status ('ok', or 'dead' once X has rejected the cookies), created_at, updated_at, last_used_at, and an egress block: source (one of session, sticky_residential, pool_residential, direct), customer_proxy_in_use (true when the proxy_url you registered is the one your writes leave from), and a note explaining that tier. Never returns auth_token, ct0, or any proxy URL. Use it to answer 'am I posting as the account I think I am', 'has my session expired', and 'is the proxy I supplied actually being used' without opening a support ticket. Free, and scoped to your own API key by construction: it takes no account identifier of any kind, so it cannot read another key's session.",
+    args: [],
+  },
+  {
     // The counterpart to twitter_customer_session. Deliberately placed next to it
     // so an agent reading the catalog finds the way OUT beside the way IN: a
     // credential you cannot withdraw is the objection this endpoint exists to

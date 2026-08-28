@@ -28,8 +28,14 @@ const writes = TOOLS.filter((t) => t.write);
 // Bumped 86 -> 91 on 2026-08-17 with the X List operation family: two reads
 // (twitter_list_tweets, twitter_list_timeline) and three writes
 // (twitter_list_add_member, twitter_list_remove_member, twitter_list_create).
-const EXPECTED_TOOLS = 94;
-const EXPECTED_READS = 60;
+// Bumped 94 -> 95 on 2026-08-28 fixing the generator-drift: PR #39 added
+// twitter_customer_session_status (GET, read) by hand-editing src/tools.js
+// directly instead of going through scripts/tools.overrides.mjs, so this
+// constant was never bumped and the generator never learned the endpoint
+// existed. Backfilled into the override + refreshed the vendored spec so the
+// tool is generated again, not hand-maintained; writes unchanged at 34.
+const EXPECTED_TOOLS = 95;
+const EXPECTED_READS = 61;
 const EXPECTED_WRITES = 34;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);

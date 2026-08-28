@@ -38,7 +38,7 @@
     },
     {
       "name": "Direct Messages",
-      "description": "Read your account's DM inbox and the message history of a single conversation. Read-only; requires a registered session."
+      "description": "Read your account's DM inbox and the message history of a single conversation, and send new messages, all acting as the account behind your registered session."
     },
     {
       "name": "Follower Graph",
@@ -707,6 +707,196 @@
                 "example": {
                   "error": "forbidden",
                   "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customer/session/status": {
+      "get": {
+        "operationId": "customer-session-status",
+        "summary": "Session Status",
+        "description": "Read the X session stored against your API key without changing it. Returns the account the session actually resolved to, whether it is still live or has been marked dead, when it was registered and last used, and which egress tier a write would leave on. It never returns auth_token, ct0, or any proxy URL. The key is taken from the authenticated request and the handler reads no identity from the body, the query string, or any second header, so a call can only ever read the caller's own session. This call is free. Cost: Free per call.",
+        "tags": [
+          "Account Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/customer/session/status\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/customer/session/status\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/customer/session/status\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read back the session you registered: which X account it resolved to, whether it is still alive, and whether the proxy you supplied is the one your writes leave from. Free.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "registered": {
+                      "type": "boolean",
+                      "description": "True when a session is stored for your API key. False when you never registered one, or revoked it. Per-call credentials sent as x-auth-token and x-ct0 are never stored, so a caller who only uses that path always sees false."
+                    },
+                    "username": {
+                      "type": "string",
+                      "description": "The X handle the stored session resolved to when it was registered. Read back from storage, not from anything you send, so it is the field that settles whether you are acting as the account you expect. Null when resolution never succeeded."
+                    },
+                    "twitter_user_id": {
+                      "type": "string",
+                      "description": "The numeric X user id for the same account. Null when resolution never succeeded."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Either ok or dead. dead is stamped when X rejects the cookies as expired or deauthorized, so it is an observation rather than a guess. A dead session is still stored and still revocable; re-register to resume."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "ISO timestamp of when this session was first registered."
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "description": "ISO timestamp of the last time the session was registered or replaced. Equal to created_at when it has never been re-registered."
+                    },
+                    "last_used_at": {
+                      "type": "string",
+                      "description": "ISO timestamp of the last call that acted as this session. Null if it has never been used. A last_used_at that stopped moving is often the first sign of a stalled integration."
+                    },
+                    "egress.source": {
+                      "type": "string",
+                      "description": "Which egress tier a write on this session would use: session (the proxy you registered), sticky_residential or pool_residential (an exit we assign and keep stable for this account), or direct (our shared server IP)."
+                    },
+                    "egress.customer_proxy_in_use": {
+                      "type": "boolean",
+                      "description": "True when the proxy_url you registered is the one your writes leave from. This is the direct answer to whether your own proxy is being honoured."
+                    },
+                    "egress.note": {
+                      "type": "string",
+                      "description": "One line explaining that tier and what to do about it. On the direct tier it explains why a shared IP raises the chance of a challenge."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Human-readable summary. Differs for a live session, a dead one, and no session at all."
+                    }
+                  }
+                },
+                "example": {
+                  "registered": true,
+                  "username": "yourhandle",
+                  "twitter_user_id": "1234567890123456789",
+                  "status": "ok",
+                  "created_at": "2026-08-19T19:44:03.433Z",
+                  "updated_at": "2026-08-19T19:44:03.433Z",
+                  "last_used_at": "2026-08-26T12:34:37.015Z",
+                  "egress": {
+                    "source": "session",
+                    "customer_proxy_in_use": true,
+                    "note": "Writes leave through the proxy you registered on this session. Keep it sticky, one dedicated IP per account, and geo-matched to where the account normally signs in."
+                  },
+                  "message": "Your registered Twitter session is stored and marked live. A per-request proxy sent as x-proxy-url overrides the egress shown here for that call only."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -16716,7 +16906,7 @@
                   },
                   "domain_filter": {
                     "type": "string",
-                    "description": "Optional. A bare hostname (\"example.com\") or a full URL (\"https://example.com/blog\") to restrict delivery to posts that link to that host or a subdomain of it. Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Omit for no filter (deliver every new post, the default). Rejected with 400 if what remains after normalization is not a valid hostname shape.",
+                    "description": "Optional. A bare hostname (`example.com`) or a full URL (`https://example.com/blog`) to restrict delivery to posts that link to that host or a subdomain of it. Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Omit for no filter (deliver every new post, the default). Rejected with 400 if what remains after normalization is not a valid hostname shape.",
                     "example": "example.com"
                   }
                 },
