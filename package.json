@@ -16,7 +16,8 @@
     "src",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "icon.png"
   ],
   "engines": {
     "node": ">=18"
