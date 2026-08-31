@@ -1,5 +1,5 @@
 {
-  "toolCount": 95,
+  "toolCount": 96,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -95,7 +95,8 @@
     "twitter_monitor_webhook_create",
     "twitter_monitor_webhook_list",
     "twitter_monitor_webhook_delete",
-    "twitter_monitor_webhook_test"
+    "twitter_monitor_webhook_test",
+    "twitter_monitor_webhook_redrive"
   ],
   "tools": {
     "twitter_advanced_search": {
@@ -3534,6 +3535,7 @@
       "args": [
         "handle",
         "webhook_ids",
+        "include_replies",
         "domain_filter"
       ],
       "required": [
@@ -3549,6 +3551,10 @@
           },
           "webhook_ids": {
             "description": "Optional. Comma-separated webhook id(s) from twitter_monitor_webhook_create to restrict this monitor's deliveries to. Omit to deliver to every active webhook on the account (the default).",
+            "type": "string"
+          },
+          "include_replies": {
+            "description": "Optional boolean. true delivers the account's replies as well as its own posts, which is the default and what every monitor has always done; false holds replies back and delivers only the account's own posts. Must be a real boolean: the string \"false\" and the number 0 are rejected with a 400 rather than coerced, because coercing them would quietly give you the opposite of what you typed, and the wrong answer here is invisible since it looks exactly like the account not having posted.",
             "type": "string"
           },
           "domain_filter": {
@@ -3588,7 +3594,8 @@
         "id",
         "status",
         "webhook_ids",
-        "domain_filter"
+        "domain_filter",
+        "include_replies"
       ],
       "required": [
         "id"
@@ -3622,6 +3629,10 @@
                 "type": "null"
               }
             ]
+          },
+          "include_replies": {
+            "description": "Optional boolean. true delivers the account's replies as well as its own posts, false holds replies back and delivers only its own posts. Omit the field entirely to leave it unchanged. Same boolean-only validation as twitter_monitor_create: a non-boolean is a 400 rather than a coercion.",
+            "type": "string"
           }
         },
         "required": [
@@ -3881,6 +3892,47 @@
           "id": {
             "type": "string",
             "description": "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list."
+          }
+        },
+        "required": [
+          "id"
+        ]
+      }
+    },
+    "twitter_monitor_webhook_redrive": {
+      "name": "twitter_monitor_webhook_redrive",
+      "path": "/twitter/webhook/{id}/redrive",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": true,
+      "description": "Replay deliveries that dead-lettered while your endpoint was down. A delivery is dead-lettered after it fails all 8 attempts across 21 minutes, so an outage longer than that window loses those events; this re-queues them with a full retry budget, oldest first. Bounded by default so a recovered endpoint is not flooded: max_age_hours defaults to 24 and limit to 100. Returns requeued and skipped_permanent. A delivery that died for a permanent reason, a 410 Gone, a deleted webhook, or a URL egress refused, is not replayed, because it would fail the same way and spend the budget again. Replayed events carry the same signature and payload as the original, so make your handler idempotent on the event id if a duplicate would matter. Returns 409 if the webhook is disabled, which happens after your endpoint answers 410 Gone: re-register it first. Free per call.",
+      "args": [
+        "id",
+        "max_age_hours",
+        "limit"
+      ],
+      "required": [
+        "id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list."
+          },
+          "max_age_hours": {
+            "description": "Optional. How far back to look for dead-lettered deliveries, 1 to 168 hours. Defaults to 24.",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "limit": {
+            "description": "Optional. Most deliveries to replay in one call, 1 to 1000, oldest first. Defaults to 100.",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           }
         },
         "required": [
