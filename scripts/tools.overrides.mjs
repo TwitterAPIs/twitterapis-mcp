@@ -1341,6 +1341,9 @@ export const TOOL_OVERRIDES = [
       { name: "webhook_ids", required: false,
         describe:
           "Optional. Comma-separated webhook id(s) from twitter_monitor_webhook_create to restrict this monitor's deliveries to. Omit to deliver to every active webhook on the account (the default)." },
+      { name: "include_replies", required: false,
+        describe:
+          "Optional boolean. true delivers the account's replies as well as its own posts, which is the default and what every monitor has always done; false holds replies back and delivers only the account's own posts. Must be a real boolean: the string \"false\" and the number 0 are rejected with a 400 rather than coerced, because coercing them would quietly give you the opposite of what you typed, and the wrong answer here is invisible since it looks exactly like the account not having posted." },
       { name: "domain_filter", required: false,
         describe:
           "Optional. A bare hostname ('example.com') or a full URL ('https://example.com/blog') to restrict delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Omit for no filter, the default (deliver every new post). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, never silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric." },
@@ -1376,6 +1379,9 @@ export const TOOL_OVERRIDES = [
       { name: "domain_filter", required: false, nullable: true,
         describe:
           "Optional. A bare hostname or full URL to restrict delivery to, same shape and normalization as twitter_monitor_create's domain_filter. Pass an empty string (or null) to clear an existing filter back to 'deliver every new post'. Omit entirely to leave the current filter unchanged. Rejected with a 400 if a non-empty value does not normalize to a valid hostname." },
+      { name: "include_replies", required: false,
+        describe:
+          "Optional boolean. true delivers the account's replies as well as its own posts, false holds replies back and delivers only its own posts. Omit the field entirely to leave it unchanged. Same boolean-only validation as twitter_monitor_create: a non-boolean is a 400 rather than a coercion." },
     ],
   },
   {
@@ -1503,6 +1509,28 @@ export const TOOL_OVERRIDES = [
       { name: "id",
         describe:
           "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list." },
+    ],
+  },
+  {
+    name: "twitter_monitor_webhook_redrive",
+    endpoint: "/webhook/{id}/redrive",
+    write: true,
+    // The handler reads max_age_hours and limit from the BODY only, so without
+    // this every call would go out as a query string and 400. Caught by
+    // body-mode-parity, which reads the backend's own generated manifest.
+    jsonBody: true,
+    description:
+      "Replay deliveries that dead-lettered while your endpoint was down. A delivery is dead-lettered after it fails all 8 attempts across 21 minutes, so an outage longer than that window loses those events; this re-queues them with a full retry budget, oldest first. Bounded by default so a recovered endpoint is not flooded: max_age_hours defaults to 24 and limit to 100. Returns requeued and skipped_permanent. A delivery that died for a permanent reason, a 410 Gone, a deleted webhook, or a URL egress refused, is not replayed, because it would fail the same way and spend the budget again. Replayed events carry the same signature and payload as the original, so make your handler idempotent on the event id if a duplicate would matter. Returns 409 if the webhook is disabled, which happens after your endpoint answers 410 Gone: re-register it first. Free per call.",
+    args: [
+      { name: "id",
+        describe:
+          "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list." },
+      { name: "max_age_hours", required: false,
+        describe:
+          "Optional. How far back to look for dead-lettered deliveries, 1 to 168 hours. Defaults to 24." },
+      { name: "limit", required: false,
+        describe:
+          "Optional. Most deliveries to replay in one call, 1 to 1000, oldest first. Defaults to 100." },
     ],
   },
 ];

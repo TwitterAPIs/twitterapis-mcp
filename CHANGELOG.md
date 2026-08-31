@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.5 (2026-08-31)
+
+### Added
+
+- **`twitter_monitor_webhook_redrive`, replay the deliveries you missed while your endpoint was down.** A delivery is dead-lettered after it fails all 8 attempts across 21 minutes, so an outage longer than that window loses those events outright. This re-queues them with a full retry budget, oldest first, and is free per call. Bounded by default so a recovered endpoint is not flooded: `max_age_hours` defaults to 24 (1 to 168) and `limit` to 100 (1 to 1000). Returns `requeued` and `skipped_permanent`; a delivery that died for a permanent reason (a 410 Gone, a deleted webhook, or a URL egress refused) is not replayed, because it would fail the same way and spend the budget again. Replayed events carry the same signature and payload as the original, so make your handler idempotent on the event id if a duplicate would matter to you. This takes the catalog to 96 tools, 61 reads and 35 writes, which is exact parity with the API's own endpoint count.
+- **`include_replies` on `twitter_monitor_create` and `twitter_monitor_update`.** The parameter was added upstream and neither tool exposed it, so a caller could not turn replies off through the MCP at all. `true` delivers the account's replies as well as its own posts, which is the default and what every monitor has always done; `false` holds replies back. It must be a real boolean: the string `"false"` and the number `0` are rejected with a 400 rather than coerced, because coercing them would quietly give you the opposite of what you typed, and the wrong answer here is invisible since it looks exactly like the account not having posted. The generator is fail-closed on an unexposed spec param and refused to build until both were declared, which is how this surfaced.
+
+### Fixed
+
+- **The redrive tool would have 400'd on every call without `jsonBody: true`.** Its handler reads `max_age_hours` and `limit` from the body only, so the args would have gone out as a query string. Caught by `body-mode-parity`, which reads the backend's own generated route manifest rather than trusting this repo's view of it. That manifest was itself stale on the backend's main branch (the route landed without regenerating it), so the failure surfaced here first and was fixed upstream in twitterapis-backend#408 before this release.
+
 ## 0.9.4 (2026-08-19)
 
 ### Fixed

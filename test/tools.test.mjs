@@ -34,9 +34,13 @@ const writes = TOOLS.filter((t) => t.write);
 // constant was never bumped and the generator never learned the endpoint
 // existed. Backfilled into the override + refreshed the vendored spec so the
 // tool is generated again, not hand-maintained; writes unchanged at 34.
-const EXPECTED_TOOLS = 95;
+// Bumped 95 -> 96 on 2026-08-31 with twitter_monitor_webhook_redrive (POST,
+// write), which replays deliveries that dead-lettered while a customer endpoint
+// was down. Writes 34 -> 35, reads unchanged at 61, so the MCP catalog is now at
+// exact parity with the API: 96 endpoints, 61 reads and 35 writes.
+const EXPECTED_TOOLS = 96;
 const EXPECTED_READS = 61;
-const EXPECTED_WRITES = 34;
+const EXPECTED_WRITES = 35;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -90,6 +94,10 @@ const JSON_BODY_WRITES = [
   "twitter_media_upload", "twitter_customer_session", "twitter_user_login", "twitter_article_update_content",
   "twitter_monitor_create", "twitter_monitor_update", "twitter_monitor_webhook_create",
   "twitter_x_user_stream_add_user", "twitter_x_user_stream_remove_user",
+  // Added 2026-08-31 with the redrive tool. Its handler reads max_age_hours and
+  // limit from the body only, so without jsonBody every call would go out as a
+  // query string and 400, the same live failure the five tools above hit.
+  "twitter_monitor_webhook_redrive",
 ];
 check("json-body writes present: POST + write + jsonBody", JSON_BODY_WRITES.every((n) => {
   const t = TOOLS.find((x) => x.name === n);
