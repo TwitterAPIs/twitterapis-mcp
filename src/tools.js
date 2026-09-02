@@ -40,7 +40,7 @@ export const TOOLS = [
         "Result ranking mode. 'Latest' = reverse-chronological (best for monitoring). 'Top' = engagement-ranked (best for finding popular tweets, default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts.",
       ),
       count: z.number().int().min(1).max(200).optional().describe(
-        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+        "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
