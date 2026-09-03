@@ -8,12 +8,12 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 96 tools (61 reads, 35 writes).
+// Catalog: 98 tools (62 reads, 36 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
 // write actions, reads its params from the query string), except the per-call
-// inline credentials, which travel as x-* request headers, the 10
+// inline credentials, which travel as x-* request headers, the 11
 // jsonBody tools, whose fields travel in a JSON request body, and any arg listed
 // in pathParams, which is substituted into the URL path (e.g. {id}) instead. A
 // tool with `method: "POST"` or `method: "DELETE"` is a write that acts on
@@ -22,6 +22,10 @@
 //
 // write:true       -> action mutates account/Twitter state (readOnlyHint:false)
 // destructive:true -> action removes/reverses state (delete, un-follow/like/RT/bookmark)
+// local:"<name>"   -> src/index.js dispatches the call to a handler in this
+//                     package instead of a plain passthrough (feedback's draft
+//                     queue); args flagged local:true in the overrides are
+//                     consumed there and never reach the API
 // pathParams        -> arg names substituted into the URL template, not sent as
 //                      query-string or body fields (e.g. ["id"] for /monitor/{id})
 import { z } from "zod";
@@ -40,7 +44,7 @@ export const TOOLS = [
         "Result ranking mode. 'Latest' = reverse-chronological (best for monitoring). 'Top' = engagement-ranked (best for finding popular tweets, default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts.",
       ),
       count: z.number().int().min(1).max(200).optional().describe(
-        "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
+        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
@@ -774,6 +778,52 @@ export const TOOLS = [
     description:
       "Get YOUR twitterapis.com payment history: the list of top-ups and charges on your account. Authenticated by your API key. This is an account read, not Twitter data, and is free (it does not spend credits).",
     shape: {},
+  },
+  {
+    name: "twitter_feedback_send",
+    path: "/feedback",
+    method: "POST",
+    write: true,
+    jsonBody: true,
+    local: "feedback",
+    localArgs: ["action","ids"],
+    description:
+      "Report a product problem or gap in twitterapis.com to its team from inside this session, the way Claude Code's own feedback tool works: a report is DRAFTED to a local queue first (action \"draft\", the default) and SENT only after the user reviews it. Drafting sends nothing, needs no confirmation, and should not be announced mid-task. WHEN TO DRAFT, only at high-signal moments: a twitterapis tool call failed with an error that was not a missing key (401), credits (402), no linked session (409) or a rate limit (429), and the user had to work around it; the user asked for something no twitterapis tool covers; a documented field came back empty or wrong; the user was clearly frustrated with a result. One draft per distinct issue, never twice for the same one. FORMAT for details, four labelled bullets in this order: 'What happened:' observed vs expected, exact error text if short. 'What the user said:' quoted verbatim, or 'user did not comment'. 'Repro:' the minimal call that reproduces it. 'Evidence:' tool name, endpoint, HTTP status, request id (the last failing call is attached automatically where you leave a gap). Facts only: no guessing, no API keys or secrets, no personal names. REVIEW: when the user asks to see or send feedback, call action \"list\", then action \"send\" with ONLY the draft ids the user named in their own message, or action \"discard\". Sending posts each draft to POST /feedback (free) and returns a server id that twitter_feedback_get can check later.",
+    shape: {
+      action: z.enum(["draft","list","send","discard"]).optional().describe(
+        "What to do. \"draft\" (default) queues a new report locally and sends nothing. \"list\" shows the pending drafts with their ids. \"send\" posts the drafts named in ids to twitterapis.com; use it only for ids the user named. \"discard\" drops the drafts named in ids.",
+      ),
+      type: z.enum(["bug","idea","missing_capability"]).optional().describe(
+        "Required for a draft. \"bug\": a tool or endpoint misbehaved. \"idea\": a change that would have made the task easier. \"missing_capability\": the user needed something no tool provides.",
+      ),
+      title: z.string().optional().describe(
+        "Required for a draft. One specific line, at most 120 characters, naming the tool or endpoint and the defect, e.g. \"twitter_tweet_thread returns 502 when the root tweet is deleted\".",
+      ),
+      details: z.string().optional().describe(
+        "Required for a draft. At most 8000 characters, four labelled bullets in order: What happened, What the user said (verbatim), Repro, Evidence.",
+      ),
+      area: z.string().optional().describe(
+        "Optional. The endpoint or feature the report is about, e.g. \"tweet/thread\" or \"monitoring\". At most 80 characters.",
+      ),
+      evidence: z.record(z.string(), z.unknown()).optional().describe(
+        "Optional identifiers only, never payloads: {tool, endpoint, status, request_id}. Whatever you leave out is filled from the last failing call in this session; mcp_version and client are always attached.",
+      ),
+      ids: z.array(z.string()).optional().describe(
+        "For action \"send\" or \"discard\": the draft ids to act on, exactly as shown by action \"list\" and named by the user.",
+      ),
+    },
+  },
+  {
+    name: "twitter_feedback_get",
+    path: "/feedback/{id}",
+    pathParams: ["id"],
+    description:
+      "Check the status of a feedback report this account sent earlier (the server id returned by twitter_feedback_send action \"send\"): status new, triaged, shipped or declined, the team's response text if any, and updated_at, which moves only when the team acts on it. Free per call. 404 if the id is not on this account.",
+    shape: {
+      id: z.string().describe(
+        "The server id of a sent report, as returned by twitter_feedback_send action \"send\" (a UUID). Not a local draft id.",
+      ),
+    },
   },
   {
     name: "twitter_home_timeline",

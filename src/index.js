@@ -25,6 +25,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 // outbound user-agent both still advertised 0.3.0.
 const VERSION = createRequire(import.meta.url)("../package.json").version;
 import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "./tools.js";
+import { createFeedbackHandler } from "./feedback.js";
 
 const API_KEY = process.env.TWITTERAPIS_KEY;
 const BASE_URL = (
@@ -81,6 +82,11 @@ if (!API_KEY) {
 // substitute into the URL template) and callEndpoint splices them into path
 // before building the query string or body, so a pathParams arg never leaks
 // into either.
+// The last tool call that failed, so a feedback draft can carry the endpoint,
+// status and request id without the model retyping them. Set in callEndpoint's
+// error branch; the tool name is added by the registration wrapper below.
+let lastError = null;
+
 async function callEndpoint(path, args, method = "GET", jsonBody = false, pathParams = []) {
   if (!API_KEY) {
     return {
@@ -168,7 +174,21 @@ async function callEndpoint(path, args, method = "GET", jsonBody = false, pathPa
                   : res.status >= 500
                     ? " (upstream API error. Retry in a moment; if persistent, check https://www.twitterapis.com/status)"
                     : "";
-      return { isError: true, content: [{ type: "text", text: `HTTP ${res.status}${hint}: ${body.slice(0, 1200)}` }] };
+      lastError = {
+        path: resolvedPath,
+        method,
+        status: res.status,
+        requestId: res.headers.get("x-request-id") || undefined,
+        ts: Date.now(),
+      };
+      // Credential, credit, session and rate-limit failures are the caller's
+      // situation, not a product defect; everything else may be one, and the
+      // model reads error bodies closely, so the pointer lives here.
+      const feedbackHint =
+        res.status === 401 || res.status === 402 || res.status === 409 || res.status === 429
+          ? ""
+          : " If this blocked the user's task and looks like a defect or a missing capability, draft a report with twitter_feedback_send (queued locally until the user reviews it).";
+      return { isError: true, content: [{ type: "text", text: `HTTP ${res.status}${hint}: ${body.slice(0, 1200)}${feedbackHint}` }] };
     }
     return { content: [{ type: "text", text: body }] };
   } catch (err) {
@@ -180,7 +200,27 @@ async function callEndpoint(path, args, method = "GET", jsonBody = false, pathPa
 }
 
 // ── MCP server ───────────────────────────────────────────────────────────────
-const server = new McpServer({ name: "twitterapis", version: VERSION });
+// Standing instructions the client hands its model alongside the tool list.
+// This is the trigger list for feedback, in the place a model actually reads.
+const INSTRUCTIONS =
+  "twitterapis.com MCP server. Read tools cost credits per call (most $0.0008); account, monitoring and feedback tools are free. " +
+  "If a twitterapis tool call fails with an error other than 401/402/409/429 and the user has to work around it, if the user asks for something no twitterapis tool covers, " +
+  "if a documented field comes back empty or wrong, or if the user is clearly frustrated with a result, draft a report with twitter_feedback_send (action \"draft\"). " +
+  "Drafting is local and silent; never send a draft unless the user names it after reviewing action \"list\".";
+
+const server = new McpServer({ name: "twitterapis", version: VERSION }, { instructions: INSTRUCTIONS });
+
+// Handlers for tools that carry local: "<name>" in the catalog. A name the
+// catalog uses and this map lacks is a boot-time failure, never a silent
+// passthrough to the API with the local args attached.
+const LOCAL_HANDLERS = {
+  feedback: createFeedbackHandler({
+    callEndpoint,
+    version: VERSION,
+    getClientInfo: () => server.server.getClientVersion(),
+    getLastError: () => lastError,
+  }),
+};
 
 for (const tool of TOOLS) {
   const method = tool.method || "GET";
@@ -192,10 +232,23 @@ for (const tool of TOOLS) {
     destructiveHint: Boolean(tool.destructive),
     openWorldHint: true,
   };
+  let handler;
+  if (tool.local) {
+    handler = LOCAL_HANDLERS[tool.local];
+    if (!handler) throw new Error(`[twitterapis-mcp] tool ${tool.name} declares local handler "${tool.local}" but src/index.js has none`);
+  } else {
+    handler = async (args) => {
+      const result = await callEndpoint(tool.path, args, method, Boolean(tool.jsonBody), tool.pathParams || []);
+      if (result?.isError && lastError && lastError.path === resolvePathParams(tool.path, tool.pathParams || [], args).path) {
+        lastError.tool = tool.name;
+      }
+      return result;
+    };
+  }
   server.registerTool(
     tool.name,
     { description: tool.description, inputSchema: tool.shape, annotations },
-    async (args) => callEndpoint(tool.path, args, method, Boolean(tool.jsonBody), tool.pathParams || []),
+    handler,
   );
 }
 

@@ -6261,7 +6261,7 @@
       "get": {
         "operationId": "user-tweets-complete",
         "summary": "Full Tweet History",
-        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` — pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
+        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` \u2014 pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
         "tags": [
           "User Reads"
         ],
@@ -19393,6 +19393,179 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/feedback": {
+      "servers": [
+        {
+          "url": "https://api.twitterapis.com"
+        }
+      ],
+      "post": {
+        "operationId": "feedback-post",
+        "summary": "Send Feedback",
+        "description": "Send product feedback from your AI agent or integration: a bug, an idea, or a capability you needed and could not find. Stored against your account and read by the team; check its status with GET /feedback/{id}. Free, not metered. Cost: Free per call.",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "title",
+                  "details"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "bug",
+                      "idea",
+                      "missing_capability"
+                    ],
+                    "description": "What kind of report this is."
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "One specific line naming the endpoint and the defect, 1 to 120 characters.",
+                    "example": "tweet/thread returns 502 when the root tweet is deleted"
+                  },
+                  "details": {
+                    "type": "string",
+                    "description": "What happened, what the user said, how to reproduce, and the evidence. 1 to 8000 characters."
+                  },
+                  "area": {
+                    "type": "string",
+                    "description": "Optional. The endpoint or feature concerned, at most 80 characters.",
+                    "example": "tweet/thread"
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Optional identifiers only (tool, endpoint, status, request_id, client, mcp_version); must serialize to 4096 bytes or fewer."
+                  },
+                  "client": {
+                    "type": "string",
+                    "description": "Optional. The calling agent or tool and its version, at most 120 characters.",
+                    "example": "claude-code/2.1.259 via @twitterapis/mcp@0.9.6"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The report was stored.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The report id; pass it to GET /feedback/{id}."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Always \"new\" on creation."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "ISO 8601 timestamp."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid_request naming the offending field."
+          },
+          "401": {
+            "description": "Missing or invalid API key."
+          },
+          "429": {
+            "description": "More than 10 reports per minute on this key."
+          }
+        }
+      }
+    },
+    "/feedback/{id}": {
+      "servers": [
+        {
+          "url": "https://api.twitterapis.com"
+        }
+      ],
+      "get": {
+        "operationId": "feedback-id",
+        "summary": "Feedback Status",
+        "description": "Read one feedback report this account sent: its status (new, triaged, shipped, declined), the team's response if any, and when it was last acted on. Free. Cost: Free per call.",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "responses": {
+          "200": {
+            "description": "The report and its current status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "area": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "new, triaged, shipped or declined."
+                    },
+                    "response": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The team's reply, or null."
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "description": "Moves only when status or response changes."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No feedback with that id on this account."
           }
         }
       }
