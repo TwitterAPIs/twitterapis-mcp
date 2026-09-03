@@ -114,7 +114,12 @@ async function main() {
     const np = norm(t.path);
     const oaParams = oaIdx[key(t.method || "GET", np)];
     if (!oaParams) continue; // already reported in (1)
+    // Args consumed by a local handler in this package (tools.js `localArgs`,
+    // e.g. twitter_feedback_send's action/ids) never reach the API, so the
+    // spec has no param for them by design.
+    const localArgs = new Set(t.localArgs || []);
     for (const arg of Object.keys(t.shape || {})) {
+      if (localArgs.has(arg)) continue;
       if (NON_PARAM_ARGS.has(arg)) continue;
       if (!oaParams.has(arg)) {
         problems.push(`tool ${t.name} arg "${arg}" is not a request param of ${t.method || "GET"} ${np} (openapi params: ${[...oaParams].join(", ") || "none"})`);

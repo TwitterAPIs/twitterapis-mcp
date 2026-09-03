@@ -88,8 +88,11 @@ const { endpoints: ENDPOINTS, methodsByPath: METHODS_BY_PATH } = buildEndpoints(
 // x_user_stream compat shim which lives at an un-prefixed /oapi/x_user_stream/*
 // (task #87 -- same class of gap as account/*, first exposed because the spec's
 // path-level `servers` override was never consulted here).
+// /feedback and /feedback/{id} (2026-09-04) are un-prefixed for the same
+// reason as /account/*: they administer the customer's twitterapis.com
+// relationship, and the backend proxies them to billing transport-only.
 const toolPathFor = (endpoint) =>
-  endpoint.startsWith("/account/") || endpoint.startsWith("/oapi/x_user_stream/")
+  endpoint.startsWith("/account/") || endpoint.startsWith("/oapi/x_user_stream/") || endpoint === "/feedback" || endpoint.startsWith("/feedback/")
     ? endpoint
     : `/twitter${endpoint}`;
 
@@ -180,7 +183,7 @@ for (const t of TOOL_OVERRIDES) {
     // it. Fail closed on any key outside this allowlist instead of accepting
     // it silently.
     const KNOWN_ARG_KEYS = new Set([
-      "name", "describe", "required", "header", "type", "enum", "min", "max", "minLength", "nullable",
+      "name", "describe", "required", "header", "type", "enum", "min", "max", "minLength", "nullable", "local",
     ]);
     for (const k of Object.keys(a)) {
       if (!KNOWN_ARG_KEYS.has(k)) {
@@ -190,7 +193,25 @@ for (const t of TOOL_OVERRIDES) {
 
     const p = ep.params.get(a.name);
 
-    if (!p && !a.header) {
+    // A local:true arg is consumed by a handler in this package (tool.local names
+    // it) and never reaches the API, e.g. twitter_feedback_send's `action` and
+    // `ids`. It is exempt from the spec-param check only on a tool that declares
+    // a local handler, so a stray flag cannot smuggle an undocumented arg onto an
+    // ordinary passthrough tool.
+    if (a.local && !t.local) {
+      bad(`tool ${t.name} arg "${a.name}" is local:true but the tool declares no local handler (set local: "<handler>" on the tool)`);
+      continue;
+    }
+    if (a.type === "strings" && !a.local) {
+      bad(`tool ${t.name} arg "${a.name}" is type:"strings" but not local:true; the API has no array-typed param, and buildQuery would send it as a comma-joined string`);
+      continue;
+    }
+    if (p && a.local) {
+      bad(`tool ${t.name} arg "${a.name}" is local:true but IS a real request param of ${t.endpoint}; drop the flag`);
+      continue;
+    }
+
+    if (!p && !a.header && !a.local) {
       bad(
         `tool ${t.name} arg "${a.name}" is not a request param of ${t.endpoint} ` +
           `(spec params: ${[...ep.params.keys()].join(", ") || "none"}). ` +
@@ -220,7 +241,7 @@ for (const t of TOOL_OVERRIDES) {
     if (a.nullable && required) {
       bad(`tool ${t.name} arg "${a.name}" is nullable:true but required:true; nullable only makes sense on an optional arg`);
     }
-    finalArgs.push({ name: a.name, type, enum: a.enum, min: a.min, max: a.max, minLength: a.minLength, required, nullable: a.nullable, describe: a.describe });
+    finalArgs.push({ name: a.name, type, enum: a.enum, min: a.min, max: a.max, minLength: a.minLength, required, nullable: a.nullable, describe: a.describe, local: Boolean(a.local) });
   }
 
   // Every spec param must be accounted for: exposed, or omitted with a reason.
@@ -299,6 +320,10 @@ function zodExpr(a) {
     e = "z.number()";
     if (a.min !== undefined) e += `.min(${a.min})`;
     if (a.max !== undefined) e += `.max(${a.max})`;
+  } else if (a.type === "strings") {
+    // A list of short strings (draft ids for twitter_feedback_send). Only ever
+    // used on a local:true arg; the API itself has no array-typed param.
+    e = "z.array(z.string())";
   } else if (a.type === "json") {
     // Arbitrary JSON object arg, for a param the handler reads as a real
     // parsed object rather than a string (e.g. article/update_content's
@@ -336,6 +361,9 @@ const body = resolved
     if (t.destructive) L.push("    destructive: true,");
     if (t.jsonBody) L.push("    jsonBody: true,");
     if (t.pathParams && t.pathParams.length) L.push(`    pathParams: ${JSON.stringify(t.pathParams)},`);
+    if (t.local) L.push(`    local: ${q(t.local)},`);
+    const localArgs = t.args.filter((a) => a.local).map((a) => a.name);
+    if (localArgs.length) L.push(`    localArgs: ${JSON.stringify(localArgs)},`);
     L.push("    description:");
     L.push(`      ${q(t.description)},`);
     if (t.args.length === 0) {
@@ -381,6 +409,10 @@ const rendered = `// GENERATED FILE. DO NOT EDIT BY HAND.
 //
 // write:true       -> action mutates account/Twitter state (readOnlyHint:false)
 // destructive:true -> action removes/reverses state (delete, un-follow/like/RT/bookmark)
+// local:"<name>"   -> src/index.js dispatches the call to a handler in this
+//                     package instead of a plain passthrough (feedback's draft
+//                     queue); args flagged local:true in the overrides are
+//                     consumed there and never reach the API
 // pathParams        -> arg names substituted into the URL template, not sent as
 //                      query-string or body fields (e.g. ["id"] for /monitor/{id})
 import { z } from "zod";

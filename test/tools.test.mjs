@@ -38,9 +38,12 @@ const writes = TOOLS.filter((t) => t.write);
 // write), which replays deliveries that dead-lettered while a customer endpoint
 // was down. Writes 34 -> 35, reads unchanged at 61, so the MCP catalog is now at
 // exact parity with the API: 96 endpoints, 61 reads and 35 writes.
-const EXPECTED_TOOLS = 96;
-const EXPECTED_READS = 61;
-const EXPECTED_WRITES = 35;
+// Bumped 96 -> 98 on 2026-09-04 with twitter_feedback_send (POST /feedback, a
+// write with a local draft queue) and twitter_feedback_get (GET /feedback/{id},
+// a read): 98 endpoints, 62 reads and 36 writes, still exact parity.
+const EXPECTED_TOOLS = 98;
+const EXPECTED_READS = 62;
+const EXPECTED_WRITES = 36;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -58,7 +61,7 @@ check("names unique", new Set(TOOLS.map((t) => t.name)).size === TOOLS.length);
 // /twitter/monitor/{id}), so the catalog's true routing key is (method, path).
 check("(method, path) unique", new Set(TOOLS.map((t) => `${t.method || "GET"} ${t.path}`)).size === TOOLS.length);
 check("all names twitter_*", TOOLS.every((t) => /^twitter_[a-z0-9_]+$/.test(t.name)));
-check("all paths /twitter/* or /account/* or /oapi/x_user_stream/*", TOOLS.every((t) => t.path.startsWith("/twitter/") || t.path.startsWith("/account/") || t.path.startsWith("/oapi/x_user_stream/")));
+check("all paths /twitter/* or /account/* or /oapi/x_user_stream/* or /feedback*", TOOLS.every((t) => t.path.startsWith("/twitter/") || t.path.startsWith("/account/") || t.path.startsWith("/oapi/x_user_stream/") || t.path === "/feedback" || t.path.startsWith("/feedback/")));
 check("all have a real description", TOOLS.every((t) => typeof t.description === "string" && t.description.length > 20));
 check("all have an object shape", TOOLS.every((t) => t.shape && typeof t.shape === "object" && !Array.isArray(t.shape)));
 
@@ -91,6 +94,7 @@ check("pathParams match {name} templates in path", TOOLS.every((t) => {
 // production before this fix (products/twitterapis-backend, monitor.ts /
 // webhook.ts / getxapi-stream-compat.ts).
 const JSON_BODY_WRITES = [
+  "twitter_feedback_send", // POST /feedback reads a JSON body (2026-09-04)
   "twitter_media_upload", "twitter_customer_session", "twitter_user_login", "twitter_article_update_content",
   "twitter_monitor_create", "twitter_monitor_update", "twitter_monitor_webhook_create",
   "twitter_x_user_stream_add_user", "twitter_x_user_stream_remove_user",

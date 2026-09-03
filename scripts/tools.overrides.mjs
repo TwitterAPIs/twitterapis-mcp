@@ -54,8 +54,11 @@ export const ARG_GROUPS = {
   // opposite order on some endpoints; the catalog is consistent instead.
   PAGINATION: [
     { name: "count", type: "int", min: 1, max: 200,
+      // Measured live 2026-09-02 (main commit 088759b, which hand-edited the
+      // GENERATED tools.js and was silently dropped by the next regeneration):
+      // X caps search pages regardless of the value requested.
       describe:
-        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response." },
+        "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value." },
     { name: "cursor",
       describe:
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page." },
@@ -692,6 +695,60 @@ export const TOOL_OVERRIDES = [
     description:
       "Get YOUR twitterapis.com payment history: the list of top-ups and charges on your account. Authenticated by your API key. This is an account read, not Twitter data, and is free (it does not spend credits).",
     args: [],
+  },
+  // ── Feedback: product reports from inside the customer's AI tool (2026-09-04) ─
+  // Modelled on Claude Code's own feedback tool: the model DRAFTS at a
+  // high-signal moment into a local queue (src/feedback.js) and nothing is sent
+  // until the user reviews and names the drafts to send. Free, not metered,
+  // zero-rated in billing like account/* and the monitoring tools. The
+  // DESCRIPTION below is the product: it is what tells a model when to draft
+  // and what shape a useful report has. The `local` handler owns the queue;
+  // `action` and `ids` never reach the API.
+  {
+    name: "twitter_feedback_send",
+    endpoint: "/feedback",
+    method: "POST",
+    write: true, jsonBody: true,
+    local: "feedback",
+    description:
+      "Report a product problem or gap in twitterapis.com to its team from inside this session, the way Claude Code's own feedback tool works: a report is DRAFTED to a local queue first (action \"draft\", the default) and SENT only after the user reviews it. Drafting sends nothing, needs no confirmation, and should not be announced mid-task. WHEN TO DRAFT, only at high-signal moments: a twitterapis tool call failed with an error that was not a missing key (401), credits (402), no linked session (409) or a rate limit (429), and the user had to work around it; the user asked for something no twitterapis tool covers; a documented field came back empty or wrong; the user was clearly frustrated with a result. One draft per distinct issue, never twice for the same one. FORMAT for details, four labelled bullets in this order: 'What happened:' observed vs expected, exact error text if short. 'What the user said:' quoted verbatim, or 'user did not comment'. 'Repro:' the minimal call that reproduces it. 'Evidence:' tool name, endpoint, HTTP status, request id (the last failing call is attached automatically where you leave a gap). Facts only: no guessing, no API keys or secrets, no personal names. REVIEW: when the user asks to see or send feedback, call action \"list\", then action \"send\" with ONLY the draft ids the user named in their own message, or action \"discard\". Sending posts each draft to POST /feedback (free) and returns a server id that twitter_feedback_get can check later.",
+    args: [
+      { name: "action", local: true, type: "enum", enum: ["draft", "list", "send", "discard"], required: false,
+        describe:
+          "What to do. \"draft\" (default) queues a new report locally and sends nothing. \"list\" shows the pending drafts with their ids. \"send\" posts the drafts named in ids to twitterapis.com; use it only for ids the user named. \"discard\" drops the drafts named in ids." },
+      { name: "type", type: "enum", enum: ["bug", "idea", "missing_capability"], required: false,
+        describe:
+          "Required for a draft. \"bug\": a tool or endpoint misbehaved. \"idea\": a change that would have made the task easier. \"missing_capability\": the user needed something no tool provides." },
+      { name: "title", required: false,
+        describe:
+          "Required for a draft. One specific line, at most 120 characters, naming the tool or endpoint and the defect, e.g. \"twitter_tweet_thread returns 502 when the root tweet is deleted\"." },
+      { name: "details", required: false,
+        describe:
+          "Required for a draft. At most 8000 characters, four labelled bullets in order: What happened, What the user said (verbatim), Repro, Evidence." },
+      { name: "area",
+        describe:
+          "Optional. The endpoint or feature the report is about, e.g. \"tweet/thread\" or \"monitoring\". At most 80 characters." },
+      { name: "evidence", type: "json",
+        describe:
+          "Optional identifiers only, never payloads: {tool, endpoint, status, request_id}. Whatever you leave out is filled from the last failing call in this session; mcp_version and client are always attached." },
+      { name: "ids", local: true, type: "strings",
+        describe:
+          "For action \"send\" or \"discard\": the draft ids to act on, exactly as shown by action \"list\" and named by the user." },
+    ],
+    omit: {
+      client: "filled by the handler from the MCP handshake clientInfo plus this package's version, never typed by a model",
+    },
+  },
+  {
+    name: "twitter_feedback_get",
+    endpoint: "/feedback/{id}",
+    description:
+      "Check the status of a feedback report this account sent earlier (the server id returned by twitter_feedback_send action \"send\"): status new, triaged, shipped or declined, the team's response text if any, and updated_at, which moves only when the team acts on it. Free per call. 404 if the id is not on this account.",
+    args: [
+      { name: "id",
+        describe:
+          "The server id of a sent report, as returned by twitter_feedback_send action \"send\" (a UUID). Not a local draft id." },
+    ],
   },
   // ── Reads: authenticated-account surfaces (require a session behind your key) ─
   {

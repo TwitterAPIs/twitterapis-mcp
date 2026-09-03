@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.6 (2026-09-04)
+
+### Added
+
+- **`twitter_feedback_send` and `twitter_feedback_get`, report a bug or a gap to the twitterapis.com team from inside the session you are already in.** Modelled on Claude Code's own feedback tool: the model drafts a report at a high-signal moment (a call failed in a way that is not your key, credits, session or a rate limit and you had to work around it; you asked for something no tool covers; a documented field came back empty or wrong; you were plainly frustrated with a result) into a local queue at `~/.twitterapis/feedback-queue.json`, and nothing is sent until you review the queue and name the drafts to send. Each draft carries the last failing call's endpoint, status and request id, your MCP client's name and this package's version, filled in automatically, so a report is actionable without a follow-up. `twitter_feedback_send` takes `action` (`draft`, `list`, `send`, `discard`); `twitter_feedback_get` reads a sent report's status and the team's response. Both are free. The trigger list also ships as the server's MCP `instructions`, so a client that honours them nudges its model at the right moments. Every non-credential error body now ends with a one-line pointer to the tool. This takes the catalog to 98 tools, 62 reads and 36 writes, still exact parity with the API's own endpoint count.
+- **Catalog support for local handlers.** A tool may declare `local: "<handler>"` in `scripts/tools.overrides.mjs`, and args flagged `local: true` are consumed in this package instead of being sent to the API. The generator refuses a `local: true` arg on a tool with no handler, and refuses a `local` handler name `src/index.js` does not implement at boot, so neither flag can turn into a silent passthrough. A new `strings` arg type renders `z.array(z.string())`.
+
 ## 0.9.5 (2026-08-31)
 
 ### Added
