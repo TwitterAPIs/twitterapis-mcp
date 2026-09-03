@@ -18,7 +18,7 @@
   "tags": [
     {
       "name": "Account",
-      "description": "Your API account: credit balance, usage totals, and payment history. Served from the API root (https://api.twitterapis.com/account/*), not under /twitter, because billing owns their authentication. Free."
+      "description": "Your API account: credit balance, usage totals, payment history, and product feedback filed from the tool you are using. Served from the API root (https://api.twitterapis.com/account/* and /feedback), not under /twitter, because billing owns their authentication. Free."
     },
     {
       "name": "Account Session",
@@ -307,6 +307,406 @@
                       "created_at": "2026-06-02T14:08:55.000Z"
                     }
                   ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      },
+      "servers": [
+        {
+          "url": "https://api.twitterapis.com"
+        }
+      ]
+    },
+    "/feedback": {
+      "post": {
+        "operationId": "feedback",
+        "summary": "Send Feedback",
+        "description": "Files a product feedback report against your account. It exists for AI agents (Claude Code, Cursor, any MCP client) working against this API: when a call fails, a capability is missing, or the user asks for it, the agent drafts a report locally, the user reviews it, and the client sends it here. The report reaches the team as a stored row plus a Slack post, and the returned id lets the agent read its status later. Free, never metered, rate limited to 10 per minute per key. Cost: Free per call.",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/feedback\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"type\": \"bug\", \"title\": \"tweet/thread returns 500 on a quoted reply\", \"details\": \"what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\\nwhat the user said: \\\"it worked yesterday\\\"\\nrepro: GET tweet/thread with that id.\\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.\", \"area\": \"tweet/thread\", \"evidence\": {\"tool\": \"twitter_tweet_thread\", \"endpoint\": \"tweet/thread\", \"status\": 500, \"request_id\": \"req_01J9K2\", \"client\": \"claude-code/2.1.259\", \"mcp_version\": \"0.9.6\"}, \"client\": \"claude-code/2.1.259 via @twitterapis/mcp@0.9.6\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/feedback\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\n        \"type\": \"bug\",\n        \"title\": \"tweet/thread returns 500 on a quoted reply\",\n        \"details\": \"what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\\nwhat the user said: \\\"it worked yesterday\\\"\\nrepro: GET tweet/thread with that id.\\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.\",\n        \"area\": \"tweet/thread\",\n        \"evidence\": {\"tool\": \"twitter_tweet_thread\", \"endpoint\": \"tweet/thread\", \"status\": 500, \"request_id\": \"req_01J9K2\", \"client\": \"claude-code/2.1.259\", \"mcp_version\": \"0.9.6\"},\n        \"client\": \"claude-code/2.1.259 via @twitterapis/mcp@0.9.6\",\n    },\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/feedback\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({\n    type: \"bug\",\n    title: \"tweet/thread returns 500 on a quoted reply\",\n    details: \"what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\\nwhat the user said: \\\"it worked yesterday\\\"\\nrepro: GET tweet/thread with that id.\\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.\",\n    area: \"tweet/thread\",\n    evidence: { tool: \"twitter_tweet_thread\", endpoint: \"tweet/thread\", status: 500, request_id: \"req_01J9K2\", client: \"claude-code/2.1.259\", mcp_version: \"0.9.6\" },\n    client: \"claude-code/2.1.259 via @twitterapis/mcp@0.9.6\",\n  }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "File a bug, idea or missing-capability report from the tool you are using, typically drafted by your AI agent and sent after you review it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The report's id (a UUID). Pass it to GET feedback/{id} to read its status and the team's response."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Always \"new\" on creation. Moves to triaged, shipped or declined as the team works the report."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "ISO 8601 timestamp of when the report was stored."
+                    }
+                  }
+                },
+                "example": {
+                  "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "status": "new",
+                  "created_at": "2026-09-04T10:15:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "One of bug, idea or missing_capability. Anything else is rejected with 400 naming type.",
+                    "example": "bug"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "One line, 1 to 120 characters after trimming. Say what broke or what is missing, not how the user feels about it.",
+                    "example": "tweet/thread returns 500 on a quoted reply"
+                  },
+                  "details": {
+                    "type": "string",
+                    "description": "1 to 8000 characters. Recommended shape, four labelled bullets: what happened (observed vs expected, the exact error text if short), what the user said (quoted verbatim, or \"user did not comment\"), repro (minimal steps), evidence (endpoint, status, request id, tool name, client, version).",
+                    "example": "what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread. what the user said: \"it worked yesterday\". repro: GET tweet/thread with that id. evidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259."
+                  },
+                  "area": {
+                    "type": "string",
+                    "description": "The endpoint or feature the report concerns, for example tweet/thread or monitor webhooks. Up to 80 characters.",
+                    "example": "tweet/thread"
+                  },
+                  "evidence": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Identifiers only, never payloads: tool, endpoint, status, request_id, client, mcp_version. Must serialize to 4096 bytes or fewer, and must be a JSON object (an array is rejected); either failure is a 400 naming evidence.",
+                    "example": {
+                      "tool": "twitter_tweet_thread",
+                      "endpoint": "tweet/thread",
+                      "status": 500,
+                      "request_id": "req_01J9K2",
+                      "client": "claude-code/2.1.259",
+                      "mcp_version": "0.9.6"
+                    }
+                  },
+                  "client": {
+                    "type": "string",
+                    "description": "The calling agent or tool and its version, so a fix can be matched to what sent the report. Up to 120 characters.",
+                    "example": "claude-code/2.1.259 via @twitterapis/mcp@0.9.6"
+                  }
+                },
+                "required": [
+                  "type",
+                  "title",
+                  "details"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "servers": [
+        {
+          "url": "https://api.twitterapis.com"
+        }
+      ]
+    },
+    "/feedback/{id}": {
+      "get": {
+        "operationId": "feedback-id",
+        "summary": "Feedback Status",
+        "description": "Returns one feedback report filed from your account, by id: what was sent (type, title, area), its status (new, triaged, shipped or declined), the team's response text or null, and timestamps. updated_at moves only when status or response changes, so an agent can tell a report that has been looked at from one that has not. Free, never metered. Any id that is not on your account answers 404, including ids that are not UUIDs. Cost: Free per call.",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/feedback/{id}\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/feedback/{id}\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/feedback/{id}\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read one feedback report you filed: its current status and the team's response, if any.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The report's id (a UUID), as returned by POST feedback."
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "bug, idea or missing_capability, as filed."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "The title as filed."
+                    },
+                    "area": {
+                      "type": "string",
+                      "description": "The endpoint or feature named at filing, or null if none was given."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "One of new (received, not yet reviewed), triaged (accepted into the queue), shipped (the fix or feature is live) or declined (will not be done; response says why)."
+                    },
+                    "response": {
+                      "type": "string",
+                      "description": "The team's reply text, or null until one is written."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "ISO 8601 timestamp of when the report was stored."
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "description": "ISO 8601. Equals created_at until the status or the response changes, and moves only then."
+                    }
+                  }
+                },
+                "example": {
+                  "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "type": "bug",
+                  "title": "tweet/thread returns 500 on a quoted reply",
+                  "area": "tweet/thread",
+                  "status": "triaged",
+                  "response": "Reproduced. The quoted post was deleted mid-thread; a fix is in review.",
+                  "created_at": "2026-09-04T10:15:00.000Z",
+                  "updated_at": "2026-09-04T14:02:11.000Z"
                 }
               }
             }
@@ -6261,7 +6661,7 @@
       "get": {
         "operationId": "user-tweets-complete",
         "summary": "Full Tweet History",
-        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` \u2014 pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
+        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` — pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
         "tags": [
           "User Reads"
         ],
@@ -19393,179 +19793,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/feedback": {
-      "servers": [
-        {
-          "url": "https://api.twitterapis.com"
-        }
-      ],
-      "post": {
-        "operationId": "feedback-post",
-        "summary": "Send Feedback",
-        "description": "Send product feedback from your AI agent or integration: a bug, an idea, or a capability you needed and could not find. Stored against your account and read by the team; check its status with GET /feedback/{id}. Free, not metered. Cost: Free per call.",
-        "tags": [
-          "Account"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-cost-usd": 0,
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "type",
-                  "title",
-                  "details"
-                ],
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "bug",
-                      "idea",
-                      "missing_capability"
-                    ],
-                    "description": "What kind of report this is."
-                  },
-                  "title": {
-                    "type": "string",
-                    "description": "One specific line naming the endpoint and the defect, 1 to 120 characters.",
-                    "example": "tweet/thread returns 502 when the root tweet is deleted"
-                  },
-                  "details": {
-                    "type": "string",
-                    "description": "What happened, what the user said, how to reproduce, and the evidence. 1 to 8000 characters."
-                  },
-                  "area": {
-                    "type": "string",
-                    "description": "Optional. The endpoint or feature concerned, at most 80 characters.",
-                    "example": "tweet/thread"
-                  },
-                  "evidence": {
-                    "type": "object",
-                    "additionalProperties": true,
-                    "description": "Optional identifiers only (tool, endpoint, status, request_id, client, mcp_version); must serialize to 4096 bytes or fewer."
-                  },
-                  "client": {
-                    "type": "string",
-                    "description": "Optional. The calling agent or tool and its version, at most 120 characters.",
-                    "example": "claude-code/2.1.259 via @twitterapis/mcp@0.9.6"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "The report was stored.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "description": "The report id; pass it to GET /feedback/{id}."
-                    },
-                    "status": {
-                      "type": "string",
-                      "description": "Always \"new\" on creation."
-                    },
-                    "created_at": {
-                      "type": "string",
-                      "description": "ISO 8601 timestamp."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "invalid_request naming the offending field."
-          },
-          "401": {
-            "description": "Missing or invalid API key."
-          },
-          "429": {
-            "description": "More than 10 reports per minute on this key."
-          }
-        }
-      }
-    },
-    "/feedback/{id}": {
-      "servers": [
-        {
-          "url": "https://api.twitterapis.com"
-        }
-      ],
-      "get": {
-        "operationId": "feedback-id",
-        "summary": "Feedback Status",
-        "description": "Read one feedback report this account sent: its status (new, triaged, shipped, declined), the team's response if any, and when it was last acted on. Free. Cost: Free per call.",
-        "tags": [
-          "Account"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-cost-usd": 0,
-        "responses": {
-          "200": {
-            "description": "The report and its current status.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "type": {
-                      "type": "string"
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "area": {
-                      "type": "string",
-                      "nullable": true
-                    },
-                    "status": {
-                      "type": "string",
-                      "description": "new, triaged, shipped or declined."
-                    },
-                    "response": {
-                      "type": "string",
-                      "nullable": true,
-                      "description": "The team's reply, or null."
-                    },
-                    "created_at": {
-                      "type": "string"
-                    },
-                    "updated_at": {
-                      "type": "string",
-                      "description": "Moves only when status or response changes."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "No feedback with that id on this account."
           }
         }
       }
