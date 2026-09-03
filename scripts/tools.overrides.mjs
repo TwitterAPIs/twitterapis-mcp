@@ -54,8 +54,11 @@ export const ARG_GROUPS = {
   // opposite order on some endpoints; the catalog is consistent instead.
   PAGINATION: [
     { name: "count", type: "int", min: 1, max: 200,
+      // Measured live 2026-09-02 (main commit 088759b, which hand-edited the
+      // GENERATED tools.js and was silently dropped by the next regeneration):
+      // X caps search pages regardless of the value requested.
       describe:
-        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response." },
+        "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value." },
     { name: "cursor",
       describe:
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page." },

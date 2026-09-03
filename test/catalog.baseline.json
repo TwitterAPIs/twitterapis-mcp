@@ -136,7 +136,7 @@
             ]
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -175,7 +175,7 @@
             "description": "Name, keyword, or topic to search accounts for. Examples: 'OpenAI', 'AI researcher', 'tech founder'."
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -330,7 +330,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -403,7 +403,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -442,7 +442,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -515,7 +515,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -551,7 +551,7 @@
             "description": "Twitter/X handle WITHOUT the leading @ of the user to find mentions for (e.g. 'openai' to find tweets mentioning @openai)."
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -590,7 +590,7 @@
             "description": "Numeric Twitter/X user id (e.g. '44196397'). Required: this endpoint does not accept a username. Resolve a handle to a user_id first with twitter_user_info."
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -632,7 +632,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -671,7 +671,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -710,7 +710,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -749,7 +749,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -788,7 +788,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -828,7 +828,7 @@
             "description": "Numeric user id of the target account to compute shared followers against."
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -972,7 +972,7 @@
             "type": "string"
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -1061,7 +1061,7 @@
             "description": "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>."
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -1803,7 +1803,7 @@
         "type": "object",
         "properties": {
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -1852,7 +1852,7 @@
         "type": "object",
         "properties": {
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -1901,7 +1901,7 @@
         "type": "object",
         "properties": {
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -1950,7 +1950,7 @@
         "type": "object",
         "properties": {
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200
@@ -2006,7 +2006,7 @@
             "description": "Search terms to match against your bookmarked tweets' text."
           },
           "count": {
-            "description": "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response.",
+            "description": "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
             "type": "integer",
             "minimum": 1,
             "maximum": 200

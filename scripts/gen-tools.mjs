@@ -202,6 +202,10 @@ for (const t of TOOL_OVERRIDES) {
       bad(`tool ${t.name} arg "${a.name}" is local:true but the tool declares no local handler (set local: "<handler>" on the tool)`);
       continue;
     }
+    if (a.type === "strings" && !a.local) {
+      bad(`tool ${t.name} arg "${a.name}" is type:"strings" but not local:true; the API has no array-typed param, and buildQuery would send it as a comma-joined string`);
+      continue;
+    }
     if (p && a.local) {
       bad(`tool ${t.name} arg "${a.name}" is local:true but IS a real request param of ${t.endpoint}; drop the flag`);
       continue;

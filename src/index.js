@@ -181,18 +181,24 @@ async function callEndpoint(path, args, method = "GET", jsonBody = false, pathPa
         requestId: res.headers.get("x-request-id") || undefined,
         ts: Date.now(),
       };
-      // Credential, credit, session and rate-limit failures are the caller's
-      // situation, not a product defect; everything else may be one, and the
-      // model reads error bodies closely, so the pointer lives here.
+      // Credential, credit, session, rate-limit and not-found failures are the
+      // caller's situation (a 404 is almost always a wrong id), not a product
+      // defect; everything else may be one, and the model reads error bodies
+      // closely, so the pointer lives here.
       const feedbackHint =
-        res.status === 401 || res.status === 402 || res.status === 409 || res.status === 429
+        res.status === 401 || res.status === 402 || res.status === 404 || res.status === 409 || res.status === 429
           ? ""
           : " If this blocked the user's task and looks like a defect or a missing capability, draft a report with twitter_feedback_send (queued locally until the user reviews it).";
       return { isError: true, content: [{ type: "text", text: `HTTP ${res.status}${hint}: ${body.slice(0, 1200)}${feedbackHint}` }] };
     }
+    // A success clears the record so a later draft never inherits an old
+    // failure's endpoint or request id (review 2026-09-04: a delete's draft
+    // carried the previous update's 404).
+    lastError = null;
     return { content: [{ type: "text", text: body }] };
   } catch (err) {
     const msg = err?.name === "AbortError" ? `timed out after ${REQUEST_TIMEOUT_MS}ms` : err?.message || String(err);
+    lastError = { path: resolvedPath, method, status: null, error: msg.slice(0, 200), ts: Date.now() };
     return { isError: true, content: [{ type: "text", text: `Request failed: ${msg}` }] };
   } finally {
     clearTimeout(timer);
@@ -239,8 +245,12 @@ for (const tool of TOOLS) {
   } else {
     handler = async (args) => {
       const result = await callEndpoint(tool.path, args, method, Boolean(tool.jsonBody), tool.pathParams || []);
-      if (result?.isError && lastError && lastError.path === resolvePathParams(tool.path, tool.pathParams || [], args).path) {
-        lastError.tool = tool.name;
+      if (result?.isError && lastError) {
+        let resolved = null;
+        try { resolved = resolvePathParams(tool.path, tool.pathParams || [], args).path; } catch { resolved = null; }
+        // Name the tool only when BOTH method and path match the recorded
+        // failure; two tools share /monitor/{id} (POST update, DELETE remove).
+        if (resolved === lastError.path && method === lastError.method) lastError.tool = tool.name;
       }
       return result;
     };

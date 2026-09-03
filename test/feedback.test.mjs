@@ -2,7 +2,8 @@
 // feedback.test.mjs: the local draft queue behind twitter_feedback_send.
 // No network: callEndpoint is a recorder. The queue lives in a temp dir via
 // TWITTERAPIS_FEEDBACK_DIR so a run never touches the developer's real queue.
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createFeedbackHandler, queuePath, draftId, QUEUE_CAP } from "../src/feedback.js";
@@ -129,6 +130,74 @@ const queue = () => JSON.parse(readFileSync(queuePath(env), "utf8")).drafts;
   check("cap did not write", queue().length === QUEUE_CAP);
   const bad = await tool({ action: "explode" });
   check("unknown action is an error", bad.isError);
+}
+
+
+// ── review fixes (2026-09-04) ─────────────────────────────────────────────
+{
+  // Junk entries in the file are skipped, never thrown on.
+  await tool({ action: "discard", ids: queue().map((d) => d.id) });
+  await tool({ type: "bug", title: "real one", details: "d" });
+  const raw = JSON.parse(readFileSync(queuePath(env), "utf8"));
+  raw.drafts.push(null, { id: "half" }, 7);
+  writeFileSync(queuePath(env), JSON.stringify(raw));
+  const l = await tool({ action: "list" });
+  check("list survives junk entries", !l.isError && /1 feedback draft/.test(txt(l)), txt(l));
+  const d = await tool({ type: "idea", title: "another", details: "d" });
+  check("draft survives junk entries", !d.isError, txt(d));
+  check("junk dropped on the next write", JSON.parse(readFileSync(queuePath(env), "utf8")).drafts.every((x) => x && typeof x.id === "string"));
+}
+{
+  // Duplicate ids post once; each success is persisted before the next send.
+  calls.length = 0;
+  const ids = queue().map((d) => d.id);
+  let n = 0;
+  nextResponse = () => (++n === 1
+    ? { content: [{ type: "text", text: '{"id":"srv-a"}' }] }
+    : { isError: true, content: [{ type: "text", text: "HTTP 502" }] });
+  const r = await tool({ action: "send", ids: [ids[0], ids[0], ids[1]] });
+  check("duplicate id posts once", calls.filter((c) => c.args.title === "real one").length === 1);
+  check("second draft failed and stayed", queue().length === 1 && queue()[0].id === ids[1], txt(r));
+  nextResponse = () => ({ content: [{ type: "text", text: "{}" }] });
+  await tool({ action: "discard", ids: queue().map((d) => d.id) });
+}
+{
+  // Stale or self-referential lastError is not attached; a fresh one is.
+  lastError = { tool: "twitter_user_info", path: "/twitter/user/info", status: 500, ts: Date.now() - 11 * 60 * 1000 };
+  await tool({ type: "bug", title: "stale check", details: "d" });
+  check("stale lastError ignored", queue()[0].evidence.tool === undefined);
+  lastError = { path: "/feedback", method: "POST", status: 502, ts: Date.now() };
+  await tool({ type: "bug", title: "self check", details: "d" });
+  check("a failed send is not evidence", queue().find((d) => d.title === "self check").evidence.endpoint === undefined);
+  lastError = { tool: "twitter_user_info", path: "/twitter/user/info", status: 500, ts: Date.now() };
+  await tool({ type: "bug", title: "fresh check", details: "d" });
+  check("fresh lastError attached", queue().find((d) => d.title === "fresh check").evidence.tool === "twitter_user_info");
+  lastError = null;
+  await tool({ action: "discard", ids: queue().map((d) => d.id) });
+}
+{
+  // client is capped at what billing accepts.
+  const longTool = createFeedbackHandler({ callEndpoint, version: "9.9.9", getClientInfo: () => ({ name: "x".repeat(200), version: "1" }), env });
+  await longTool({ type: "idea", title: "long client", details: "d" });
+  check("client capped at 120", queue()[0].client.length === 120);
+  await tool({ action: "discard", ids: queue().map((d) => d.id) });
+}
+{
+  // Two processes drafting into one queue lose nothing.
+  const dir2 = mkdtempSync(join(tmpdir(), "twapi-feedback-race-"));
+  const code = `import("${new URL("../src/feedback.js", import.meta.url).pathname}").then(async ({ createFeedbackHandler }) => { const t = createFeedbackHandler({ callEndpoint: async () => ({}), version: "0", env: { TWITTERAPIS_FEEDBACK_DIR: process.argv[1] } }); for (let i = 0; i < 5; i++) await t({ type: "idea", title: process.argv[2] + i, details: "d" }); });`;
+  const procs = ["A-", "B-"].map((tag) => spawnSync(process.execPath, ["--input-type=module", "-e", code, dir2, tag], { encoding: "utf8" }));
+  const p2 = spawnSync(process.execPath, ["--input-type=module", "-e", code, dir2, "C-"], { encoding: "utf8" });
+  const survivors = JSON.parse(readFileSync(join(dir2, "feedback-queue.json"), "utf8")).drafts.map((d) => d.title).sort();
+  check("sequential writers keep all drafts", survivors.length === 10 && survivors.filter((t) => t.startsWith("A-")).length === 5, survivors.join(","));
+  // True concurrency: two writers started together.
+  const dir3 = mkdtempSync(join(tmpdir(), "twapi-feedback-race2-"));
+  const { spawn } = await import("node:child_process");
+  await Promise.all(["A-", "B-"].map((tag) => new Promise((res) => spawn(process.execPath, ["--input-type=module", "-e", code, dir3, tag], { stdio: "ignore" }).on("exit", res))));
+  const s3 = JSON.parse(readFileSync(join(dir3, "feedback-queue.json"), "utf8")).drafts.map((d) => d.title);
+  check("concurrent writers keep all drafts (10 of 10)", s3.length === 10, s3.join(","));
+  rmSync(dir2, { recursive: true, force: true }); rmSync(dir3, { recursive: true, force: true });
+  void procs; void p2;
 }
 
 rmSync(dir, { recursive: true, force: true });

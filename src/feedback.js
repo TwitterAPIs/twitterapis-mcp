@@ -21,7 +21,7 @@
 // because two MCP clients can share one home directory.
 
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
@@ -37,10 +37,18 @@ export function queuePath(env = process.env) {
   return join(dir, "feedback-queue.json");
 }
 
+/** A draft this module can act on. Anything else in the file (a hand edit, an
+ * older shape, a null) is skipped rather than allowed to throw on every call. */
+function isDraft(d) {
+  return d && typeof d === "object" && !Array.isArray(d)
+    && typeof d.id === "string" && typeof d.type === "string"
+    && typeof d.title === "string" && typeof d.details === "string";
+}
+
 export function readQueue(path) {
   try {
     const parsed = JSON.parse(readFileSync(path, "utf8"));
-    return Array.isArray(parsed?.drafts) ? parsed.drafts : [];
+    return Array.isArray(parsed?.drafts) ? parsed.drafts.filter(isDraft) : [];
   } catch {
     return [];
   }
@@ -53,14 +61,57 @@ function writeQueue(path, drafts) {
   renameSync(tmp, path);
 }
 
+// Two MCP servers can share one home directory, and temp+rename only keeps the
+// file well-formed: without a lock a read-modify-write from each loses one
+// side's drafts (measured 2026-09-04: two writers, five of ten drafts gone).
+// mkdir is atomic on every platform node runs on, so a lock DIRECTORY is the
+// mutex; a holder that died leaves it behind, so one older than STALE_MS is
+// reclaimed.
+const LOCK_STALE_MS = 10_000;
+const LOCK_WAIT_MS = 3_000;
+async function withLock(path, fn) {
+  mkdirSync(dirname(path), { recursive: true });
+  const lock = `${path}.lock`;
+  const deadline = Date.now() + LOCK_WAIT_MS;
+  for (;;) {
+    try {
+      mkdirSync(lock);
+      break;
+    } catch (err) {
+      if (err?.code !== "EEXIST") throw err;
+      try {
+        if (Date.now() - statSync(lock).mtimeMs > LOCK_STALE_MS) { rmSync(lock, { recursive: true, force: true }); continue; }
+      } catch { /* vanished between checks; retry */ }
+      if (Date.now() > deadline) throw new Error(`feedback queue is locked by another process (${lock}); retry in a moment`);
+      await new Promise((r) => setTimeout(r, 25 + Math.floor(Math.random() * 50)));
+    }
+  }
+  try {
+    return await fn();
+  } finally {
+    rmSync(lock, { recursive: true, force: true });
+  }
+}
+
 /** Stable per-issue id: the same type + title redrafted replaces itself. */
 export function draftId(type, title) {
   return createHash("sha256").update(`${type}\n${title.trim().toLowerCase()}`).digest("hex").slice(0, 8);
 }
 
+const CLIENT_MAX = 120; // billing rejects longer; the model never types this field
 function clientString(clientInfo, version) {
   const name = clientInfo?.name ? `${clientInfo.name}${clientInfo.version ? `/${clientInfo.version}` : ""}` : "unknown-client";
-  return `${name} via @twitterapis/mcp@${version}`;
+  return `${name} via @twitterapis/mcp@${version}`.slice(0, CLIENT_MAX);
+}
+
+// The last failing call is worth attaching only while it is plausibly the call
+// the draft is about: recent, and not the feedback endpoint's own failure.
+const LAST_ERROR_TTL_MS = 10 * 60 * 1000;
+function usableLastError(last) {
+  if (!last || typeof last !== "object") return null;
+  if (typeof last.ts === "number" && Date.now() - last.ts > LAST_ERROR_TTL_MS) return null;
+  if (last.path === "/feedback" || (typeof last.path === "string" && last.path.startsWith("/feedback/"))) return null;
+  return last;
 }
 
 const text = (t, isError = false) => ({ isError, content: [{ type: "text", text: t }] });
@@ -83,7 +134,14 @@ export function createFeedbackHandler({ callEndpoint, version, getClientInfo, ge
     const action = args.action || "draft";
     if (!ACTIONS.includes(action)) return text(`action must be one of ${ACTIONS.join(", ")}.`, true);
     const path = queuePath(env);
+    try {
+      return await withLock(path, () => run(action, args, path));
+    } catch (err) {
+      return text(err?.message || String(err), true);
+    }
+  };
 
+  async function run(action, args, path) {
     if (action === "draft") {
       if (!TYPES.includes(args.type)) return text(`type is required for a draft and must be one of ${TYPES.join(", ")}.`, true);
       const title = String(args.title ?? "").trim();
@@ -94,7 +152,7 @@ export function createFeedbackHandler({ callEndpoint, version, getClientInfo, ge
 
       const client = clientString(getClientInfo?.(), version);
       const evidence = { ...(args.evidence && typeof args.evidence === "object" && !Array.isArray(args.evidence) ? args.evidence : {}) };
-      const last = getLastError?.();
+      const last = usableLastError(getLastError?.());
       // Fill only what the model did not supply: its own evidence wins.
       if (last) {
         if (evidence.tool === undefined && last.tool) evidence.tool = last.tool;
@@ -137,7 +195,7 @@ export function createFeedbackHandler({ callEndpoint, version, getClientInfo, ge
       );
     }
 
-    const ids = Array.isArray(args.ids) ? args.ids.map(String) : [];
+    const ids = [...new Set((Array.isArray(args.ids) ? args.ids : []).map(String))];
     if (ids.length === 0) return text(`action "${action}" needs ids: the draft ids the user named (from action "list").`, true);
     const unknown = ids.filter((id) => !drafts.some((d) => d.id === id));
     if (unknown.length) return text(`Unknown draft id(s): ${unknown.join(", ")}. Run action "list" to see the current ids.`, true);
@@ -166,12 +224,14 @@ export function createFeedbackHandler({ callEndpoint, version, getClientInfo, ge
       try { serverId = JSON.parse(out).id ?? null; } catch { /* body was not JSON; keep null */ }
       sent.push(`${id} -> ${serverId ?? "sent"}`);
       remaining = remaining.filter((x) => x.id !== id);
+      // Persist after EACH success, so a process that dies mid-loop cannot
+      // re-send a report the server already holds.
+      writeQueue(path, remaining);
     }
-    writeQueue(path, remaining);
     const lines = [];
     if (sent.length) lines.push(`Sent ${sent.length} report(s) to twitterapis.com (free, not metered):\n  ${sent.join("\n  ")}\nCheck one later with twitter_feedback_get using the server id.`);
     if (failed.length) lines.push(`${failed.length} draft(s) stayed in the queue because the send failed:\n  ${failed.join("\n  ")}`);
     lines.push(`${remaining.length} draft(s) still pending.`);
     return text(lines.join("\n\n"), sent.length === 0);
-  };
+  }
 }
