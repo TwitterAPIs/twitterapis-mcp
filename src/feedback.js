@@ -163,6 +163,7 @@ export function createFeedbackHandler({ callEndpoint, version, getClientInfo, ge
 
     const sent = [];
     const failed = [];
+    const stuck = [];
     for (const d of picked.drafts) {
       const body = { type: d.type, title: d.title, details: d.details, evidence: d.evidence, client: d.client };
       if (d.area) body.area = d.area;
@@ -177,13 +178,22 @@ export function createFeedbackHandler({ callEndpoint, version, getClientInfo, ge
       sent.push(`${d.id} -> ${serverId ?? "sent"}`);
       // Persist after EACH success against the CURRENT queue, so a process that
       // dies mid-loop cannot re-send, and a draft another process added while
-      // this one was on the network is kept.
-      await withLock(path, () => writeQueue(path, readQueue(path).filter((x) => x.id !== d.id)));
+      // this one was on the network is kept. The server already holds this
+      // report, so a lock that cannot be re-taken (a foreign holder past the
+      // wait) must NOT turn into an error that hides the server id and leaves
+      // the draft re-sendable: report it as posted and name the draft to discard.
+      try {
+        await withLock(path, () => writeQueue(path, readQueue(path).filter((x) => x.id !== d.id)));
+      } catch (err) {
+        stuck.push(`${d.id} (server id ${serverId ?? "unknown"}): ${err?.message || String(err)}`);
+      }
     }
-    const remaining = await withLock(path, () => readQueue(path).length);
+    let remaining;
+    try { remaining = await withLock(path, () => readQueue(path).length); } catch { remaining = readQueue(path).length; }
     const lines = [];
     if (sent.length) lines.push(`Sent ${sent.length} report(s) to twitterapis.com (free, not metered):\n  ${sent.join("\n  ")}\nCheck one later with twitter_feedback_get using the server id.`);
     if (failed.length) lines.push(`${failed.length} draft(s) stayed in the queue because the send failed:\n  ${failed.join("\n  ")}`);
+    if (stuck.length) lines.push(`${stuck.length} report(s) WERE posted but the local draft could not be removed (the queue was locked). Do not send these ids again; remove them with action "discard":\n  ${stuck.join("\n  ")}`);
     lines.push(`${remaining} draft(s) still pending.`);
     return text(lines.join("\n\n"), sent.length === 0);
   }

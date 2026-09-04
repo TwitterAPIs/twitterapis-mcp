@@ -236,6 +236,37 @@ const queue = () => JSON.parse(readFileSync(queuePath(env), "utf8")).drafts;
   rmSync(dir4, { recursive: true, force: true });
 }
 
+// ── a posted report whose draft cannot be removed is never re-sendable ─────
+{
+  const dir5 = mkdtempSync(join(tmpdir(), "twapi-feedback-stuck-"));
+  const env5 = { TWITTERAPIS_FEEDBACK_DIR: dir5 };
+  const lockDir = `${queuePath(env5)}.lock`;
+  const { mkdirSync: mk } = await import("node:fs");
+  let posts5 = 0;
+  const stuck = createFeedbackHandler({
+    callEndpoint: async () => {
+      posts5++;
+      // A foreign holder takes the lock while we are on the network and keeps it
+      // past LOCK_WAIT_MS, so the per-success re-take cannot succeed.
+      mk(lockDir, { recursive: true });
+      return { content: [{ type: "text", text: JSON.stringify({ id: "srv-stuck" }) }] };
+    },
+    version: "9.9.9", getClientInfo: () => ({ name: "a", version: "1" }), getLastError: () => null, env: env5,
+  });
+  await stuck({ type: "bug", title: "stuck one", details: "- What happened: 1\n- What the user said: 2\n- Repro: 3\n- Evidence: 4" });
+  const id5 = JSON.parse(readFileSync(queuePath(env5), "utf8")).drafts[0].id;
+  const t0 = Date.now();
+  const r5 = await stuck({ action: "send", ids: [id5] });
+  const dt = Date.now() - t0;
+  rmSync(lockDir, { recursive: true, force: true });
+  check("posted once even though the re-take failed", posts5 === 1);
+  check("the send is reported as a success, not an error", !r5.isError, txt(r5));
+  check("the server id is still reported", /srv-stuck/.test(txt(r5)), txt(r5));
+  check("the caller is told not to resend and to discard", /WERE posted/.test(txt(r5)) && new RegExp(id5).test(txt(r5)) && /discard/.test(txt(r5)), txt(r5));
+  check("waited for the lock before giving up", dt >= 2500, String(dt));
+  rmSync(dir5, { recursive: true, force: true });
+}
+
 rmSync(dir, { recursive: true, force: true });
 console.log(`feedback: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
