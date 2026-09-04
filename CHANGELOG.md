@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.8 (2026-09-04)
+
+### Fixed
+
+- **`manifest.json` now declares its tool catalog statically, so the MCPB bundle carries capability metadata a registry can read without running the server.** Reproduced live: our Smithery listing scored 45/100 with "No capabilities found" even though `tools/list` already answers correctly with 98 tools and no API key (the 2026-08-18 lazy-validation fix). The MCPB manifest schema (v0.3) has an optional `tools: [{name, description}]` field plus a `tools_generated` flag for exactly this; it was never populated. A new `scripts/gen-manifest-tools.mjs` derives it from `src/tools.js` (the same generated catalog everything else in this repo is built from), wired into `npm run build`, `npm run bundle`, and `npm test` (`--check` mode) so it cannot go stale the way `src/tools.js` itself is guarded against.
+- **Smithery's own listing for this server was a hard 404 ("Server Not Found or Removed"), not merely showing "No capabilities found" as reported.** Smithery was acquired by Arcade.dev (2026-08-05) and its publish model changed: local/stdio servers now require an explicit `.mcpb` bundle upload (`smithery mcp publish`) rather than an automatic scan of the GitHub repo. The Aug 18 listing did not survive that migration. Republished under `emma-fwab/twitterapis-mcp` (our Smithery org namespace) via the CLI; the listing is live again with correct description, repo, homepage and icon.
+- **Known upstream limitation, not fixable from this repo: Smithery's publish backend rejects a `tools[]` entry that lacks `inputSchema`** ("expected object, received undefined" x98), but the official MCPB manifest schema's `tools` field forbids any key beyond `name`/`description` (`additionalProperties: false`), and `mcpb pack` itself refuses to build a bundle that adds one. Confirmed by testing both directions: a manifest with `inputSchema` fails `mcpb validate` and `mcpb pack` outright; a manifest without it publishes fine but Smithery shows "No capabilities found". Shipping the spec-compliant `name`/`description` list here is still correct (matches the documented format, harmless, and picks up automatically if Smithery relaxes their validator), but full capability display on Smithery is blocked on their side until that's resolved.
+
 ## 0.9.7 (2026-09-04)
 
 ### Fixed
