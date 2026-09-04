@@ -200,6 +200,42 @@ const queue = () => JSON.parse(readFileSync(queuePath(env), "utf8")).drafts;
   void procs; void p2;
 }
 
+// ── send must not hold the lock across the network ────────────────────────
+{
+  const dir4 = mkdtempSync(join(tmpdir(), "twapi-feedback-slow-send-"));
+  const env4 = { TWITTERAPIS_FEEDBACK_DIR: dir4 };
+  const q4 = () => JSON.parse(readFileSync(queuePath(env4), "utf8")).drafts.map((d) => d.title);
+  const other = createFeedbackHandler({ callEndpoint: async () => { throw new Error("other never sends"); }, version: "9.9.9", getClientInfo: () => ({ name: "b", version: "1" }), getLastError: () => null, env: env4 });
+  let midSendDraft = null;
+  let duringSecond = null;
+  let calls4 = 0;
+  const slow = createFeedbackHandler({
+    callEndpoint: async () => {
+      calls4++;
+      if (calls4 === 1) {
+        // While the FIRST send is on the network, another process drafts. With the
+        // lock held across the call this either times out (3s wait) or, past
+        // LOCK_STALE_MS, reclaims the lock and is overwritten by the sender.
+        midSendDraft = await other({ type: "idea", title: "landed mid-send", details: "- What happened: x\n- What the user said: y\n- Repro: z\n- Evidence: w" });
+      }
+      if (calls4 === 2) duringSecond = q4();
+      return { content: [{ type: "text", text: JSON.stringify({ id: `srv-${calls4}` }) }] };
+    },
+    version: "9.9.9", getClientInfo: () => ({ name: "a", version: "1" }), getLastError: () => null, env: env4,
+  });
+  await slow({ type: "bug", title: "first", details: "- What happened: 1\n- What the user said: 2\n- Repro: 3\n- Evidence: 4" });
+  await slow({ type: "bug", title: "second", details: "- What happened: 1\n- What the user said: 2\n- Repro: 3\n- Evidence: 4" });
+  const ids4 = JSON.parse(readFileSync(queuePath(env4), "utf8")).drafts.map((d) => d.id);
+  const r4 = await slow({ action: "send", ids: ids4 });
+  check("slow send is not an error", !r4.isError, txt(r4));
+  check("a draft made during the send is accepted, not refused as locked", midSendDraft && !midSendDraft.isError, midSendDraft && txt(midSendDraft));
+  check("that draft survives the sender's writes", q4().includes("landed mid-send"), q4().join(","));
+  check("both sent drafts left the queue", !q4().includes("first") && !q4().includes("second"), q4().join(","));
+  check("the first draft was already off disk while the second send was in flight", Array.isArray(duringSecond) && !duringSecond.includes("first") && duringSecond.includes("second"), JSON.stringify(duringSecond));
+  check("pending count reports the survivor", /1 draft\(s\) still pending/.test(txt(r4)), txt(r4));
+  rmSync(dir4, { recursive: true, force: true });
+}
+
 rmSync(dir, { recursive: true, force: true });
 console.log(`feedback: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
