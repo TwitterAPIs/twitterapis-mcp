@@ -135,11 +135,68 @@ export function createFeedbackHandler({ callEndpoint, version, getClientInfo, ge
     if (!ACTIONS.includes(action)) return text(`action must be one of ${ACTIONS.join(", ")}.`, true);
     const path = queuePath(env);
     try {
+      if (action === "send") return await send(args, path);
       return await withLock(path, () => run(action, args, path));
     } catch (err) {
       return text(err?.message || String(err), true);
     }
   };
+
+  // send: NEVER hold the lock across a network call. LOCK_STALE_MS is 10s and a
+  // request may take up to the client timeout (30s), so a send that held the lock
+  // let a concurrent draft reclaim it as stale and then overwrote that draft with
+  // the sender's pre-send snapshot (measured 2026-09-04: A sends with an 11.5s
+  // upstream, B drafts at t=8.5s, B's draft is gone). Now: pick the drafts under
+  // the lock, release, post each without it, and after every success re-take the
+  // lock, RE-READ the queue and remove exactly that id. A draft added meanwhile
+  // survives; a crash mid-batch still never resends a report the server holds.
+  async function send(args, path) {
+    const ids = [...new Set((Array.isArray(args.ids) ? args.ids : []).map(String))];
+    if (ids.length === 0) return text(`action "send" needs ids: the draft ids the user named (from action "list").`, true);
+    const picked = await withLock(path, () => {
+      const drafts = readQueue(path);
+      const unknown = ids.filter((id) => !drafts.some((d) => d.id === id));
+      if (unknown.length) return { unknown };
+      return { drafts: ids.map((id) => drafts.find((x) => x.id === id)) };
+    });
+    if (picked.unknown) return text(`Unknown draft id(s): ${picked.unknown.join(", ")}. Run action "list" to see the current ids.`, true);
+
+    const sent = [];
+    const failed = [];
+    const stuck = [];
+    for (const d of picked.drafts) {
+      const body = { type: d.type, title: d.title, details: d.details, evidence: d.evidence, client: d.client };
+      if (d.area) body.area = d.area;
+      const res = await callEndpoint("/feedback", body, "POST", true);
+      const out = res?.content?.[0]?.text ?? "";
+      if (res?.isError) {
+        failed.push(`${d.id}: ${out.slice(0, 300)}`);
+        continue;
+      }
+      let serverId = null;
+      try { serverId = JSON.parse(out).id ?? null; } catch { /* body was not JSON; keep null */ }
+      sent.push(`${d.id} -> ${serverId ?? "sent"}`);
+      // Persist after EACH success against the CURRENT queue, so a process that
+      // dies mid-loop cannot re-send, and a draft another process added while
+      // this one was on the network is kept. The server already holds this
+      // report, so a lock that cannot be re-taken (a foreign holder past the
+      // wait) must NOT turn into an error that hides the server id and leaves
+      // the draft re-sendable: report it as posted and name the draft to discard.
+      try {
+        await withLock(path, () => writeQueue(path, readQueue(path).filter((x) => x.id !== d.id)));
+      } catch (err) {
+        stuck.push(`${d.id} (server id ${serverId ?? "unknown"}): ${err?.message || String(err)}`);
+      }
+    }
+    let remaining;
+    try { remaining = await withLock(path, () => readQueue(path).length); } catch { remaining = readQueue(path).length; }
+    const lines = [];
+    if (sent.length) lines.push(`Sent ${sent.length} report(s) to twitterapis.com (free, not metered):\n  ${sent.join("\n  ")}\nCheck one later with twitter_feedback_get using the server id.`);
+    if (failed.length) lines.push(`${failed.length} draft(s) stayed in the queue because the send failed:\n  ${failed.join("\n  ")}`);
+    if (stuck.length) lines.push(`${stuck.length} report(s) WERE posted but the local draft could not be removed (the queue was locked). Do not send these ids again; remove them with action "discard":\n  ${stuck.join("\n  ")}`);
+    lines.push(`${remaining} draft(s) still pending.`);
+    return text(lines.join("\n\n"), sent.length === 0);
+  }
 
   async function run(action, args, path) {
     if (action === "draft") {
@@ -206,32 +263,6 @@ export function createFeedbackHandler({ callEndpoint, version, getClientInfo, ge
       return text(`Discarded ${ids.length} draft(s): ${ids.join(", ")}. ${kept.length} still pending.`);
     }
 
-    // send
-    const sent = [];
-    const failed = [];
-    let remaining = drafts;
-    for (const id of ids) {
-      const d = drafts.find((x) => x.id === id);
-      const body = { type: d.type, title: d.title, details: d.details, evidence: d.evidence, client: d.client };
-      if (d.area) body.area = d.area;
-      const res = await callEndpoint("/feedback", body, "POST", true);
-      const out = res?.content?.[0]?.text ?? "";
-      if (res?.isError) {
-        failed.push(`${id}: ${out.slice(0, 300)}`);
-        continue;
-      }
-      let serverId = null;
-      try { serverId = JSON.parse(out).id ?? null; } catch { /* body was not JSON; keep null */ }
-      sent.push(`${id} -> ${serverId ?? "sent"}`);
-      remaining = remaining.filter((x) => x.id !== id);
-      // Persist after EACH success, so a process that dies mid-loop cannot
-      // re-send a report the server already holds.
-      writeQueue(path, remaining);
-    }
-    const lines = [];
-    if (sent.length) lines.push(`Sent ${sent.length} report(s) to twitterapis.com (free, not metered):\n  ${sent.join("\n  ")}\nCheck one later with twitter_feedback_get using the server id.`);
-    if (failed.length) lines.push(`${failed.length} draft(s) stayed in the queue because the send failed:\n  ${failed.join("\n  ")}`);
-    lines.push(`${remaining.length} draft(s) still pending.`);
-    return text(lines.join("\n\n"), sent.length === 0);
+    return text(`action "${action}" is not handled here.`, true);
   }
 }

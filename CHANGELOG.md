@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.9.6 (2026-09-04)
+## 0.9.7 (2026-09-04)
+
+### Fixed
+
+- **`twitter_feedback_send` no longer holds the local queue lock while it talks to the API.** The lock's stale threshold is 10s and a request may take up to 30s, so a send that held it let a second MCP process reclaim the lock, write its draft, and then lose that draft to the sender's pre-send snapshot. Drafts to send are now picked under the lock, posted with it released, and after each success the lock is re-taken, the queue re-read and exactly that draft removed. A draft added by another process mid-send survives; a crash mid-batch still never resends a posted report. If the per-success removal itself cannot take the lock, the report is still shown as posted with its server id and the caller is told to discard that draft rather than send it again.
 
 ### Added
 
