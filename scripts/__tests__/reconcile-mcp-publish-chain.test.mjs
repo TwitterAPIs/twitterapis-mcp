@@ -518,7 +518,7 @@ console.log("\n── SEAM 7: publishing identity (registry-controlled) ──�
 {
   const root = newWorkspace();
   redTest("the right username on the WRONG account email", {
-    defectArgs: chain(root, { meta: { ...BASE_META, _npmUser: "twitterapis <someone@gmail.com>" } }),
+    defectArgs: chain(root, { meta: { ...BASE_META, _npmUser: "twitterapis <someone@example.invalid>" } }),
     expectKind: "WRONG-PUBLISHER-EMAIL",
   });
   rmSync(root, { recursive: true, force: true });
