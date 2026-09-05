@@ -95,7 +95,7 @@ check("pathParams match {name} templates in path", TOOLS.every((t) => {
 // resolution. Every call to any of these 5 tools failed with a 400 "Provide
 // `handle`/`url`/... in the JSON body" error, live-reproduced against
 // production before this fix (products/twitterapis-backend, monitor.ts /
-// webhook.ts / getxapi-stream-compat.ts).
+// webhook.ts / the x_user_stream compat module).
 const JSON_BODY_WRITES = [
   "twitter_feedback_send", // POST /feedback reads a JSON body (2026-09-04)
   "twitter_media_upload", "twitter_customer_session", "twitter_user_login", "twitter_article_update_content",
