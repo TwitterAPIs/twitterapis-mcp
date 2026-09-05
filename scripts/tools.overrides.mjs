@@ -210,7 +210,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_user_tweets",
     endpoint: "/user/tweets",
     description:
-      "Get a user's recent posting timeline. IMPORTANT: this endpoint does NOT filter server-side, so the response routinely includes retweets and replies alongside original posts. Every item carries is_retweet, is_reply and is_quote booleans, so filter client-side on those flags if you need originals only, and read author.username rather than assuming every item was written by the requested user (a retweet's retweeted_tweet holds the original author). Returns tweet text, id, timestamp, and engagement metrics. Paginate with cursor to go further back. For the full back-catalogue in one call, use twitter_user_tweets_complete.",
+      "Get a user's recent posting timeline. IMPORTANT: this endpoint does NOT filter server-side, so the response routinely includes retweets and replies alongside original posts. Every item carries is_retweet, is_reply and is_quote booleans, so filter client-side on those flags if you need originals only, and read author.username rather than assuming every item was written by the requested user (a retweet's retweeted_tweet holds the original author). Returns tweet text, id, timestamp, and engagement metrics. Paginate with cursor to go further back. To pull a back-catalogue in bulk with fewer round-trips, use twitter_user_tweets_complete (which is also cursor-paged, not one-shot).",
     args: [
       "@USER_REF",
       "@PAGINATION",
@@ -230,19 +230,18 @@ export const TOOL_OVERRIDES = [
     name: "twitter_user_tweets_complete",
     endpoint: "/user/tweets/complete",
     description:
-      "Get a user's near-complete original-tweet history in a single call, auto-paginating server-side up to a cap (Twitter's ~3200-tweet per-user ceiling). Heavier than twitter_user_tweets; use when you want the whole back-catalogue at once rather than page-by-page. Returns a flat tweet array. Requires the numeric user_id (resolve a handle first with twitter_user_info).",
+      "Get a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages. Heavier than twitter_user_tweets; use it to pull a back-catalogue with fewer round-trips. Returns { count, next_cursor, has_more, tweets }. IMPORTANT, this does NOT guarantee the whole history in one call: next_cursor is the completion signal, NOT count. A non-null next_cursor means the history is TRUNCATED and more remains, so call this tool again with cursor set to that value, and repeat until next_cursor is null (has_more is the same signal as a boolean). Each call is bounded by BOTH max and a server-side wall-clock budget, so a response can be truncated even when it returned fewer tweets than you asked for, which is why count must never be used to decide whether you are done. Requires the numeric user_id (resolve a handle first with twitter_user_info). Billed a flat $0.0024 per call regardless of how many tweets come back, so fewer, larger calls are cheaper than many small ones.",
     args: [
       { name: "user_id",
         describe:
           "Numeric Twitter/X user id. Required: this endpoint does not accept a username. Resolve a handle to a user_id first with twitter_user_info." },
       { name: "max", type: "int", min: 1, max: 3200,
         describe:
-          "Maximum number of tweets to collect (default 800, hard ceiling 3200). Higher values take longer and cost more." },
+          "Target number of tweets to collect in this call. Defaults to 200 when omitted. This is a MINIMUM target, not a hard cap: pages arrive in whole chunks, so a response may contain up to one page (<=100) more than requested (measured live 2026-09-05: max=10 returned 20). Never assume count === max. Twitter's ~3200-per-user history ceiling still applies overall." },
+      { name: "cursor",
+        describe:
+          "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped, and keep repeating while next_cursor is non-null." },
     ],
-    omit: {
-      cursor:
-        "Not exposed by the hand-written catalog and kept unexposed here so this generator is behaviour-preserving. The endpoint does accept a resume cursor; surfacing it is a real improvement and a deliberate separate change, not something a codegen should decide.",
-    },
   },
   {
     name: "twitter_user_media",
