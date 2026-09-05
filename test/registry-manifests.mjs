@@ -52,6 +52,26 @@ for (const k of ["name", "description", "version"]) {
   check(typeof server[k] === "string" && server[k].length > 0, `server.json: missing required field "${k}"`);
 }
 
+// LENGTH BOUNDS. Read off the live schema, not from memory:
+// static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json gives
+// description maxLength 100, title maxLength 100, name maxLength 200.
+//
+// This block exists because the version above it did not have it, and the
+// omission cost a listing. The 0.6.3 descriptors passed this gate green while
+// the registry rejected them with HTTP 422 "expected length <= 100": the
+// description was 205 characters. A present-but-invalid manifest reads as done
+// and does nothing, which is the worse half of not having one at all. Checking
+// that a string is non-empty is not checking that the registry will take it.
+const MAX = { description: 100, title: 100, name: 200 };
+for (const [field, limit] of Object.entries(MAX)) {
+  const v = server[field];
+  if (typeof v !== "string") continue;
+  check(
+    v.length <= limit,
+    `server.json: ${field} is ${v.length} chars, the official registry rejects anything over ${limit}`,
+  );
+}
+
 // Reverse-DNS, exactly one slash. Copied from the live schema's own pattern
 // (static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json), not
 // from memory: a name that fails this is rejected at publish time.
