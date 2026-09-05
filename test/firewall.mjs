@@ -94,6 +94,17 @@ if (run.error) fail(`could not run the isolation registry: ${run.error.message}`
 if (run.stdout) process.stdout.write(run.stdout);
 if (run.stderr) process.stderr.write(run.stderr);
 
+if (run.status === 2) {
+  fail(
+    "isolation registry exited 2 — a publish SURFACE could not be resolved, so nothing is certified",
+    "This is NOT a report that a foreign identity was found. Exit 2 means the registry could not\n" +
+      "  determine what this repo publishes: git is unavailable or this is not a git checkout, the\n" +
+      "  index is empty, or `npm pack` failed. Restore the missing input and re-run. An\n" +
+      "  unresolvable surface is a FAIL, never an 'n/a' — a package must not be published from a\n" +
+      "  machine that cannot see its own publish surface.",
+  );
+}
+
 if (run.status !== 0) {
   fail(
     `isolation registry exited ${run.status} — the publish surfaces are NOT certified`,
