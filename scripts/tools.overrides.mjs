@@ -1489,7 +1489,7 @@ export const TOOL_OVERRIDES = [
     method: "POST",
     write: true, jsonBody: true,
     // Fixed 2026-08-16, same root cause: addUserToMonitorTweetRoute
-    // (getxapi-stream-compat.ts) reads only c.req.json(), no query fallback.
+    // (the x_user_stream compat module) reads only c.req.json(), no query fallback.
     description:
       "Compat drop-in for twitter_monitor_create using an x_user_stream-shaped request/response envelope: watch an X account for new posts, translated onto the same underlying monitor system. Free per call. Prefer twitter_monitor_create for new integrations; this exists for migrating an existing x_user_stream-shaped integration without a rewrite.",
     args: [
@@ -1504,7 +1504,7 @@ export const TOOL_OVERRIDES = [
     method: "POST",
     write: true, destructive: true, jsonBody: true,
     // Fixed 2026-08-16, same root cause: removeUserToMonitorTweetRoute
-    // (getxapi-stream-compat.ts) reads only c.req.json(), no query fallback.
+    // (the x_user_stream compat module) reads only c.req.json(), no query fallback.
     description:
       "Compat drop-in for twitter_monitor_delete using an x_user_stream-shaped envelope: stop watching an account. Irreversible. Free per call.",
     args: [

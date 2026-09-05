@@ -84,7 +84,7 @@ const { endpoints: ENDPOINTS, methodsByPath: METHODS_BY_PATH } = buildEndpoints(
 
 // ── 2. Resolve overrides against the spec ────────────────────────────────────
 // The MCP tool path carries the /twitter prefix the spec omits, except for the
-// billing reads which live at an un-prefixed /account/*, and the GetXAPI
+// billing reads which live at an un-prefixed /account/*, and the
 // x_user_stream compat shim which lives at an un-prefixed /oapi/x_user_stream/*
 // (task #87 -- same class of gap as account/*, first exposed because the spec's
 // path-level `servers` override was never consulted here).

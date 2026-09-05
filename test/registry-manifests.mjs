@@ -27,8 +27,10 @@
 // that only runs on the npm tarball would never see them (they are not in the
 // package `files` list).
 import { readFileSync, existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
@@ -295,14 +297,56 @@ if (lockRoot) {
   );
 }
 
-// ── tenant firewall on all three ────────────────────────────────────────────
-// Bare case-insensitive substrings, never word boundaries: \bforkoff\b misses
-// officialForkoff, which is exactly the string that must not appear here.
-const BANNED = ["forkoff", "0x0simba", "simba", "bozad", "getxapi", "redditapis", "users/apple"];
-for (const f of ["server.json", "smithery.yaml", "glama.json", "manifest.json"]) {
-  const body = read(f).toLowerCase();
-  for (const term of BANNED) {
-    check(!body.includes(term), `${f}: tenant-firewall breach, contains "${term}"`);
+// ── tenant firewall on the four public descriptors ──────────────────────────
+// DELEGATED to the isolation registry. This file carries NO roster of its own,
+// for the same reason test/firewall.mjs states in its header: this repository is
+// PUBLIC, so a hardcoded list of the identities being firewalled would itself
+// publish the association it exists to prevent, which is a worse leak than any
+// single string it could catch.
+//
+// It used to hold that list inline, as `const BANNED = [...]`, in direct
+// contradiction of the rule its sibling gate spells out. Every name in it was
+// readable by anyone, unauthenticated, from the public repo. Replaced with a
+// delegation, so there is also ONE implementation of the matching semantics
+// (bare case-insensitive substrings, never \b word boundaries, per-tenant
+// carve-outs) rather than two that can drift apart.
+//
+// Fail-closed: a registry that cannot be located, cannot run, or answers with a
+// config error is a FAILURE, never a skip. "I could not check" is not "clean".
+const tenantFile = resolve(ROOT, ".tenant");
+check(existsSync(tenantFile), ".tenant marker is missing — cannot firewall an artifact that does not declare its tenant");
+const tenant = existsSync(tenantFile) ? read(".tenant").trim() : "";
+check(tenant.length > 0, ".tenant marker is empty — declare the owning tenant, one slug, no blank default");
+
+const isoScanner =
+  process.env.TENANT_ISOLATION_SCAN || join(homedir(), ".claude", "scripts", "tenant-isolation-scan.py");
+check(
+  existsSync(isoScanner),
+  `tenant isolation registry not found at ${isoScanner} — set TENANT_ISOLATION_SCAN to its path. ` +
+    `A missing gate input is a FAIL, never an "n/a".`,
+);
+
+if (tenant && existsSync(isoScanner)) {
+  for (const f of ["server.json", "smithery.yaml", "glama.json", "manifest.json"]) {
+    // --is-foreign-text exits 0 when the text CONTAINS a foreign identity,
+    // 1 when it is clean, 2 on a config error. It prints nothing.
+    const run = spawnSync(
+      process.env.PYTHON || "python3",
+      [isoScanner, "--tenant", tenant, "--is-foreign-text", read(f)],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+    );
+    if (run.error) {
+      check(false, `${f}: could not run the isolation registry (${run.error.message}) — a firewall that cannot execute is not a passing firewall`);
+      continue;
+    }
+    if (run.status === 2) {
+      check(false, `${f}: the isolation registry returned a config error (exit 2) — not a pass`);
+      continue;
+    }
+    check(
+      run.status === 1,
+      `${f}: tenant-firewall breach — the isolation registry found an identity foreign to "${tenant}" in this PUBLIC descriptor. Remove it; do not reword it and do not exempt it.`,
+    );
   }
 }
 
