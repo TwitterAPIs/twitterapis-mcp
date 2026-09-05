@@ -1,5 +1,5 @@
 // Unit tests for the tool catalog + query builder. No network, no SDK server.
-import { TOOLS, buildQuery } from "../src/tools.js";
+import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "../src/tools.js";
 
 let pass = 0, fail = 0;
 const check = (name, cond) => { if (cond) { pass++; } else { fail++; console.error("  FAIL:", name); } };
@@ -7,33 +7,171 @@ const check = (name, cond) => { if (cond) { pass++; } else { fail++; console.err
 const reads = TOOLS.filter((t) => !t.write);
 const writes = TOOLS.filter((t) => t.write);
 
-// Catalog shape (full parity: reads + writes)
-check("40 tools", TOOLS.length === 40);
-check("29 reads", reads.length === 29);
-check("11 writes", writes.length === 11);
+// Catalog shape (full parity: reads + writes).
+//
+// THESE THREE WERE RED ON MAIN FOR TWELVE DAYS. twitter_users_by_ids and
+// twitter_media_status were merged on 2026-07-31 (49 tools, 35 reads) and these
+// constants were left at the pre-merge 47/33. Because prepublishOnly runs
+// `npm test`, that made the package UNPUBLISHABLE: the release everyone was
+// waiting on would have failed at its first step, and the reason was never the
+// npm credential. Nothing caught it because GitHub Actions is permanently off
+// and nobody ran the suite locally after the merge.
+//
+// Keep the exact counts, they are what catches an accidentally DELETED tool,
+// which no other gate here would notice. Bump them deliberately in the same
+// commit that adds or removes a tool.
+// Bumped 75 -> 76 on 2026-08-16 with twitter_user_status (GET /user/status), per
+// the rule directly above: bump deliberately, in the same commit as the tool.
+// Bumped 80 -> 86 on 2026-08-16 with the five community reads
+// (twitter_community_info / _members / _moderators / _tweets / _memberships) and
+// twitter_tweet_quotes, all GET reads, so writes are unchanged at 31.
+// Bumped 86 -> 91 on 2026-08-17 with the X List operation family: two reads
+// (twitter_list_tweets, twitter_list_timeline) and three writes
+// (twitter_list_add_member, twitter_list_remove_member, twitter_list_create).
+// Bumped 94 -> 95 on 2026-08-28 fixing the generator-drift: PR #39 added
+// twitter_customer_session_status (GET, read) by hand-editing src/tools.js
+// directly instead of going through scripts/tools.overrides.mjs, so this
+// constant was never bumped and the generator never learned the endpoint
+// existed. Backfilled into the override + refreshed the vendored spec so the
+// tool is generated again, not hand-maintained; writes unchanged at 34.
+// Bumped 95 -> 96 on 2026-08-31 with twitter_monitor_webhook_redrive (POST,
+// write), which replays deliveries that dead-lettered while a customer endpoint
+// was down. Writes 34 -> 35, reads unchanged at 61, so the MCP catalog is now at
+// exact parity with the API: 96 endpoints, 61 reads and 35 writes.
+// Bumped 96 -> 98 on 2026-09-04 with twitter_feedback_send (POST /feedback, a
+// write with a local draft queue) and twitter_feedback_get (GET /feedback/{id},
+// a read): 98 endpoints, 62 reads and 36 writes, still exact parity.
+const EXPECTED_TOOLS = 98;
+const EXPECTED_READS = 62;
+const EXPECTED_WRITES = 36;
+check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
+check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
+check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
+// Arithmetic invariant, independent of the three constants above: every tool is
+// either a read or a write. A partition that does not add up means `write` is
+// missing or misspelled on some tool, which the three counts alone can miss when
+// two errors cancel out.
+check(
+  `reads + writes == total (${reads.length} + ${writes.length} == ${TOOLS.length})`,
+  reads.length + writes.length === TOOLS.length,
+);
 check("names unique", new Set(TOOLS.map((t) => t.name)).size === TOOLS.length);
-check("paths unique", new Set(TOOLS.map((t) => t.path)).size === TOOLS.length);
+// Path is NOT globally unique: the monitor/webhook family serves more than one
+// HTTP method on the same REST path (POST update + DELETE remove both target
+// /twitter/monitor/{id}), so the catalog's true routing key is (method, path).
+check("(method, path) unique", new Set(TOOLS.map((t) => `${t.method || "GET"} ${t.path}`)).size === TOOLS.length);
 check("all names twitter_*", TOOLS.every((t) => /^twitter_[a-z0-9_]+$/.test(t.name)));
-check("all paths /twitter/*", TOOLS.every((t) => t.path.startsWith("/twitter/")));
+check("all paths /twitter/* or /account/* or /oapi/x_user_stream/* or /feedback*", TOOLS.every((t) => t.path.startsWith("/twitter/") || t.path.startsWith("/account/") || t.path.startsWith("/oapi/x_user_stream/") || t.path === "/feedback" || t.path.startsWith("/feedback/")));
 check("all have a real description", TOOLS.every((t) => typeof t.description === "string" && t.description.length > 20));
 check("all have an object shape", TOOLS.every((t) => t.shape && typeof t.shape === "object" && !Array.isArray(t.shape)));
 
-// Method discipline: reads are GET (no method or "GET"), writes are POST.
-check("reads have no POST method", reads.every((t) => !t.method || t.method === "GET"));
-check("writes are POST", writes.every((t) => t.method === "POST"));
-check("only writes carry write:true", TOOLS.every((t) => Boolean(t.write) === (t.method === "POST")));
+// Method discipline: reads are GET (no method or "GET"); writes are POST or
+// DELETE (a DELETE mutates account state just as much as a POST write does).
+check("reads have no POST/DELETE method", reads.every((t) => !t.method || t.method === "GET"));
+check("writes are POST or DELETE", writes.every((t) => t.method === "POST" || t.method === "DELETE"));
+check("only writes carry write:true", TOOLS.every((t) => Boolean(t.write) === (t.method === "POST" || t.method === "DELETE")));
+// A tool whose path carries a {name} template must list it in pathParams, and
+// nothing else may claim pathParams (it is meaningless without a template).
+check("pathParams match {name} templates in path", TOOLS.every((t) => {
+  const templated = [...(t.path.matchAll(/\{([^}]+)\}/g) || [])].map((m) => m[1]);
+  const declared = t.pathParams || [];
+  return JSON.stringify([...templated].sort()) === JSON.stringify([...declared].sort());
+}));
 
-// Excluded endpoints must NOT be in the catalog: media/upload (its base64 body
-// does not fit the query-string transport, and create_tweet already takes
-// pre-uploaded media_ids) and the session-management paths (not data tools).
-// dm/send was previously walled and is now live, so it IS included (below).
-const EXCLUDED = ["/twitter/media/upload", "/twitter/user/user_login", "/twitter/customer/session"];
-check("no walled/excluded paths", !TOOLS.some((t) => EXCLUDED.includes(t.path)));
+// Previously-walled endpoints are now first-class tools: media/upload (base64
+// image in a JSON body), customer/session and user_login (session bootstrap, JSON
+// body). Each reads a JSON request body, so it sets jsonBody:true and is a POST
+// write. dm/send is also live (below).
+//
+// Fixed 2026-08-16: the 5 monitor/webhook write tools below were shipped with
+// jsonBody unset (defaulting to false, query-string args), but their backend
+// handlers (createMonitorRoute, updateMonitorRoute, createWebhookRoute,
+// addUserToMonitorTweetRoute, removeUserToMonitorTweetRoute) all read ONLY
+// `await c.req.json()` with no query-string fallback -- unlike most write
+// endpoints, which go through resolveBodyParam's dual-mode query-or-body
+// resolution. Every call to any of these 5 tools failed with a 400 "Provide
+// `handle`/`url`/... in the JSON body" error, live-reproduced against
+// production before this fix (products/twitterapis-backend, monitor.ts /
+// webhook.ts / getxapi-stream-compat.ts).
+const JSON_BODY_WRITES = [
+  "twitter_feedback_send", // POST /feedback reads a JSON body (2026-09-04)
+  "twitter_media_upload", "twitter_customer_session", "twitter_user_login", "twitter_article_update_content",
+  "twitter_monitor_create", "twitter_monitor_update", "twitter_monitor_webhook_create",
+  "twitter_x_user_stream_add_user", "twitter_x_user_stream_remove_user",
+  // Added 2026-08-31 with the redrive tool. Its handler reads max_age_hours and
+  // limit from the body only, so without jsonBody every call would go out as a
+  // query string and 400, the same live failure the five tools above hit.
+  "twitter_monitor_webhook_redrive",
+];
+check("json-body writes present: POST + write + jsonBody", JSON_BODY_WRITES.every((n) => {
+  const t = TOOLS.find((x) => x.name === n);
+  return t && t.method === "POST" && t.write === true && t.jsonBody === true;
+}));
+check("only the json-body tools set jsonBody", TOOLS.every((t) => !t.jsonBody || JSON_BODY_WRITES.includes(t.name)));
+// New read tools (account/billing + trends) are read-only; account reads live on
+// the un-prefixed /account/* path (billing proxy), not under /twitter/.
+const NEW_READS = ["twitter_trends", "twitter_trends_locations", "twitter_account_me", "twitter_account_payments"];
+check("new read tools present and read-only", NEW_READS.every((n) => { const t = TOOLS.find((x) => x.name === n); return t && !t.write; }));
+check("account tools use /account/* path", ["twitter_account_me", "twitter_account_payments"].every((n) => TOOLS.find((t) => t.name === n)?.path.startsWith("/account/")));
 check("dm_send present and is a write", TOOLS.find((t) => t.name === "twitter_dm_send")?.method === "POST" && TOOLS.find((t) => t.name === "twitter_dm_send")?.write === true);
 
 // The destructive (reversing) writes are flagged for client warnings.
-const DESTRUCTIVE = ["twitter_delete_tweet", "twitter_unfavorite_tweet", "twitter_unretweet", "twitter_unbookmark_tweet", "twitter_unfollow_user"];
+const DESTRUCTIVE = ["twitter_delete_tweet", "twitter_unfavorite_tweet", "twitter_unretweet", "twitter_unbookmark_tweet", "twitter_unfollow_user", "twitter_article_unpublish", "twitter_article_delete", "twitter_monitor_delete", "twitter_monitor_webhook_delete", "twitter_list_remove_member"];
 check("destructive writes flagged", DESTRUCTIVE.every((n) => TOOLS.find((t) => t.name === n)?.destructive === true));
+
+// The X List family (task #2251): two reads that look like two spellings of one
+// capability and are not, plus three session-backed writes. The two reads must
+// stay DIFFERENT in their parameter sets, which is the only thing that separates
+// them: list/tweets is search-backed so it carries since/until/include_replies,
+// list/timeline is X's native feed so it carries none of the three. A future
+// edit that "harmonises" them would silently make one answer the other's
+// question, so the difference is pinned here rather than left to prose.
+check("list read family present and read-only", ["twitter_list_members", "twitter_list_tweets", "twitter_list_timeline"].every((n) => {
+  const t = TOOLS.find((x) => x.name === n);
+  return t && !t.write && !t.method;
+}));
+check("list/tweets is the filterable (search-backed) feed", (() => {
+  const t = TOOLS.find((x) => x.name === "twitter_list_tweets");
+  return t && ["list_id", "since", "until", "include_replies", "count", "cursor"].every((a) => a in t.shape);
+})());
+check("list/timeline takes NO filters, only list_id + paging", (() => {
+  const t = TOOLS.find((x) => x.name === "twitter_list_timeline");
+  return t && JSON.stringify(Object.keys(t.shape)) === JSON.stringify(["list_id", "count", "cursor"]);
+})());
+check("list writes are POST writes on the customer's own session (inline creds exposed)", ["twitter_list_add_member", "twitter_list_remove_member", "twitter_list_create"].every((n) => {
+  const t = TOOLS.find((x) => x.name === n);
+  return t && t.method === "POST" && t.write === true && !t.jsonBody && t.shape.auth_token && t.shape.ct0;
+}));
+
+// Monitoring family (task #14/#488): the first tools in this catalog that carry
+// a REST path parameter (/monitor/{id}, /webhook/{id}, /webhook/{id}/test) and
+// the first that serve more than one HTTP method on the very same path
+// (/monitor/{id} is POST to update, DELETE to remove; /monitor and /webhook are
+// each GET to list, POST to create).
+const MONITORING = [
+  "twitter_monitor_create", "twitter_monitor_list", "twitter_monitor_update",
+  "twitter_monitor_delete", "twitter_monitor_health", "twitter_monitor_deliveries",
+  "twitter_monitor_webhook_create", "twitter_monitor_webhook_list",
+  "twitter_monitor_webhook_delete", "twitter_monitor_webhook_test",
+];
+check("all monitoring tools present", MONITORING.every((n) => TOOLS.some((t) => t.name === n)));
+check("monitor DELETE tool present and is a real DELETE write", (() => {
+  const t = TOOLS.find((x) => x.name === "twitter_monitor_delete");
+  return t && t.method === "DELETE" && t.write === true && t.destructive === true;
+})());
+check("webhook DELETE tool present and is a real DELETE write", (() => {
+  const t = TOOLS.find((x) => x.name === "twitter_monitor_webhook_delete");
+  return t && t.method === "DELETE" && t.write === true && t.destructive === true;
+})());
+check("monitor update (POST) and monitor delete (DELETE) share one REST path but differ in method", (() => {
+  const upd = TOOLS.find((x) => x.name === "twitter_monitor_update");
+  const del = TOOLS.find((x) => x.name === "twitter_monitor_delete");
+  return upd && del && upd.path === del.path && upd.method === "POST" && del.method === "DELETE";
+})());
+check("path-templated tools carry a matching pathParams entry", (() => {
+  const templated = TOOLS.filter((t) => t.name === "twitter_monitor_update" || t.name === "twitter_monitor_delete" || t.name === "twitter_monitor_health" || t.name === "twitter_monitor_webhook_delete" || t.name === "twitter_monitor_webhook_test");
+  return templated.length === 5 && templated.every((t) => Array.isArray(t.pathParams) && t.pathParams.includes("id") && t.shape.id);
+})());
 
 // Spot-check that the key new tools landed.
 const EXPECTED_NEW = [
@@ -62,6 +200,36 @@ check("buildQuery keeps tweet text for writes", buildQuery({ text: "gm world", r
 // count is zod .positive() upstream so 0 never reaches buildQuery; the builder itself
 // keeps any non-empty stringified value (it is a dumb stringifier, not a validator).
 check("buildQuery stringifies numeric 0 as count=0", buildQuery({ count: 0 }) === "count=0");
+
+// Path-param substitution (backs the monitor/webhook {id} tools).
+check("resolvePathParams substitutes {id} and strips it from args", (() => {
+  const { path, args } = resolvePathParams("/twitter/monitor/{id}", ["id"], { id: "abc-123", status: "paused" });
+  return path === "/twitter/monitor/abc-123" && !("id" in args) && args.status === "paused";
+})());
+check("resolvePathParams URL-encodes the substituted value", (() => {
+  const { path } = resolvePathParams("/twitter/webhook/{id}", ["id"], { id: "a b/c" });
+  return path === "/twitter/webhook/a%20b%2Fc";
+})());
+check("resolvePathParams with no pathParams is a no-op passthrough", (() => {
+  const { path, args } = resolvePathParams("/twitter/monitor", [], { handle: "elonmusk" });
+  return path === "/twitter/monitor" && args.handle === "elonmusk";
+})());
+check("resolvePathParams throws MissingPathParamError on a missing value", (() => {
+  try {
+    resolvePathParams("/twitter/monitor/{id}", ["id"], {});
+    return false;
+  } catch (e) {
+    return e instanceof MissingPathParamError && e.paramName === "id";
+  }
+})());
+check("resolvePathParams throws on an empty-string value too", (() => {
+  try {
+    resolvePathParams("/twitter/monitor/{id}", ["id"], { id: "" });
+    return false;
+  } catch (e) {
+    return e instanceof MissingPathParamError;
+  }
+})());
 
 console.log(`tools.test: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

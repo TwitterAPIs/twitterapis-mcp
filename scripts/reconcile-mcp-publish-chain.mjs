@@ -68,7 +68,9 @@
 // The publish chain is a property of what has LANDED, not of what is being typed.
 // So enforcement lives in the three places where the question is well-posed:
 //
-//   1. THE MERGE PATH  (--mode=merge-path, .github/workflows/mcp-publish-chain.yml)
+//   1. THE MERGE PATH  (--mode=merge-path, run LOCALLY against the merge result)
+//      GitHub Actions is permanently off for this org and no workflow may be
+//      authored, so this mode is invoked by hand before a merge, never by CI.
 //      Runs on the PR merge result. Content drift here is EXPECTED and legitimate
 //      — the PR is the fix, and reconciling it requires a publish, which is an
 //      operator action that cannot happen inside CI. Content drift is therefore
