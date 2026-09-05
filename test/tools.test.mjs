@@ -41,8 +41,11 @@ const writes = TOOLS.filter((t) => t.write);
 // Bumped 96 -> 98 on 2026-09-04 with twitter_feedback_send (POST /feedback, a
 // write with a local draft queue) and twitter_feedback_get (GET /feedback/{id},
 // a read): 98 endpoints, 62 reads and 36 writes, still exact parity.
-const EXPECTED_TOOLS = 98;
-const EXPECTED_READS = 62;
+// Bumped 98 -> 99 on 2026-09-05 with twitter_feedback_list (GET /feedback), which
+// the API shipped after 0.9.7 and which no tool covered: 99 endpoints, 63 reads
+// and 36 writes, still exact parity.
+const EXPECTED_TOOLS = 99;
+const EXPECTED_READS = 63;
 const EXPECTED_WRITES = 36;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
