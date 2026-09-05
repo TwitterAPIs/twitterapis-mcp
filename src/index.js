@@ -87,6 +87,38 @@ if (!API_KEY) {
 // error branch; the tool name is added by the registration wrapper below.
 let lastError = null;
 
+// The 404 hint used to be a flat status-only ternary telling EVERY caller that
+// "the user, tweet, or list may have been deleted or the id is wrong". For a
+// feedback id that sentence is simply wrong, and it sends a customer chasing a
+// report id off to look at a tweet. The feedback routes are the first mounted
+// outside the /twitter surface, so they are the first place the assumption is
+// plainly visible; /account/* would have been next.
+//
+// ONLY THE 404 VARIES. Every other status is about the KEY, the CREDIT
+// balance, the caller's SESSION, or OUR service, and each of those reads
+// identically on every endpoint. Adding per-path branches for them would be
+// surface area with no reader.
+const NOT_FOUND_HINTS = [
+  [/^\/feedback/, " (not found. No feedback report with that id on this account, and an id from another account will not resolve here. Use the id returned by twitter_feedback_send action=send.)"],
+  [/^\/account/, " (not found. That account resource does not exist for this key.)"],
+];
+const DEFAULT_NOT_FOUND_HINT =
+  " (not found. The user, tweet, or list may have been deleted or the id is wrong)";
+
+export function hintFor(status, path) {
+  if (status === 401) return " (invalid or missing API key, verify TWITTERAPIS_KEY at https://www.twitterapis.com/dashboard)";
+  if (status === 402) return " (insufficient credits, top up at https://www.twitterapis.com/dashboard)";
+  if (status === 403) return " (access forbidden. The resource may be private or your plan does not include this endpoint)";
+  if (status === 404) {
+    for (const [re, h] of NOT_FOUND_HINTS) if (re.test(path || "")) return h;
+    return DEFAULT_NOT_FOUND_HINT;
+  }
+  if (status === 409) return " (no authenticated X session for this key. Write actions and account-only reads (likes, bookmarks, DMs, home timeline, follow, post) require linking an X account/session to your key first; see https://www.twitterapis.com/dashboard)";
+  if (status === 429) return " (rate limited. Wait a few seconds and retry; reduce request frequency or increase TWITTERAPIS_TIMEOUT_MS if needed)";
+  if (status >= 500) return " (upstream API error. Retry in a moment; if persistent, check https://www.twitterapis.com/status)";
+  return "";
+}
+
 async function callEndpoint(path, args, method = "GET", jsonBody = false, pathParams = []) {
   if (!API_KEY) {
     return {
@@ -158,22 +190,7 @@ async function callEndpoint(path, args, method = "GET", jsonBody = false, pathPa
     });
     const body = await res.text();
     if (!res.ok) {
-      const hint =
-        res.status === 401
-          ? " (invalid or missing API key, verify TWITTERAPIS_KEY at https://www.twitterapis.com/dashboard)"
-          : res.status === 402
-            ? " (insufficient credits, top up at https://www.twitterapis.com/dashboard)"
-            : res.status === 403
-              ? " (access forbidden. The resource may be private or your plan does not include this endpoint)"
-              : res.status === 404
-                ? " (not found. The user, tweet, or list may have been deleted or the id is wrong)"
-                : res.status === 409
-                  ? " (no authenticated X session for this key. Write actions and account-only reads (likes, bookmarks, DMs, home timeline, follow, post) require linking an X account/session to your key first; see https://www.twitterapis.com/dashboard)"
-                  : res.status === 429
-                  ? " (rate limited. Wait a few seconds and retry; reduce request frequency or increase TWITTERAPIS_TIMEOUT_MS if needed)"
-                  : res.status >= 500
-                    ? " (upstream API error. Retry in a moment; if persistent, check https://www.twitterapis.com/status)"
-                    : "";
+      const hint = hintFor(res.status, resolvedPath);
       lastError = {
         path: resolvedPath,
         method,
