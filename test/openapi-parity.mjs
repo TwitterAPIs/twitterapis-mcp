@@ -36,7 +36,36 @@ const norm = (p) => p.replace(/^\/twitter/, "");
 // nothing is excluded from the "every endpoint has a tool" coverage check. Keep
 // this empty: any path added here is EXCLUDED from that check and needs a reason.
 // Entries are "METHOD /path", e.g. "DELETE /monitor/{id}".
-const NO_TOOL_ALLOWLIST = new Set([]);
+const NO_TOOL_ALLOWLIST = new Set([
+  // GET /feedback ("List Feedback") is DOCUMENTED IN THE PUBLISHED SPEC BUT NOT
+  // DEPLOYED. Adding a tool for it would ship a tool that 404s on every call.
+  //
+  // Probed live 2026-09-05 against https://api.twitterapis.com (the per-path
+  // server override the spec itself declares for /feedback, i.e. no /twitter
+  // prefix), all with a valid key:
+  //
+  //   GET  /feedback                 -> 404, body is the bare string "404 Not Found"
+  //   GET  /definitely-not-a-route   -> 404, byte-identical bare "404 Not Found"
+  //   GET  /feedback/<uuid>          -> 404, {"error":"not_found","message":"No
+  //                                     feedback with that id on this account."}
+  //   POST /feedback (invalid body)  -> 400, {"error":"invalid_request","field":"type"}
+  //
+  // The last two are the controls that make this a finding rather than a guess:
+  // a sibling path, and the SAME path under a different method, both answer from
+  // the application. So this is not a wrong base URL and not an auth problem.
+  // GET /feedback alone is unrouted.
+  //
+  // This is upstream drift (spec ahead of deploy), not a catalog gap, so the
+  // honest state is a NAMED, DATED exemption rather than either a tool that is
+  // broken for every customer or a red suite that blocks every publish
+  // (prepublishOnly runs npm test).
+  //
+  // REMOVE THIS ENTRY and add twitter_feedback_list the moment GET /feedback
+  // answers. Re-probe with the four requests above. The tool is otherwise ready
+  // to write: limit int 1-100 default 25, cursor string, status enum
+  // new|triaged|shipped|declined, type enum bug|idea|missing_capability.
+  "GET /feedback",
+]);
 
 // Tool args that map to request HEADERS or are universal pagination, so they are
 // NOT expected to appear as openapi query/body params.
