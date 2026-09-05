@@ -107,6 +107,36 @@ const STUB_DIRTY = join(STUB_DIR, "dirty.py");
 writeFileSync(STUB_CLEAN, "import sys\nprint('stub: CLEAN')\nsys.exit(0)\n");
 writeFileSync(STUB_DIRTY, "import sys\nprint('stub: FOREIGN IDENTITY FOUND')\nsys.exit(1)\n");
 
+// npm CONFIG ISOLATION for every gate run.
+//
+// Check 8 shells out to `npm whoami`, so without this the gate reads the
+// MACHINE's npm login while the fixtures declare a synthetic owner
+// ("acme_publisher"). The suite therefore passed only while NOBODY was logged
+// in, and failed the moment a real token was staged, i.e. it went green exactly
+// when the check it exercises could not run and red exactly when a publish
+// became possible. Measured 2026-09-06 on this file: 81 of 81 with npm logged
+// out, 80 of 81 with a valid twitterapis token staged, the single failure being
+// "PASSES clean against its OWN identity contract" reporting whoami
+// "twitterapis" against expectedOwner "acme_publisher".
+//
+// Pointing BOTH the user and global config at empty files makes whoami resolve
+// to null deterministically, which is the state these fixtures were always
+// written against. It is isolation by construction rather than by luck, and it
+// deliberately adds NO override seam to the gate: an env var that can forge an
+// identity would be a bypass on the one check that can prevent a wrong-identity
+// publish, which is a far worse trade than the coverage gap noted below.
+//
+// COVERAGE THIS DOES NOT GIVE: with whoami null, check 8's MATCH and MISMATCH
+// branches are not exercised here. Those are covered where it counts, on the
+// real publish path under --publish-intent, where an unresolved whoami is fatal
+// rather than a warning.
+const NPM_ISOLATED_CFG = (() => {
+  const dir = mkdtempSync(join(tmpdir(), "mcp-chain-npmcfg-"));
+  const f = join(dir, "empty-npmrc");
+  writeFileSync(f, "");
+  return f;
+})();
+
 function runGate(args, { env = {} } = {}) {
   let stdout = "";
   let status = 0;
@@ -114,7 +144,13 @@ function runGate(args, { env = {} } = {}) {
     stdout = execFileSync("node", [GATE, ...args, "--json"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
-      env: { ...process.env, TENANT_ISOLATION_SCAN: STUB_CLEAN, ...env },
+      env: {
+        ...process.env,
+        TENANT_ISOLATION_SCAN: STUB_CLEAN,
+        NPM_CONFIG_USERCONFIG: NPM_ISOLATED_CFG,
+        NPM_CONFIG_GLOBALCONFIG: NPM_ISOLATED_CFG,
+        ...env,
+      },
     });
   } catch (e) {
     status = e.status ?? 1;
@@ -752,7 +788,7 @@ console.log("\n── SEAM 11: property parameterization (not a fork) ───�
     JSON.stringify(r.json?.topology),
   );
   check(
-    "…and PASSES clean against its OWN identity contract",
+    "…and PASSES clean against its OWN identity contract (whoami isolated to null; the match/mismatch branches are covered on the real publish path)",
     r.status === 0 && r.json?.identity?.expectedOwner === "acme_publisher",
     `exit=${r.status}, identity=${JSON.stringify(r.json?.identity)}`,
   );
