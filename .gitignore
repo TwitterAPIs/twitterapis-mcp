@@ -7,6 +7,10 @@ node_modules
 .env.local
 *.log
 .DS_Store
+
+# Built MCPB bundles. `npm run bundle` writes one at the repo root; it is a
+# 3MB build artifact rebuilt from source on demand, never a committed file.
+*.mcpb
 // gitignored: needs a workflow-scoped token to push; add via GitHub UI later
 .github/workflows/
 

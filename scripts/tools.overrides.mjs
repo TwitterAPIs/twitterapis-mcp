@@ -26,6 +26,21 @@
 //   - required-ness and base type are DERIVED from the spec. Set them here only
 //     to deviate deliberately, and say why in the neighbouring comment.
 //   - After editing this file run `npm run build`.
+//   - BEFORE adding a new write:true tool, or copy-pasting one as a template:
+//     open the corresponding route handler in products/twitterapis-backend and
+//     check whether it reads `c.req.json()` directly (needs jsonBody:true here)
+//     or goes through resolveBodyParam/similar dual-mode query-or-body helper
+//     (jsonBody can stay unset). Getting this wrong is NOT caught by any test
+//     in THIS repo -- gen-tools.mjs and catalog-identity.mjs only check internal
+//     consistency, never whether jsonBody actually matches what the backend
+//     reads. Incident 2026-08-16: 5 tools (twitter_monitor_create/update,
+//     twitter_monitor_webhook_create, twitter_x_user_stream_add_user/
+//     remove_user) shipped with jsonBody unset while their backend handlers
+//     read ONLY the JSON body -- every call to any of them failed with a 400,
+//     for an unknown period, caught only by an independent code-review pass
+//     that happened to trace one call path all the way into the sibling repo.
+//     Verify with a REAL live call (see test/smoke.mjs for the pattern), not
+//     just by reading the route -- a static read is a hypothesis, not proof.
 
 /** Reusable arg runs. A tool references one as the string "@NAME". */
 export const ARG_GROUPS = {
@@ -39,8 +54,11 @@ export const ARG_GROUPS = {
   // opposite order on some endpoints; the catalog is consistent instead.
   PAGINATION: [
     { name: "count", type: "int", min: 1, max: 200,
+      // Measured live 2026-09-02 (main commit 088759b, which hand-edited the
+      // GENERATED tools.js and was silently dropped by the next regeneration):
+      // X caps search pages regardless of the value requested.
       describe:
-        "Max items to return for this page. Typical range 1 to 200; endpoint default (20) applies if omitted. To page through results, pass the cursor from the previous response." },
+        "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value." },
     { name: "cursor",
       describe:
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page." },
@@ -141,14 +159,14 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
-    name: "twitter_users_by_ids",
-    endpoint: "/users/by_ids",
+    name: "twitter_user_status",
+    endpoint: "/user/status",
     description:
-      "Resolve up to 100 numeric user ids into full profiles in ONE call. Same user object as twitter_user_info_by_id, returned as a list. Use this whenever you hold several ids and would otherwise loop twitter_user_info_by_id, for example hydrating the authors of a batch of tweets. Ids that no longer resolve (suspended or deleted accounts) are omitted rather than returned as nulls; compare the requested and resolved counts in the response, or diff the returned ids against the ones you sent, to see which were dropped. Sending more than 100 ids is rejected rather than truncated, so a short list always means those accounts are gone, never that the request was clipped.",
+      "Check whether a Twitter/X account is alive, suspended, or deleted. Returns a status field that is one of 'alive', 'suspended', 'not_found', or 'unavailable', plus the numeric id when the account is alive and X's own reason when it gives one. Use this instead of twitter_user_info when the QUESTION is whether the account still exists: user info answers a suspended account, a deleted account, and a handle that never existed all the same way, so it cannot tell a ban from a typo. Every outcome here is a successful response, so read the status field rather than treating a suspension as an error. A protected (private) account counts as alive, since protection is a visibility setting and not an account state.",
     args: [
-      { name: "user_ids",
+      { name: "userName",
         describe:
-          "Comma-separated numeric Twitter/X user ids, up to 100 (e.g. '44196397,745273'). Duplicates are collapsed and billed once." },
+          "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama')." },
     ],
   },
   {
@@ -192,7 +210,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_user_tweets",
     endpoint: "/user/tweets",
     description:
-      "Get a user's recent original tweets, excluding replies and retweets. Returns tweet text, id, timestamp, and engagement metrics. Paginate with cursor to go further back. Use this to analyse a user's own content, opinions, or posting cadence. For replies too, use twitter_user_tweets_and_replies; for the full back-catalogue in one call, use twitter_user_tweets_complete.",
+      "Get a user's recent posting timeline. IMPORTANT: this endpoint does NOT filter server-side, so the response routinely includes retweets and replies alongside original posts. Every item carries is_retweet, is_reply and is_quote booleans, so filter client-side on those flags if you need originals only, and read author.username rather than assuming every item was written by the requested user (a retweet's retweeted_tweet holds the original author). Returns tweet text, id, timestamp, and engagement metrics. Paginate with cursor to go further back. For the full back-catalogue in one call, use twitter_user_tweets_complete.",
     args: [
       "@USER_REF",
       "@PAGINATION",
@@ -202,7 +220,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_user_tweets_and_replies",
     endpoint: "/user/tweets_and_replies",
     description:
-      "Get a user's full activity timeline: their original tweets AND replies to others. Useful for understanding how someone engages with a community, not just what they post. Paginate with cursor. To see only original tweets, use twitter_user_tweets.",
+      "Get a user's full activity timeline: their original tweets AND replies to others. Useful for understanding how someone engages with a community, not just what they post. Paginate with cursor. Items carry is_retweet, is_reply and is_quote booleans; filter on those if you need a specific subset. Note that twitter_user_tweets does NOT filter replies or retweets out either, so on many accounts the two endpoints return overlapping or identical pages.",
     args: [
       "@USER_REF",
       "@PAGINATION",
@@ -370,6 +388,27 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    name: "twitter_tweet_quotes",
+    endpoint: "/tweet/quotes",
+    description:
+      "List the tweets that QUOTE a specific tweet, cursor-paginated as full tweet objects, so you get the commentary people attached rather than just a number. Different from twitter_tweet_retweeters (a plain retweet carries no text) and from twitter_tweet_replies (a reply is not a quote). IMPORTANT, state this to the user whenever you report a number from it: this endpoint is SEARCH-BACKED, because X exposes no dedicated quote-tweets operation, so it runs the query quoted_tweet_id:<id> against X's search index. The returned 'count' is therefore how many quotes THIS SEARCH returned, never the tweet's true total; the authoritative total is 'quote_count' on the tweet object from twitter_tweet_detail, and the two WILL differ because of index lag and because deleted, protected, suspended and region-withheld quotes are absent from search. Every response carries 'source' (always \"search\"), 'search_query' (the exact query sent), and 'quote_matched' (how many returned tweets demonstrably quote the requested id). quote_matched equal to count means every row is genuine; quote_matched 0 on a NON-EMPTY page means X stopped honouring the operator and the rows are junk, so discard that page rather than reporting it.",
+    args: [
+      "@TWEET_REF",
+      { name: "product", enum: ["Latest","Top"],
+        describe:
+          "Search ordering. 'Latest' (default) is reverse-chronological and cheap. 'Top' is X's ranked ordering and is materially slower upstream. Any other value falls back to Latest rather than changing what the tool means." },
+      { name: "strict", type: "boolean",
+        describe:
+          "Set true to DROP every returned row that does not demonstrably quote the requested tweet, instead of only counting them in quote_matched. Default false, because X does not embed the quoted original on every search result, so strict trades a false-positive risk for a false-negative one. Billing follows what you receive, so rows dropped by strict are not charged." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max quote tweets to request for this page. Defaults to 20 and is clamped to 1-100 by the underlying search, so a larger number returns at most 100 rather than erroring." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
     name: "twitter_list_members",
     endpoint: "/list/members",
     description:
@@ -381,7 +420,243 @@ export const TOOL_OVERRIDES = [
       "@PAGINATION",
     ],
   },
+  {
+    name: "twitter_list_followers",
+    endpoint: "/list/followers",
+    description:
+      "Fetch a public List's followers by its numeric id, cursor-paginated. Followers and members are different sets of people: members are the accounts the List owner added to it, followers are the accounts that subscribed to read it. A List with hundreds of members commonly has only a handful of followers, so a small count here is normal and is not a truncated page. Use twitter_list_members for the member roster instead.",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max items to return for this page. Defaults to 20 and is clamped to 1-100." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. next_cursor is null once X marks the follower list complete." },
+    ],
+  },
+  // TWO LIST FEEDS, TWO CAPABILITIES, NOT TWO SPELLINGS OF ONE. The names read
+  // like versions of each other and they are not: list/tweets is SEARCH-BACKED,
+  // so it can answer a time-ranged or reply-filtered question and carries no
+  // retweets; list/timeline is X's OWN native List feed, so it carries retweets
+  // and X's ordering and accepts no filters at all, only paging. Their PARAMETER
+  // SETS are what separates them, which is why each description below states the
+  // trade and names the other tool: a model handed only the names will pick one
+  // at random and silently answer a different question than the user asked.
+  {
+    name: "twitter_list_tweets",
+    endpoint: "/list/tweets",
+    description:
+      "Read the posts written by the members of a public Twitter/X List, newest first, through X's search index. This is the FILTERABLE List feed: it accepts since and until date bounds and an include_replies toggle. It does NOT return retweets, and search-index lag applies, so a post made moments ago can be missing for a short while. Use twitter_list_timeline instead when you want the List exactly as X shows it, retweets and native ordering included, and accept that it takes no filters. Paginate with cursor. The list_id appears in the X.com list URL (x.com/i/lists/<list_id>).",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>. The List must be public." },
+      { name: "since",
+        describe:
+          "Optional. Only posts on or after this date, as YYYY-MM-DD (e.g. \"2026-08-01\"). Any other format is rejected with a 400." },
+      { name: "until",
+        describe:
+          "Optional. Only posts BEFORE this date, as YYYY-MM-DD. EXCLUSIVE, matching X's own until: search operator, so a post made on the until date is not returned. Any other format is rejected with a 400." },
+      { name: "include_replies", type: "boolean",
+        describe:
+          "Optional. Whether to include replies written by List members. Pass the string \"true\" or \"false\"; defaults to true when omitted. Any other value is rejected with a 400 rather than read as false." },
+      { name: "product", enum: ["Latest","Top"],
+        describe:
+          "Which search ranking to read. 'Latest' (default) is reverse-chronological. 'Top' is X's ranked ordering. Any unrecognised value falls back to Latest rather than erroring." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
+    name: "twitter_list_timeline",
+    endpoint: "/list/timeline",
+    description:
+      "Read a public Twitter/X List's NATIVE feed, the same posts and the same ordering the List shows on x.com, including members' retweets. It takes only list_id, count and cursor: no date range and no reply filter exist on this endpoint, because a native timeline cannot honour search operators. Use twitter_list_tweets when you need a date range or want replies filtered out, and accept that it drops retweets in exchange. Paginate with cursor until the tweets array comes back empty.",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>. The List must be public." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
   // ── Reads: trends ──────────────────────────────────────────────────────────
+  {
+    name: "twitter_spaces_info",
+    endpoint: "/spaces/info",
+    description:
+      "Get metadata and the participant roster for one X Space by id, live or ended: title, lifecycle state (Scheduled, NotStarted, Running or Ended), host, topics, scheduled and actual start/end times, peak live listener count, replay view count, and the admin, speaker and listener rosters. Returns metadata only, NOT the Space audio. Note that X does not retain the per-person listener roster once a Space ends, so listeners comes back empty for an ended Space while total_live_listeners and total_replay_watched still reflect the real audience. All timestamps are millisecond-epoch numbers.",
+    args: [
+      { name: "id",
+        describe:
+          "The Space id: the trailing token of a x.com/i/spaces/<id> URL, e.g. '1RKZzjkoYRAKB'. A '/peek' suffix on the URL is not part of the id." },
+      { name: "with_listeners", required: false,
+        describe:
+          "Optional. Include the listener roster. Defaults to true. X drops this roster once a Space ends, so it is empty for an ended Space regardless of this flag." },
+      { name: "with_replays", required: false,
+        describe:
+          "Optional. Include replay availability and related metadata. Defaults to true." },
+    ],
+  },
+  // ── Reads: communities ─────────────────────────────────────────────────────
+  // Five PUBLIC POOLED reads. They are served by our account pool rather than by
+  // the caller's session, which is why every one of these descriptions states
+  // that role / can_join / is_pinned / viewer_relationship_type come back null:
+  // those four describe the account that made the upstream call, and on a pooled
+  // read that is a rotating account the customer has never heard of. A model
+  // that is not told this will report them to a user as a broken field.
+  {
+    name: "twitter_community_search",
+    endpoint: "/community/search",
+    description:
+      "Find X Communities by keyword, cursor-paginated. This is the discovery step the rest of the community family assumes: every other community endpoint starts from a community id, and this is the one that produces one. Each hit is a compact record, id, name, member count, nsfw flag, topic name, banners and the facepile avatars, exactly what X's own search sends and nothing more. Once you have an id, use twitter_community_info or twitter_community_about for detail, twitter_community_members / twitter_community_moderators for the roster, and twitter_community_tweets for its posts.",
+    args: [
+      { name: "query",
+        describe:
+          "Keyword to search for, 1 to 500 characters, e.g. 'build in public'." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
+    name: "twitter_community_info",
+    endpoint: "/community/info",
+    description:
+      "Get the metadata for one X Community by its numeric id: name, description, member_count, moderator_count, join_policy, invites_policy, the join question, primary topic, search tags, the posted rules, both the custom and the default banner plus a resolved banner_url, the permalink, the admin and creator profiles, and the facepile member ids. The community id is the digits in a x.com/i/communities/<id> URL. IMPORTANT: role, can_join, is_pinned and viewer_relationship_type are ALWAYS null here and that is deliberate, not an error, because they describe the account that made the call and this is a pooled read served by a rotating account. rules[].description is also always null: X sends only the rule id and name on this payload. Use twitter_community_members for the roster and twitter_community_tweets for the posts.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id." },
+    ],
+  },
+  {
+    name: "twitter_community_about",
+    endpoint: "/community/about",
+    description:
+      "The About tab for one X Community: its moderators, and a preview of its members, both returned as FULL user profiles with bio, follower and following counts, tweet counts, location, website, banner and join date. twitter_community_members and twitter_community_moderators return a reduced row instead, so this is the endpoint that answers who runs a community in one call rather than one call plus a profile lookup per person. Use twitter_community_info instead for the community's own metadata (name, description, rules, join policy); this endpoint is about the PEOPLE, not the community object.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'." },
+    ],
+  },
+  {
+    name: "twitter_community_members",
+    endpoint: "/community/members",
+    description:
+      "List the member roster of an X Community, cursor-paginated, with each row carrying that member's own role in the community: 'Admin', 'Moderator' or 'Member'. Rows are { user, role }. The user object is deliberately REDUCED (id, username, name, profile_image_url, is_blue_verified, verified, is_protected) because X's roster operation sends no bio, no follower or following counts and no created_at; call twitter_user_info with an id when the full profile is needed. Note that the role on a member ROW is NOT caller-relative and is returned in full, unlike the role field on the community object itself. Admins and moderators are interleaved through this list at arbitrary positions, so do NOT derive a moderator list by filtering the first page: use twitter_community_moderators. Paging is a bare next_cursor with no total count from X; stop when members comes back empty or has_more is false.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max roster rows to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns 100 rather than erroring." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. Absence of next_cursor is the only end-of-list signal X gives on this operation." },
+    ],
+  },
+  {
+    name: "twitter_community_moderators",
+    endpoint: "/community/moderators",
+    description:
+      "List the moderators and admins of an X Community, cursor-paginated, in the same { user, role } row shape twitter_community_members returns (the array is also called members, deliberately, so the two cannot drift apart). This is a SEPARATE upstream operation, not a filter over the member roster, and that matters for correctness: moderators sit at arbitrary positions inside the full roster, so filtering one page of twitter_community_members would return 'the moderators among the first 20 members' while looking like a complete answer. Read each row's role rather than assuming every row is a Moderator, since admins appear here too. Paging is a bare next_cursor with no total count from X.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max rows to return for this page. Defaults to 20 and is clamped to 1-100." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
+    name: "twitter_community_tweets",
+    endpoint: "/community/tweets",
+    description:
+      "Read an X Community's own post timeline, cursor-paginated as full tweet objects, with the community's PINNED post returned as its own separate 'pinned' field rather than as an item inside 'tweets'. That split is not cosmetic: X delivers the pinned post under a different timeline instruction and does not repeat it in the feed, so a client that iterates only 'tweets' silently loses it, and it is very often the community's rules post, the single most useful item in the response. To build one flat list, read 'pinned' first if non-null, then 'tweets' (the pinned post is excluded from 'tweets', so there is no duplicate). ranking_mode is a REAL upstream parameter, not a local sort. Use twitter_advanced_search instead when the search should span all of X rather than one community.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'." },
+      { name: "ranking_mode", enum: ["Recency","Relevance"],
+        describe:
+          "Ordering, sent to X as a real request parameter. 'Recency' is the default and the only value confirmed against a live capture. 'Relevance' is accepted because X's own community tab offers exactly two orderings, but it is NOT confirmed live, so do not depend on it. Any other value is rejected with a 400." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max posts to return for this page. Defaults to 20 and is clamped to 1-100." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
+    name: "twitter_community_memberships",
+    endpoint: "/community/memberships",
+    description:
+      "The INVERSE community lookup: given a numeric X USER id, list the communities that account belongs to, cursor-paginated. Every other community tool starts from a community; this one starts from an account, which makes it the tool for profiling which audiences a person sits inside. Each row is the FULL community object (the same shape twitter_community_info returns, with member counts, rules, topic, policies, admin and creator), so no follow-up call per community is needed. Takes a numeric user id ONLY, not a @handle: resolve a handle with twitter_user_info first, because resolving it here would silently cost a second call. An EMPTY communities array is a real, successful answer (the account is in no communities), not a not-found. As on twitter_community_info, role / can_join / is_pinned / viewer_relationship_type are always null on every community returned, because this is a pooled read.",
+    args: [
+      { name: "user_id",
+        describe:
+          "Numeric X user id, e.g. '1281109705495130113'. NOT a @handle and NOT a community id. Resolve a handle to its id with twitter_user_info first." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max communities to return for this page. Defaults to 20 and is clamped to 1-100." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+    ],
+  },
+  {
+    name: "twitter_grok_chat",
+    endpoint: "/grok/chat",
+    write: true,
+    description:
+      "Ask X's own Grok a question AS your authenticated account, and get ONE complete JSON reply with the answer plus the sources it cited. Unlike a general LLM, Grok reads X in real time, so it can answer about what is being said right now, and passing a bare tweet or status URL as the message returns a structured summary of that post. Returns answer text, citations (url, title, snippet) merged and de-duplicated across every search Grok ran, the searches themselves, and the model that ACTUALLY answered (which can differ from the one you asked for). Buffered, not streamed. STATELESS: nothing is stored, so to continue a conversation pass the prior turns back in messages[] along with conversation_id. Requires an authenticated session for the acting account.",
+    args: [
+      { name: "message", required: false,
+        describe:
+          "The prompt, for a single-turn question. A bare tweet or status URL is a first-class input and comes back as a summary of that post. Provide either this or messages[]." },
+      { name: "messages", required: false,
+        describe:
+          "Prior turns for a multi-turn conversation, oldest first, each { role: 'user' | 'grok', content: '...' }. The endpoint stores nothing, so the full history you want Grok to see must travel in this array. Provide either this or message." },
+      { name: "conversation_id", required: false,
+        describe:
+          "Conversation id returned by a previous call. Omit on the first turn and one is created for you." },
+      { name: "mode", required: false,
+        describe:
+          "Which Grok to use: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports the model that actually answered, which can differ from the mode requested." },
+      { name: "image_count", required: false,
+        describe:
+          "How many images Grok may generate if the prompt calls for one. Defaults to the value X's own client sends. Set 0 for a text-only answer." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_grok_config",
+    endpoint: "/grok/config",
+    description:
+      "Check whether the authenticated account can use Grok, and which models it may pick. Returns eligibility, X's own reasons when it is NOT eligible (passed through verbatim, since we cannot know X's policy), whether free access is enabled, and the available model options. Eligibility is a property of the X ACCOUNT rather than of the API key, so ask this about the same account you intend to run twitter_grok_chat as. Free.",
+    args: [
+      "@INLINE",
+    ],
+  },
   {
     name: "twitter_trends",
     endpoint: "/trends",
@@ -420,6 +695,60 @@ export const TOOL_OVERRIDES = [
     description:
       "Get YOUR twitterapis.com payment history: the list of top-ups and charges on your account. Authenticated by your API key. This is an account read, not Twitter data, and is free (it does not spend credits).",
     args: [],
+  },
+  // ── Feedback: product reports from inside the customer's AI tool (2026-09-04) ─
+  // Modelled on Claude Code's own feedback tool: the model DRAFTS at a
+  // high-signal moment into a local queue (src/feedback.js) and nothing is sent
+  // until the user reviews and names the drafts to send. Free, not metered,
+  // zero-rated in billing like account/* and the monitoring tools. The
+  // DESCRIPTION below is the product: it is what tells a model when to draft
+  // and what shape a useful report has. The `local` handler owns the queue;
+  // `action` and `ids` never reach the API.
+  {
+    name: "twitter_feedback_send",
+    endpoint: "/feedback",
+    method: "POST",
+    write: true, jsonBody: true,
+    local: "feedback",
+    description:
+      "Report a product problem or gap in twitterapis.com to its team from inside this session, the way Claude Code's own feedback tool works: a report is DRAFTED to a local queue first (action \"draft\", the default) and SENT only after the user reviews it. Drafting sends nothing, needs no confirmation, and should not be announced mid-task. WHEN TO DRAFT, only at high-signal moments: a twitterapis tool call failed with an error that was not a missing key (401), credits (402), no linked session (409) or a rate limit (429), and the user had to work around it; the user asked for something no twitterapis tool covers; a documented field came back empty or wrong; the user was clearly frustrated with a result. One draft per distinct issue, never twice for the same one. FORMAT for details, four labelled bullets in this order: 'What happened:' observed vs expected, exact error text if short. 'What the user said:' quoted verbatim, or 'user did not comment'. 'Repro:' the minimal call that reproduces it. 'Evidence:' tool name, endpoint, HTTP status, request id (the last failing call is attached automatically where you leave a gap). Facts only: no guessing, no API keys or secrets, no personal names. REVIEW: when the user asks to see or send feedback, call action \"list\", then action \"send\" with ONLY the draft ids the user named in their own message, or action \"discard\". Sending posts each draft to POST /feedback (free) and returns a server id that twitter_feedback_get can check later.",
+    args: [
+      { name: "action", local: true, type: "enum", enum: ["draft", "list", "send", "discard"], required: false,
+        describe:
+          "What to do. \"draft\" (default) queues a new report locally and sends nothing. \"list\" shows the pending drafts with their ids. \"send\" posts the drafts named in ids to twitterapis.com; use it only for ids the user named. \"discard\" drops the drafts named in ids." },
+      { name: "type", type: "enum", enum: ["bug", "idea", "missing_capability"], required: false,
+        describe:
+          "Required for a draft. \"bug\": a tool or endpoint misbehaved. \"idea\": a change that would have made the task easier. \"missing_capability\": the user needed something no tool provides." },
+      { name: "title", required: false,
+        describe:
+          "Required for a draft. One specific line, at most 120 characters, naming the tool or endpoint and the defect, e.g. \"twitter_tweet_thread returns 502 when the root tweet is deleted\"." },
+      { name: "details", required: false,
+        describe:
+          "Required for a draft. At most 8000 characters, four labelled bullets in order: What happened, What the user said (verbatim), Repro, Evidence." },
+      { name: "area",
+        describe:
+          "Optional. The endpoint or feature the report is about, e.g. \"tweet/thread\" or \"monitoring\". At most 80 characters." },
+      { name: "evidence", type: "json",
+        describe:
+          "Optional identifiers only, never payloads: {tool, endpoint, status, request_id}. Whatever you leave out is filled from the last failing call in this session; mcp_version and client are always attached." },
+      { name: "ids", local: true, type: "strings",
+        describe:
+          "For action \"send\" or \"discard\": the draft ids to act on, exactly as shown by action \"list\" and named by the user." },
+    ],
+    omit: {
+      client: "filled by the handler from the MCP handshake clientInfo plus this package's version, never typed by a model",
+    },
+  },
+  {
+    name: "twitter_feedback_get",
+    endpoint: "/feedback/{id}",
+    description:
+      "Check the status of a feedback report this account sent earlier (the server id returned by twitter_feedback_send action \"send\"): status new, triaged, shipped or declined, the team's response text if any, and updated_at, which moves only when the team acts on it. Free per call. 404 if the id is not on this account.",
+    args: [
+      { name: "id",
+        describe:
+          "The server id of a sent report, as returned by twitter_feedback_send action \"send\" (a UUID). Not a local draft id." },
+    ],
   },
   // ── Reads: authenticated-account surfaces (require a session behind your key) ─
   {
@@ -472,6 +801,28 @@ export const TOOL_OVERRIDES = [
         describe:
           "Search terms to match against your bookmarked tweets' text." },
       "@PAGINATION",
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_bookmark_folders",
+    endpoint: "/user/bookmark_folders",
+    description:
+      "List YOUR authenticated account's bookmark FOLDERS (X's internal name: collections), the named groups you can organize saved tweets into, separate from your flat bookmarks list (twitter_bookmarks). Requires an authenticated session behind your key. Returns each folder's id, name, and a cover image. Takes no arguments; your folders resolve from your session alone. Use twitter_bookmark_folder_timeline with a folder's id to read the tweets inside it.",
+    args: [
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_bookmark_folder_timeline",
+    endpoint: "/user/bookmark_folder_timeline",
+    description:
+      "Read the tweets inside ONE of your authenticated account's bookmark folders, identified by folder_id (from twitter_bookmark_folders). Requires an authenticated session behind your key. Cursor-paginated; there is no count/page-size argument for this op.",
+    args: [
+      { name: "folder_id",
+        describe:
+          "The bookmark folder's id, from twitter_bookmark_folders (e.g. '2073826456430592429')." },
+      "@CURSOR",
       "@INLINE",
     ],
   },
@@ -672,6 +1023,77 @@ export const TOOL_OVERRIDES = [
         "Deliberately not a tool arg. The catalog routes a caller-supplied proxy through the x-proxy-url REQUEST HEADER instead (see the proxy_url arg in @INLINE), because a proxy URL routinely embeds user:pass credentials and a query-string param would write those into every URL and access log along the path.",
     },
   },
+  // ── Writes: Lists (create a List, curate its membership) ───────────────────
+  // These run on the CUSTOMER'S REGISTERED X SESSION, never on a pooled account,
+  // because a List belongs to a specific account: a pooled write would mutate a
+  // rotation account's Lists, which nobody asked for and nobody could read back.
+  // Register once with twitter_customer_session, or pass auth_token and ct0 per
+  // call via @INLINE.
+  //
+  // jsonBody deliberately UNSET, and this was checked rather than copied: the
+  // backend handlers (listAddMemberRoute / listRemoveMemberRoute /
+  // listCreateRoute in twitterapis-backend scraper/src/server/routes/
+  // list-write.ts) read every field through resolveBodyParam, the dual-mode
+  // query-or-body helper, so query-string args work. The backend's own
+  // route-body-modes.json manifest classifies all three as mode "either", which
+  // is what test/body-mode-parity.mjs asserts against.
+  //
+  // ON member_count: X returns a populated errors[] on 100% of SUCCESSFUL calls
+  // to these three ops, so a caller cannot use the error array to decide whether
+  // the write applied. The List's member_count, read back from X after the
+  // write, is the check that works, which is why every description below points
+  // a model at it instead of at ok alone.
+  {
+    name: "twitter_list_add_member",
+    endpoint: "/list/add_member",
+    write: true,
+    description:
+      "Add one account to a Twitter/X List that YOUR registered X session owns, by numeric list id and numeric user id. Use it to curate a List from code, for example adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. Read member_count to confirm the change landed: it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List is not yours) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reverse with twitter_list_remove_member.",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric id of the List you own. Found in the list URL: x.com/i/lists/<list_id>." },
+      { name: "user_id",
+        describe:
+          "Numeric user id of the account to add. Resolve a handle to a user_id first with twitter_user_info." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_list_remove_member",
+    endpoint: "/list/remove_member",
+    write: true, destructive: true,
+    description:
+      "Remove one account from a Twitter/X List that YOUR registered X session owns, by numeric list id and numeric user id. Use it to prune a curated List, for example dropping accounts that have gone quiet. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. Read member_count to confirm the removal landed: it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was never a member, the List is not yours) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reverse with twitter_list_add_member.",
+    args: [
+      { name: "list_id",
+        describe:
+          "Numeric id of the List you own. Found in the list URL: x.com/i/lists/<list_id>." },
+      { name: "user_id",
+        describe:
+          "Numeric user id of the account to remove. Resolve a handle to a user_id first with twitter_user_info." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_list_create",
+    endpoint: "/list/create",
+    write: true,
+    description:
+      "Create a new Twitter/X List owned by YOUR registered X session, with a name and an optional description and privacy flag. This is the starting point for building a List from code: create it here, then fill it with twitter_list_add_member using the list id this returns. Returns ok, action, the new list_id, member_count, and the full list object X returned. A List is PUBLIC unless you explicitly ask for a private one, and a private List is not readable by the public List read tools (twitter_list_members, twitter_list_tweets, twitter_list_timeline).",
+    args: [
+      { name: "name", minLength: 1,
+        describe:
+          "Display name for the new List, e.g. \"Founders\". Required; an empty or whitespace-only name is rejected with a 400." },
+      { name: "description",
+        describe:
+          "Optional. Description shown on the List, e.g. \"People building in public\". Defaults to empty." },
+      { name: "is_private", type: "boolean",
+        describe:
+          "Optional. Pass the string \"true\" to create a PRIVATE List. Defaults to false (public), because a public List can be made private later while a leak cannot be undone. Note a private List is not readable by the public List read tools." },
+      "@INLINE",
+    ],
+  },
   // ── Session bootstrap + media: link an X account to your key, then act as it ─
   // Once a session is linked (via twitter_customer_session or twitter_user_login)
   // the authenticated-account reads and the write actions run AS that account.
@@ -683,7 +1105,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/customer/session",
     write: true, jsonBody: true,
     description:
-      "Register YOUR OWN X account session against your API key, so the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes) and the write tools (twitter_create_tweet, twitter_dm_send, twitter_follow_user, twitter_favorite_tweet, twitter_retweet, twitter_media_upload) act as your account. Provide your x.com session cookies auth_token and ct0 (copy them from a logged-in browser); optionally a user_agent and a residential proxy_url. The cookies are stored server-side against your key and are never returned. Returns ok, the resolved username, and whether the session validated live. Prefer twitter_user_login if you would rather pass a username/password than raw cookies. Most tools also accept auth_token/ct0 per-call without registering.",
+      "Register YOUR OWN X account session against your API key, so the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes, twitter_article_list) and the write tools (twitter_create_tweet, twitter_dm_send, twitter_follow_user, twitter_favorite_tweet, twitter_retweet, twitter_media_upload, twitter_article_create, twitter_article_update_title, twitter_article_update_content, twitter_article_publish, twitter_article_unpublish, twitter_article_delete) act as your account. Provide your x.com session cookies auth_token and ct0 (copy them from a logged-in browser); optionally a user_agent and a residential proxy_url. The cookies are stored server-side against your key and are never returned. Returns ok, the resolved username, and whether the session validated live. Prefer twitter_user_login if you would rather pass a username/password than raw cookies. Most tools also accept auth_token/ct0 per-call without registering.",
     args: [
       { name: "auth_token",
         describe:
@@ -698,6 +1120,39 @@ export const TOOL_OVERRIDES = [
         describe:
           "Optional. HTTP or SOCKS proxy URL to route this session's traffic through, e.g. 'http://user:pass@host:port'." },
     ],
+  },
+  {
+    // The read-back counterpart to twitter_customer_session. Deliberately placed
+    // between register and delete so an agent reading the catalog finds the way
+    // to CHECK the thing it just registered before it finds the way to remove
+    // it. Added for support ticket #197: register and revoke existed, but
+    // nothing let the account owner ask "is my session ok" without a human
+    // reading the production database. GET, no args: the key comes from the
+    // auth middleware's context, so the handler cannot be pointed at another
+    // key's session.
+    name: "twitter_customer_session_status",
+    endpoint: "/customer/session/status",
+    description:
+      "Read back the X account session you registered with twitter_customer_session, without changing it. Returns registered (false if you never registered one), the resolved username and twitter_user_id the session actually maps to, status ('ok', or 'dead' once X has rejected the cookies), created_at, updated_at, last_used_at, and an egress block: source (one of session, sticky_residential, pool_residential, direct), customer_proxy_in_use (true when the proxy_url you registered is the one your writes leave from), and a note explaining that tier. Never returns auth_token, ct0, or any proxy URL. Use it to answer 'am I posting as the account I think I am', 'has my session expired', and 'is the proxy I supplied actually being used' without opening a support ticket. Free, and scoped to your own API key by construction: it takes no account identifier of any kind, so it cannot read another key's session.",
+    args: [],
+  },
+  {
+    // The counterpart to twitter_customer_session. Deliberately placed next to it
+    // so an agent reading the catalog finds the way OUT beside the way IN: a
+    // credential you cannot withdraw is the objection this endpoint exists to
+    // answer, and it went unpublished on every surface for six days.
+    name: "twitter_customer_session_delete",
+    endpoint: "/customer/session/delete",
+    // NOT jsonBody. Unlike its sibling twitter_customer_session, this handler
+    // reads nothing from the request: it takes the api key from the auth
+    // middleware's context (c.get("apiKey")) and takes no body field and no
+    // second header, which is precisely what makes cross-key deletion
+    // impossible. A jsonBody:true here would advertise a request body the
+    // endpoint does not have.
+    write: true,
+    description:
+      "Revoke the X account session you registered with twitter_customer_session, deleting the stored auth_token and ct0 from twitterapis.com. Self-serve, no ticket and no human in the loop. Scoped to your own API key by construction: it takes no account identifier of any kind, so it cannot reach another key's session. Idempotent and free: revoking twice, or revoking when nothing was stored, still returns ok with deleted=false, and it costs no credits, so a key that is out of balance can still delete its credentials. After this, the authenticated-account tools (twitter_home_timeline, twitter_bookmarks, twitter_dm_list, twitter_dm_conversation, twitter_user_likes) and the write tools stop acting as that account until you register again. IMPORTANT: this deletes the stored copy only. It does NOT log the account out of x.com, so to invalidate the cookies themselves, also revoke the session from your X account settings.",
+    args: [],
   },
   {
     // CONTRACT NOTE (maintainers): the published spec documents an
@@ -723,6 +1178,17 @@ export const TOOL_OVERRIDES = [
       { name: "totp_secret",
         describe:
           "The account's base32 two-factor (TOTP) secret. Required only when the account has 2FA enabled." },
+      // Added 2026-08-09 when the refreshed spec exposed both. Verified against
+      // the live handler (backend src/server/routes/user-login.ts), which reads
+      // body.proxy_url and body.user_agent and stores them on the resulting
+      // session, so they describe the SESSION's ongoing egress and fingerprint,
+      // not merely the one login call.
+      { name: "proxy_url",
+        describe:
+          "Optional. HTTP or SOCKS proxy URL to perform the login through, e.g. 'http://user:pass@host:port'. Stored with the session and reused for its later requests. Omit to log in directly from the service's own IP. A residential proxy is recommended: X treats datacenter logins as automated." },
+      { name: "user_agent",
+        describe:
+          "Optional. Browser User-Agent to mint and use the session with. Defaults to a current Chrome UA. Keep it consistent with the environment the account normally signs in from; a mismatch between the UA and the session is itself a signal to X." },
     ],
   },
   {
@@ -748,6 +1214,380 @@ export const TOOL_OVERRIDES = [
         describe:
           "Numeric media id returned by twitter_media_upload, e.g. '1234567890123456789'." },
       "@INLINE",
+    ],
+  },
+  // ── Writes: Articles (X's long-form "Notes" feature, #1096) ────────────────
+  // An article is a DRAFT until published, then it is PUBLISHED and carries a
+  // public announcement tweet. Every op below except twitter_article_get acts
+  // AS the account behind your registered session (same auth model as
+  // twitter_create_tweet / twitter_dm_send): register first with
+  // twitter_customer_session or twitter_user_login, or pass auth_token/ct0
+  // per-call via @INLINE. twitter_article_get is the one PUBLIC read (same
+  // auth model as twitter_tweet_detail): just your API key, no session.
+  {
+    name: "twitter_article_create",
+    endpoint: "/article/create",
+    write: true,
+    description:
+      "Start a new DRAFT article ('Note') AS your authenticated account. No input required. Returns the new article's id (pass this to twitter_article_update_title / twitter_article_update_content / twitter_article_publish / twitter_article_delete) and its full article object. Requires an authenticated session with write capability behind your key.",
+    args: [
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_update_cover_media",
+    endpoint: "/article/update_cover_media",
+    write: true,
+    description:
+      "Attach an ALREADY-UPLOADED image as the cover of a DRAFT or PUBLISHED article, AS your authenticated account. This does NOT upload: call twitter_media_upload first and pass the media_id it returns. Provide the article's id (from twitter_article_create or twitter_article_list). Requires an authenticated session with write capability behind your key. Returns the updated article object with cover_media populated.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789')." },
+      { name: "media_id",
+        describe:
+          "The media id returned by twitter_media_upload for the image to use as the cover." },
+      { name: "media_category", required: false,
+        describe:
+          "Optional. X's media category for the upload. Defaults to 'DraftTweetImage', which is what X's own article editor sends for a cover image. Only set this if you know X expects a different category." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_update_title",
+    endpoint: "/article/update_title",
+    write: true,
+    description:
+      "Set or replace the title of a DRAFT or PUBLISHED article AS your authenticated account. Provide the article's id (from twitter_article_create or twitter_article_list) and the new title. Requires an authenticated session with write capability behind your key. Returns the updated article object.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789')." },
+      { name: "title", minLength: 1,
+        describe:
+          "The new article title (non-empty)." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_update_content",
+    endpoint: "/article/update_content",
+    write: true, jsonBody: true,
+    description:
+      "Replace the body content of a DRAFT or PUBLISHED article AS your authenticated account. Provide the article's id and content_state: Draft.js JSON ({ blocks: [...], entityMap: [...] }) that YOU build and pass through verbatim, this tool does not construct or validate it. Requires an authenticated session with write capability behind your key. Returns the updated article object.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list." },
+      { name: "content_state", type: "json",
+        describe:
+          "Draft.js content state object: { blocks: [...], entityMap: [...] }. You construct this JSON yourself (it is the same shape the X Article editor produces); it is passed through to X verbatim and not validated here." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_publish",
+    endpoint: "/article/publish",
+    write: true,
+    description:
+      "Publish a DRAFT article AS your authenticated account, transitioning it to Published and posting a REAL, PUBLIC announcement tweet that your followers and anyone with the link can see. WARNING: this is a genuinely consequential, hard-to-fully-undo action, it is not like saving a draft. twitter_article_unpublish reverts the article to Draft but LEAVES the announcement tweet up; only twitter_article_delete on a published article unpublishes AND removes the announcement tweet, and by then the content was already public for however long it stayed up. Confirm with the caller before publishing unless they have clearly asked for it. Provide the article's id; audience and reply_control default to 'Everyone' when omitted; caption is an optional short (<=256 character) caption for the announcement tweet. Requires an authenticated session with write capability behind your key. Returns the updated (Published) article object.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list. Must currently be a Draft." },
+      { name: "audience", required: false,
+        describe:
+          "Optional. Who can see the published article, e.g. 'Everyone'. Defaults to 'Everyone' when omitted." },
+      { name: "reply_control", required: false,
+        describe:
+          "Optional. Who can reply to the announcement tweet, e.g. 'Everyone'. Defaults to 'Everyone' when omitted." },
+      { name: "caption", required: false,
+        describe:
+          "Optional. Short caption text for the announcement tweet, up to 256 characters." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_unpublish",
+    endpoint: "/article/unpublish",
+    write: true, destructive: true,
+    description:
+      "Revert a PUBLISHED article back to Draft AS your authenticated account. The announcement tweet the publish posted is LEFT IN PLACE, still publicly visible, use twitter_article_delete instead if you also want that tweet removed. X refuses this with an 'invalid_lifecycle' error if the article is not currently Published. Requires an authenticated session with write capability behind your key. Returns the updated (Draft) article object.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list. Must currently be Published." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_get",
+    endpoint: "/article/get",
+    description:
+      "Read an article's full content (title, content_state, cover media, author, timestamps, public_url). Two mutually exclusive forms. PUBLIC: provide id or url of the article's announcement tweet, no registered session or per-call credentials needed, just your API key, same auth model as twitter_tweet_detail, works for PUBLISHED articles only. OWNER-ONLY: provide article_id (the article's own entity id, from twitter_article_create or twitter_article_list), requires an authenticated session, also reaches your own Drafts, which have no announcement tweet the public form could resolve. Returns 404 (article null) if not found, not visible, or (article_id form) not owned by the calling account.",
+    args: [
+      "@TWEET_REF",
+      { name: "article_id", required: false,
+        describe:
+          "OWNER-ONLY form. The article's own entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789', or the bare numeric rest_id). Requires an authenticated session. Provide exactly one of id, url, or article_id." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_list",
+    endpoint: "/article/list",
+    description:
+      "List YOUR OWN articles (drafts or published) AS your authenticated account, most recent first. X exposes no combined view, so this filters to ONE lifecycle per call: pass lifecycle='published' to list published articles, omit it (or pass 'draft') for drafts. Requires an authenticated session behind your key. Returns count, next_cursor (pass it back as cursor to fetch the next page; null/absent means no more pages), and the page of article objects.",
+    args: [
+      { name: "lifecycle", enum: ["draft", "published"], required: false,
+        describe:
+          "Which lifecycle to list: 'draft' or 'published'. Defaults to 'draft' when omitted. X has no combined view, list each lifecycle separately." },
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Max articles to return for this page, 1 to 100. Defaults to 20 when omitted." },
+      "@CURSOR",
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_article_delete",
+    endpoint: "/article/delete",
+    write: true, destructive: true,
+    description:
+      "Delete an article AS your authenticated account. A DRAFT is hard-deleted outright; a PUBLISHED article is unpublished first and then its announcement tweet is deleted too, so this is the one op that fully removes a published article's public footprint (compare twitter_article_unpublish, which leaves the tweet up). Irreversible. lifecycle and tweet_id are optional fast-path hints (read them off a prior twitter_article_create or twitter_article_list response): when omitted, the server figures out the lifecycle itself by scanning your own Draft then Published articles, which costs an extra round trip. Requires an authenticated session with write capability behind your key. Returns ok/deleted and the id you targeted.",
+    args: [
+      { name: "id",
+        describe:
+          "The article's entity id, from twitter_article_create or twitter_article_list." },
+      { name: "lifecycle", enum: ["draft", "published"], required: false,
+        describe:
+          "Optional fast-path hint: 'draft' or 'published', if you already know it. Omit to let the server resolve it (slower, one extra lookup)." },
+      { name: "tweet_id", required: false,
+        describe:
+          "Optional fast-path hint: the announcement tweet id, only meaningful when lifecycle is 'published'. Omit to let the server resolve it from your own article list." },
+      "@INLINE",
+    ],
+  },
+  // ── Monitoring: account monitors + webhooks (task #14/#488) ────────────────
+  // Free account administration, not metered Twitter reads: monitor/webhook CRUD
+  // is zero-rated in billing (same precedent as customer/session, account/me,
+  // account/payments). Watch an X handle with twitter_monitor_create; register a
+  // delivery URL with twitter_monitor_webhook_create; every new post from a watched
+  // handle is HMAC-signed and POSTed to your registered webhook(s). /monitor/{id}
+  // and /webhook/{id} are each served under more than one HTTP method (POST to
+  // update, DELETE to remove), so every tool below that targets one of those two
+  // paths sets method explicitly to say which.
+  {
+    name: "twitter_monitor_create",
+    endpoint: "/monitor",
+    method: "POST",
+    write: true, jsonBody: true,
+    // Fixed 2026-08-16: the backend's createMonitorRoute reads ONLY
+    // `await c.req.json()` with no query-string fallback (unlike most
+    // write endpoints, which go through resolveBodyParam's dual-mode
+    // query-or-body resolution). Without jsonBody:true this tool sent
+    // every arg as a query string the backend never reads, so EVERY call
+    // failed with a 400 "Provide `handle` ... in the JSON body" -- live-
+    // reproduced against production before this fix.
+    description:
+      "Start watching an X account for new posts. Every new post from that handle is HMAC-signed and delivered to your registered webhook(s) on a shared poll interval (see twitter_monitor_webhook_create to register a delivery URL first). Free: monitor creation is account administration, not a metered read. Returns the new monitor's id, plus its normalized handle, status, and poll_interval_ms.",
+    args: [
+      { name: "handle", minLength: 1,
+        describe:
+          "The X username to watch, without the leading @ (e.g. 'elonmusk')." },
+      { name: "webhook_ids", required: false,
+        describe:
+          "Optional. Comma-separated webhook id(s) from twitter_monitor_webhook_create to restrict this monitor's deliveries to. Omit to deliver to every active webhook on the account (the default)." },
+      { name: "include_replies", required: false,
+        describe:
+          "Optional boolean. true delivers the account's replies as well as its own posts, which is the default and what every monitor has always done; false holds replies back and delivers only the account's own posts. Must be a real boolean: the string \"false\" and the number 0 are rejected with a 400 rather than coerced, because coercing them would quietly give you the opposite of what you typed, and the wrong answer here is invisible since it looks exactly like the account not having posted." },
+      { name: "domain_filter", required: false,
+        describe:
+          "Optional. A bare hostname ('example.com') or a full URL ('https://example.com/blog') to restrict delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Omit for no filter, the default (deliver every new post). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, never silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric." },
+    ],
+  },
+  {
+    name: "twitter_monitor_list",
+    endpoint: "/monitor",
+    method: "GET",
+    description:
+      "List every monitor on your account: id, subject (its from:<handle> query), kind, status ('active' or 'paused'), degraded flag, events_possibly_missed, webhook_ids restriction, and created_at. Takes no arguments.",
+    args: [],
+  },
+  {
+    name: "twitter_monitor_update",
+    endpoint: "/monitor/{id}",
+    method: "POST",
+    write: true, jsonBody: true,
+    // Fixed 2026-08-16, same root cause as twitter_monitor_create above:
+    // updateMonitorRoute also reads only c.req.json(), no query fallback.
+    description:
+      "Partially update an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, change or clear its domain_filter, or any combination in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Free per call. All three fields are optional; omit any of them to leave that part unchanged.",
+    args: [
+      { name: "id",
+        describe:
+          "The monitor's id, from twitter_monitor_create or twitter_monitor_list." },
+      { name: "status", enum: ["active", "paused"], required: false,
+        describe:
+          "'paused' to pause the monitor, 'active' to resume it. Omit to leave status unchanged." },
+      { name: "webhook_ids", required: false,
+        describe:
+          "Optional. Comma-separated webhook id(s) to restrict delivery to. Pass an empty string to clear the restriction back to 'deliver to every active webhook'. Omit entirely to leave it unchanged." },
+      { name: "domain_filter", required: false, nullable: true,
+        describe:
+          "Optional. A bare hostname or full URL to restrict delivery to, same shape and normalization as twitter_monitor_create's domain_filter. Pass an empty string (or null) to clear an existing filter back to 'deliver every new post'. Omit entirely to leave the current filter unchanged. Rejected with a 400 if a non-empty value does not normalize to a valid hostname." },
+      { name: "include_replies", required: false,
+        describe:
+          "Optional boolean. true delivers the account's replies as well as its own posts, false holds replies back and delivers only its own posts. Omit the field entirely to leave it unchanged. Same boolean-only validation as twitter_monitor_create: a non-boolean is a 400 rather than a coercion." },
+    ],
+  },
+  {
+    name: "twitter_monitor_delete",
+    endpoint: "/monitor/{id}",
+    method: "DELETE",
+    write: true, destructive: true,
+    description:
+      "Stop and remove a monitor by id. Irreversible: create a new monitor with twitter_monitor_create if you want to watch that handle again. Delivery history referencing this monitor is retained, not cascade-deleted. Free per call.",
+    args: [
+      { name: "id",
+        describe:
+          "The monitor's id, from twitter_monitor_create or twitter_monitor_list." },
+    ],
+  },
+  {
+    name: "twitter_monitor_health",
+    endpoint: "/monitor/{id}/health",
+    description:
+      "Read one monitor's current status, degradation flag, poll interval, possibly-missed-event count, and cursor position (last_tweet_id, last_poll_at), for building your own health dashboard. Free per call.",
+    args: [
+      { name: "id",
+        describe:
+          "The monitor's id, from twitter_monitor_create or twitter_monitor_list." },
+    ],
+  },
+  {
+    name: "twitter_monitor_account_health",
+    endpoint: "/monitor/health",
+    description:
+      "Account-wide monitoring rollup in ONE call, distinct from twitter_monitor_health (which needs an id and reports one monitor's cursor): service status ('operational' or 'degraded'), active/paused/total counts across every monitor you own, and pending/delivered/failed delivery counts from the last 24 hours. Takes no arguments. A key with zero monitors gets zeroed counts back, never an error. Free per call.",
+    args: [],
+  },
+  {
+    name: "twitter_monitor_deliveries",
+    endpoint: "/monitor/deliveries",
+    description:
+      "List your most recent monitor delivery events across every monitor, most recent first: id, monitor_id, tweet_id, status, tweet_created_at, and the real measured latency (detected_lag_ms, from X's own post timestamp to enqueue; delivery_lag_ms, the separate queue-to-webhook-POST time; total_lag_ms). Free per call.",
+    args: [
+      { name: "limit", type: "int", min: 1, max: 200,
+        describe:
+          "Max delivery events to return, 1 to 200. Defaults to 50 when omitted." },
+    ],
+  },
+  {
+    name: "twitter_x_user_stream_add_user",
+    endpoint: "/oapi/x_user_stream/add_user_to_monitor_tweet",
+    method: "POST",
+    write: true, jsonBody: true,
+    // Fixed 2026-08-16, same root cause: addUserToMonitorTweetRoute
+    // (getxapi-stream-compat.ts) reads only c.req.json(), no query fallback.
+    description:
+      "Compat drop-in for twitter_monitor_create using an x_user_stream-shaped request/response envelope: watch an X account for new posts, translated onto the same underlying monitor system. Free per call. Prefer twitter_monitor_create for new integrations; this exists for migrating an existing x_user_stream-shaped integration without a rewrite.",
+    args: [
+      { name: "x_user_name",
+        describe:
+          "The X username to watch, without the @." },
+    ],
+  },
+  {
+    name: "twitter_x_user_stream_remove_user",
+    endpoint: "/oapi/x_user_stream/remove_user_to_monitor_tweet",
+    method: "POST",
+    write: true, destructive: true, jsonBody: true,
+    // Fixed 2026-08-16, same root cause: removeUserToMonitorTweetRoute
+    // (getxapi-stream-compat.ts) reads only c.req.json(), no query fallback.
+    description:
+      "Compat drop-in for twitter_monitor_delete using an x_user_stream-shaped envelope: stop watching an account. Irreversible. Free per call.",
+    args: [
+      { name: "id_for_user",
+        describe:
+          "The monitor id, from twitter_x_user_stream_list_users. Same value as a twitter_monitor_* tool's monitor id." },
+    ],
+  },
+  {
+    name: "twitter_x_user_stream_list_users",
+    endpoint: "/oapi/x_user_stream/get_user_to_monitor_tweet",
+    description:
+      "Compat drop-in for twitter_monitor_list using an x_user_stream-shaped envelope: list every account you are currently tweet-monitoring. Honest field mapping, not fabricated: x_user_id is always null (this API stores no numeric Twitter user id) and is_monitor_profile is always 0 (profile-change monitoring is not a capability this API has). Free per call.",
+    args: [],
+  },
+  {
+    name: "twitter_monitor_webhook_create",
+    endpoint: "/webhook",
+    method: "POST",
+    write: true, jsonBody: true,
+    // Fixed 2026-08-16, same root cause: createWebhookRoute (webhook.ts)
+    // reads only c.req.json(), no query fallback.
+    description:
+      "Register an HTTPS endpoint to receive signed monitor events. The HMAC signing secret is returned ONLY in this response, store it immediately: it cannot be retrieved again, and it is what you use to verify the X-TwitterAPIs-Signature header on every delivery. Free per call.",
+    args: [
+      { name: "url", minLength: 1,
+        describe:
+          "Your https delivery endpoint, e.g. 'https://example.com/webhooks/twitterapis'. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration." },
+    ],
+  },
+  {
+    name: "twitter_monitor_webhook_list",
+    endpoint: "/webhook",
+    method: "GET",
+    description:
+      "List every webhook registered on your account: id, url, status ('active' delivers, 'disabled' means the endpoint returned a 410 Gone and needs re-registering to reactivate), and created_at. The signing secret is never returned here, only at creation. Takes no arguments.",
+    args: [],
+  },
+  {
+    name: "twitter_monitor_webhook_delete",
+    endpoint: "/webhook/{id}",
+    method: "DELETE",
+    write: true, destructive: true,
+    description:
+      "Soft-delete a webhook by id: it stops receiving deliveries immediately and disappears from twitter_monitor_webhook_list, but delivery history referencing it is retained rather than cascade-deleted. Irreversible from the caller's side (register a new webhook with twitter_monitor_webhook_create to resume delivery). Free per call.",
+    args: [
+      { name: "id",
+        describe:
+          "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list." },
+    ],
+  },
+  {
+    name: "twitter_monitor_webhook_test",
+    endpoint: "/webhook/{id}/test",
+    write: true,
+    description:
+      "Send one HMAC-signed test event to this webhook's URL right now and return the outcome synchronously: delivered (true if your endpoint returned a 2xx within the delivery timeout), status_code, and error. Unlike a real monitor event, a test send is never queued, retried, or dead-lettered, it is a one-shot diagnostic to confirm your endpoint and signature verification both work before relying on the webhook. Free per call.",
+    args: [
+      { name: "id",
+        describe:
+          "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list." },
+    ],
+  },
+  {
+    name: "twitter_monitor_webhook_redrive",
+    endpoint: "/webhook/{id}/redrive",
+    write: true,
+    // The handler reads max_age_hours and limit from the BODY only, so without
+    // this every call would go out as a query string and 400. Caught by
+    // body-mode-parity, which reads the backend's own generated manifest.
+    jsonBody: true,
+    description:
+      "Replay deliveries that dead-lettered while your endpoint was down. A delivery is dead-lettered after it fails all 8 attempts across 21 minutes, so an outage longer than that window loses those events; this re-queues them with a full retry budget, oldest first. Bounded by default so a recovered endpoint is not flooded: max_age_hours defaults to 24 and limit to 100. Returns requeued and skipped_permanent. A delivery that died for a permanent reason, a 410 Gone, a deleted webhook, or a URL egress refused, is not replayed, because it would fail the same way and spend the budget again. Replayed events carry the same signature and payload as the original, so make your handler idempotent on the event id if a duplicate would matter. Returns 409 if the webhook is disabled, which happens after your endpoint answers 410 Gone: re-register it first. Free per call.",
+    args: [
+      { name: "id",
+        describe:
+          "The webhook's id, from twitter_monitor_webhook_create or twitter_monitor_webhook_list." },
+      { name: "max_age_hours", required: false,
+        describe:
+          "Optional. How far back to look for dead-lettered deliveries, 1 to 168 hours. Defaults to 24." },
+      { name: "limit", required: false,
+        describe:
+          "Optional. Most deliveries to replay in one call, 1 to 1000, oldest first. Defaults to 100." },
     ],
   },
 ];

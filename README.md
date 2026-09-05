@@ -91,9 +91,9 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-51 tools: 37 reads and 14 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Two of the reads are free account/billing lookups (`twitter_account_me`, `twitter_account_payments`).
+98 tools: 62 reads and 36 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Three of the reads are free account lookups (`twitter_account_me`, `twitter_account_payments`, `twitter_feedback_get`); the 14 monitoring tools and `twitter_feedback_send` are also free (account administration, not metered reads).
 
-Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **all write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark) are annotated `destructiveHint: true` so MCP clients can prompt before running them.
+Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **most write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark, monitor/webhook delete) are annotated `destructiveHint: true` so MCP clients can prompt before running them. The **monitoring** and **feedback** tools (see below) are the exception: they administer your twitterapis.com account, not an X session, so they need only your API key, no linked session and no inline credentials.
 
 ### Reads
 
@@ -103,7 +103,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_user_search` | Find user accounts by name or keyword |
 | `twitter_user_info` | Full profile by handle (bio, counts, verification, location) |
 | `twitter_user_info_by_id` | Full profile by numeric user id |
-| `twitter_users_by_ids` | Up to 100 numeric user ids resolved to full profiles in one call |
+| `twitter_user_status` | Is an account alive, suspended, or deleted |
 | `twitter_user_about` | A user's structured About object (category, professional/business labels, verification + identity-verification flags, joined date, and X's 'About this account' transparency panel) |
 | `twitter_user_affiliates` | Accounts affiliated with an organization profile |
 | `twitter_check_follow_relationship` | Follow relationship between two user ids (who follows whom) |
@@ -123,19 +123,37 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_tweet_replies` | Replies to a tweet |
 | `twitter_tweet_thread` | Full author thread (connected tweet chain by same author) |
 | `twitter_tweet_retweeters` | Accounts that retweeted a tweet |
+| `twitter_tweet_quotes` | Tweets that quote a tweet, with their text. Search-backed, so `count` is what search returned, not the tweet's true `quote_count` |
 | `twitter_list_members` | Members of a Twitter/X List |
+| `twitter_list_followers` | Accounts that follow a public List (a different set from its members) |
+| `twitter_list_tweets` | Posts by a List's members, search-backed: filterable by `since` / `until` date, `include_replies`, and `product` (Latest / Top), no retweets |
+| `twitter_list_timeline` | A List's native X feed: retweets and X's own ordering included, no filters, paging only |
 | `twitter_home_timeline` | Your authenticated account's Home timeline _(session)_ |
 | `twitter_bookmarks` | Your authenticated account's bookmarks _(session)_ |
 | `twitter_blocking` | Accounts your authenticated account has blocked (your own list only) _(session)_ |
 | `twitter_muting` | Accounts your authenticated account has muted (your own list only) _(session)_ |
 | `twitter_bookmark_search` | Full-text search within your bookmarks _(session)_ |
+| `twitter_bookmark_folders` | Your authenticated account's bookmark folders _(session)_ |
+| `twitter_bookmark_folder_timeline` | Tweets inside one of your bookmark folders, by `folder_id` _(session)_ |
 | `twitter_dm_list` | Your DM conversations (inbox), read-only _(session)_ |
 | `twitter_dm_conversation` | Messages in one DM conversation, read-only _(session)_ |
+| `twitter_spaces_info` | Metadata and participant roster for one X Space, live or ended (by Space `id`) |
+| `twitter_community_search` | Find X Communities by keyword; the discovery step that produces the numeric id the rest of the community family needs |
+| `twitter_community_info` | One X Community by numeric id: name, counts, join policy, rules, topic, banners, admin |
+| `twitter_community_about` | A community's moderators and a member preview, each returned as a full user profile, not the reduced row `_members`/`_moderators` return |
+| `twitter_community_members` | A community's member roster, each row carrying that member's `Admin` / `Moderator` / `Member` role |
+| `twitter_community_moderators` | A community's moderators and admins, from its own upstream operation (not a filter over the roster) |
+| `twitter_community_tweets` | A community's post timeline, with the pinned post returned as its own `pinned` field |
+| `twitter_community_memberships` | The inverse lookup: every community a given numeric `user_id` belongs to |
+| `twitter_grok_chat` | Ask X's own Grok, grounded in live X data, and get the answer plus the sources it cited |
+| `twitter_grok_config` | Whether the authenticated account can use Grok, and which models it may pick |
 | `twitter_trends` | Current top trends for a location (by `country` or `woeid`) |
 | `twitter_trends_locations` | Every location X has trends for, each with its WOEID |
 | `twitter_account_me` | Your twitterapis.com account: credits, usage, email (free) |
 | `twitter_account_payments` | Your twitterapis.com payment history (free) |
 | `twitter_media_status` | Processing state of an uploaded `media_id`; poll until `succeeded` before attaching video or GIF _(session)_ |
+| `twitter_article_get` | Read a **published** article's full content via its announcement tweet id/url (public, no session) |
+| `twitter_article_list` | List your own articles, filtered by `lifecycle` (`draft` or `published`) _(session)_ |
 
 ### Write actions _(require a linked X session)_
 
@@ -148,7 +166,54 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_bookmark_tweet` / `twitter_unbookmark_tweet` | Bookmark / remove bookmark |
 | `twitter_follow_user` / `twitter_unfollow_user` | Follow / unfollow a user by id |
 | `twitter_dm_send` | Send a Direct Message to a user by their numeric `recipient_id` |
+| `twitter_list_create` | Create a Twitter/X List owned by your session (`name`, optional `description` / `is_private`) |
+| `twitter_list_add_member` / `twitter_list_remove_member` | Add / remove one account on a List you own; `member_count` comes back as proof the write landed |
 | `twitter_media_upload` | Upload a base64 image, returns a `media_id` for `twitter_create_tweet` |
+
+### Articles _(X's long-form "Notes" feature; writes require a linked X session)_
+
+| Tool | What it does |
+|---|---|
+| `twitter_article_create` | Start a new draft article, returns its `id` |
+| `twitter_article_update_title` | Set a draft or published article's title |
+| `twitter_article_update_cover_media` | Attach an already-uploaded image as an article's cover (`media_id` from `twitter_media_upload`) |
+| `twitter_article_update_content` | Replace a draft or published article's body (Draft.js `content_state` you build) |
+| `twitter_article_publish` | Publish a draft, posting a **real public announcement tweet** (not fully reversible) |
+| `twitter_article_unpublish` | Revert a published article to draft (leaves the announcement tweet up) |
+| `twitter_article_delete` | Delete an article (draft: hard delete; published: unpublish + delete the announcement tweet), irreversible |
+
+See also `twitter_article_get` and `twitter_article_list` above.
+
+### Monitoring _(webhook delivery of new posts; free, not metered)_
+
+Watch an X account for new posts and get them pushed to your own HTTPS endpoint, HMAC-signed, instead of polling. Register a webhook first, then create a monitor; every new post from a watched handle is delivered to every active webhook on your account (or a restricted subset via `webhook_ids`). Monitor/webhook CRUD is account administration, not a metered Twitter read, so every tool below is free.
+
+| Tool | What it does |
+|---|---|
+| `twitter_monitor_create` | Start watching an X account (`handle`) for new posts |
+| `twitter_monitor_list` | List every monitor on your account |
+| `twitter_monitor_update` | Pause/resume a monitor or change its `webhook_ids` restriction |
+| `twitter_monitor_delete` | Stop and remove a monitor (irreversible) |
+| `twitter_monitor_health` | One monitor's status, degradation flag, poll interval, cursor position |
+| `twitter_monitor_account_health` | Account-wide rollup: service status, active/paused monitor counts, 24h delivery outcome counts, one call |
+| `twitter_monitor_deliveries` | Recent delivery events across every monitor, with detection + delivery latency |
+| `twitter_x_user_stream_add_user` | Compat drop-in for `twitter_monitor_create` using an x_user_stream-shaped envelope |
+| `twitter_x_user_stream_remove_user` | Compat drop-in for `twitter_monitor_delete` using an x_user_stream-shaped envelope |
+| `twitter_x_user_stream_list_users` | Compat drop-in for `twitter_monitor_list` using an x_user_stream-shaped envelope |
+| `twitter_monitor_webhook_create` | Register an HTTPS delivery URL; returns the HMAC signing secret **once** |
+| `twitter_monitor_webhook_list` | List every webhook registered on your account |
+| `twitter_monitor_webhook_delete` | Soft-delete a webhook by id (irreversible from the caller's side) |
+| `twitter_monitor_webhook_test` | Send one signed test event to a webhook right now, synchronously |
+| `twitter_monitor_webhook_redrive` | Replay deliveries that dead-lettered while your endpoint was down, oldest first |
+
+### Feedback _(report a bug or a gap to the twitterapis.com team without leaving your session; free)_
+
+Modelled on Claude Code's own feedback tool. When a call fails in a way that is not your key, credits, session or a rate limit, when you ask for something no tool covers, or when a result is plainly wrong, the model can **draft** a report into a local queue (`~/.twitterapis/feedback-queue.json`, at most 10 drafts, override the directory with `TWITTERAPIS_FEEDBACK_DIR`). Nothing is sent until you ask to review the queue and name the drafts to send. Each report carries the last failing call's endpoint, status and request id, your client name and this package's version, so the team can act on it without a follow-up. Use `twitter_feedback_get` with the returned server id to see whether it was triaged, shipped or declined.
+
+| Tool | What it does |
+|---|---|
+| `twitter_feedback_send` | `action: "draft"` (default) queues a report locally and sends nothing; `"list"` shows the queue; `"send"` posts only the drafts you name to `POST /feedback`; `"discard"` drops them |
+| `twitter_feedback_get` | Read a sent report's status (`new`, `triaged`, `shipped`, `declined`) and the team's response |
 
 ### Session setup
 
@@ -157,6 +222,8 @@ Link an X account to your key once, so the account-only reads and write actions 
 | Tool | What it does |
 |---|---|
 | `twitter_customer_session` | Register your x.com session cookies (`auth_token` + `ct0`) against your key |
+| `twitter_customer_session_status` | Read back the registered session without changing it: resolved account, live/dead status, timestamps, and which egress tier a write would use. Never returns the cookies. Free |
+| `twitter_customer_session_delete` | Revoke that stored session, deleting your `auth_token` + `ct0` from the service. Idempotent and free |
 | `twitter_user_login` | Log in with `username` + `password` (+ `totp_secret` for 2FA); stores the session against your key. Returns a confirmation, never the cookies |
 
 ## Usage examples
@@ -226,7 +293,7 @@ count: 50
 
 ## Pricing
 
-Calls are billed to your twitterapis.com account. Almost every endpoint is $0.0008/call: all reads (search, profiles, tweets, followers, likes) plus the simple write actions (like, retweet, bookmark, follow and their undos, delete). At the read rate that works out to $0.04 per 1,000 tweets, since each call returns about 20 tweets. The premium endpoints cost a little more: tweet creation, sending a DM (`twitter_dm_send`), and DM reads (`twitter_dm_list`, `twitter_dm_conversation`) at $0.0016/call, full tweet history (`twitter_user_tweets_complete`) at $0.0024/call, and a full tweet thread (`twitter_tweet_thread`) at $0.004/call. Your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing).
+Calls are billed to your twitterapis.com account. Almost every endpoint is $0.0008/call: all reads (search, profiles, tweets, followers, likes) plus the simple write actions (like, retweet, bookmark, follow and their undos, delete). At the read rate that works out to $0.04 per 1,000 tweets, since each call returns about 20 tweets. The premium endpoints cost a little more: tweet creation, sending a DM (`twitter_dm_send`), and DM reads (`twitter_dm_list`, `twitter_dm_conversation`) at $0.0016/call, full tweet history (`twitter_user_tweets_complete`) at $0.0024/call, a full tweet thread (`twitter_tweet_thread`) and a Grok answer (`twitter_grok_chat`) at $0.004/call, and the article-editing writes (`twitter_article_create`, `twitter_article_update_title`, `twitter_article_update_cover_media`, `twitter_article_update_content`, `twitter_article_publish`, `twitter_article_unpublish`) at $0.0016/call (`twitter_article_get`, `twitter_article_list`, and `twitter_article_delete` stay at the standard $0.0008/call). Your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing).
 
 ## Links
 
@@ -239,7 +306,7 @@ Calls are billed to your twitterapis.com account. Almost every endpoint is $0.00
 
 **Do I need an X (Twitter) developer account?** No. Get an API key at [twitterapis.com/signup](https://www.twitterapis.com/signup); there is no application or approval step.
 
-**Is it read-only?** No. 37 read tools work with just your API key; 14 write actions (post, like, retweet, follow, DM, media upload) act as a linked X account or per-call inline credentials.
+**Is it read-only?** No. 62 read tools work with just your API key; 36 write actions (post, like, retweet, follow, DM, media upload, List create/add member/remove member, article create/edit/publish/delete, monitor/webhook create/update/delete, feedback send) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD and feedback, which are account administration and need only your API key.
 
 **Which clients are supported?** Claude Desktop, Cursor, Windsurf, and VS Code (Copilot agent mode), or any Model Context Protocol client.
 
@@ -263,18 +330,6 @@ npm test                  # gates, incl. "src/tools.js matches the generator"
 ```
 
 `npm test` fails if `src/tools.js` was hand-edited or left stale, if the catalog and the live spec disagree, or if the tool list and this README disagree.
-
-### Directory listings
-
-Where this server actually appears, and what each directory needs. A descriptor file sitting in the repo is not a listing, so this table records the listing, not the file. Checked 2026-08-02.
-
-| Directory | State | What it takes |
-| --- | --- | --- |
-| Official MCP Registry | listed as `io.github.TwitterAPIs/twitterapis-mcp` | `server.json` plus `mcpName` in the **published** `package.json`. Publish with `mcp-publisher`, authenticating with a GitHub token whose account is an org **admin**. Every release needs a fresh `publish`, since the registry pins a version. |
-| Glama | listed, crawled automatically | Nothing to submit. Glama indexed the GitHub repo on its own. `glama.json` names the maintainer for the claim, but the claim itself is completed from a signed-in Glama account. |
-| Smithery | not listed | `smithery.yaml` no longer does anything: the repo-linked build path was retired and the filename appears nowhere in Smithery's current docs. Listing now means publishing either a public Streamable HTTP endpoint or a prebuilt MCPB bundle, both from a Smithery account with an API key. |
-
-Two traps worth keeping in mind. The registry enforces `description` at 100 characters and `title` at 100; `test/registry-manifests.mjs` pins both, because the descriptors passed an earlier version of that gate while the registry rejected them with HTTP 422. And `mcpName` is verified against the tarball on npm, not against the working tree, so a wrong value is only visible after the release has shipped and costs another version to correct.
 
 ## License
 

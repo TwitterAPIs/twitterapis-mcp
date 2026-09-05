@@ -32,12 +32,27 @@
 //   - the spec has an endpoint no override covers
 //   - an override arg is not a real param of that endpoint (and is not a header)
 //   - a spec param is neither exposed as an arg nor listed in omit with a reason
-//   - two tools share a name or a path, or a group reference does not resolve
+//   - two tools share a name or a (method, path) pair, or a group reference does not resolve
+//   - an override targets a path the spec serves under more than one HTTP method
+//     without saying which one (method: "..."), since the endpoint is then ambiguous
+//
+// METHODS + PATH PARAMS. A spec path can carry more than one HTTP method (e.g.
+// POST /monitor/{id} to update, DELETE /monitor/{id} to remove) and a method can
+// be "delete", not only get/post. So endpoints are keyed by (path, method), never
+// by path alone, and an override that targets an ambiguous path must say
+// method: "DELETE" (etc) to disambiguate; a path served under exactly one method
+// still resolves without the override naming it, so every pre-existing override
+// keeps working unchanged. A path segment written `{name}` (OpenAPI path-param
+// syntax) is picked up even when the spec declares no formal `in: "path"`
+// parameter for it (this API's spec does not), synthesized as a required string
+// param, and threaded through as a resolved tool's `pathParams` so the runtime
+// substitutes it into the URL instead of sending it as a query/body field.
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ARG_GROUPS, TOOL_OVERRIDES } from "./tools.overrides.mjs";
+import { buildEndpoints, pathParamNames, endpointKey } from "./gen-tools-endpoints.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..");
@@ -60,31 +75,26 @@ if (!existsSync(SNAPSHOT)) {
 }
 const spec = JSON.parse(readFileSync(SNAPSHOT, "utf8"));
 
-/** endpoint path -> { method, params: Map<name,{required,type,body}> } */
-const ENDPOINTS = new Map();
-for (const [p, ops] of Object.entries(spec.paths || {})) {
-  for (const [m, op] of Object.entries(ops)) {
-    if (m !== "get" && m !== "post") continue;
-    const params = new Map();
-    for (const x of op.parameters || []) {
-      params.set(x.name, { required: Boolean(x.required), type: x.schema?.type || "string" });
-    }
-    const body = op.requestBody?.content?.["application/json"]?.schema;
-    if (body) {
-      const req = new Set(body.required || []);
-      for (const [k, v] of Object.entries(body.properties || {})) {
-        params.set(k, { required: req.has(k), type: v.type || "string", body: true });
-      }
-    }
-    if (ENDPOINTS.has(p)) bad(`spec declares ${p} under more than one of GET/POST; the catalog assumes one verb per path`);
-    ENDPOINTS.set(p, { method: m.toUpperCase(), params });
-  }
-}
+// (path, method) -> { path, method, params: Map<name,{required,type,body,path}> },
+// and path -> Set<METHOD> for the ambiguity check below. Built by
+// gen-tools-endpoints.mjs, kept as its own module so this exact logic (a DELETE
+// method, and two methods on one path) is unit-testable against a synthetic
+// route table, see test/gen-tools-endpoints.mjs.
+const { endpoints: ENDPOINTS, methodsByPath: METHODS_BY_PATH } = buildEndpoints(spec.paths);
 
 // ── 2. Resolve overrides against the spec ────────────────────────────────────
 // The MCP tool path carries the /twitter prefix the spec omits, except for the
-// billing reads which live at an un-prefixed /account/*.
-const toolPathFor = (endpoint) => (endpoint.startsWith("/account/") ? endpoint : `/twitter${endpoint}`);
+// billing reads which live at an un-prefixed /account/*, and the GetXAPI
+// x_user_stream compat shim which lives at an un-prefixed /oapi/x_user_stream/*
+// (task #87 -- same class of gap as account/*, first exposed because the spec's
+// path-level `servers` override was never consulted here).
+// /feedback and /feedback/{id} (2026-09-04) are un-prefixed for the same
+// reason as /account/*: they administer the customer's twitterapis.com
+// relationship, and the backend proxies them to billing transport-only.
+const toolPathFor = (endpoint) =>
+  endpoint.startsWith("/account/") || endpoint.startsWith("/oapi/x_user_stream/") || endpoint === "/feedback" || endpoint.startsWith("/feedback/")
+    ? endpoint
+    : `/twitter${endpoint}`;
 
 function expandArgs(tool) {
   const out = [];
@@ -105,27 +115,50 @@ function expandArgs(tool) {
 }
 
 const seenNames = new Set();
-const seenPaths = new Set();
-const seenEndpoints = new Set();
+const seenToolRoutes = new Set(); // MCP-facing (method, path) pairs
+const seenEndpoints = new Set(); // spec-facing (path, method) keys, i.e. ENDPOINTS keys
 const resolved = [];
 
 for (const t of TOOL_OVERRIDES) {
   if (seenNames.has(t.name)) bad(`duplicate tool name ${t.name}`);
   seenNames.add(t.name);
 
-  const ep = ENDPOINTS.get(t.endpoint);
-  if (!ep) {
+  const methodsForPath = METHODS_BY_PATH.get(t.endpoint);
+  if (!methodsForPath || methodsForPath.size === 0) {
     bad(
       `tool ${t.name} targets endpoint ${t.endpoint}, which the vendored spec does not have. ` +
         `Either the route was retired upstream (drop the tool) or the snapshot is stale (npm run openapi:refresh).`,
     );
     continue;
   }
-  seenEndpoints.add(t.endpoint);
+
+  // A path served under one HTTP method resolves without the override naming it
+  // (every pre-existing override keeps working). A path served under more than
+  // one method (e.g. POST + DELETE /monitor/{id}) is ambiguous and the override
+  // must say which one it targets via method: "DELETE" (etc).
+  let epMethod = t.method;
+  if (!epMethod) {
+    if (methodsForPath.size === 1) {
+      epMethod = [...methodsForPath][0];
+    } else {
+      bad(
+        `tool ${t.name} targets endpoint ${t.endpoint}, which the spec serves under more than one ` +
+          `method (${[...methodsForPath].join(", ")}); the override must set method: "..." to say which one.`,
+      );
+      continue;
+    }
+  } else if (!methodsForPath.has(epMethod)) {
+    bad(`tool ${t.name} sets method: "${epMethod}" but ${t.endpoint} is not served under that method in the spec (spec has: ${[...methodsForPath].join(", ")})`);
+    continue;
+  }
+
+  const ep = ENDPOINTS.get(endpointKey(t.endpoint, epMethod));
+  seenEndpoints.add(endpointKey(t.endpoint, epMethod));
 
   const path = toolPathFor(t.endpoint);
-  if (seenPaths.has(path)) bad(`duplicate tool path ${path}`);
-  seenPaths.add(path);
+  const routeKey = `${epMethod} ${path}`;
+  if (seenToolRoutes.has(routeKey)) bad(`duplicate tool route ${routeKey}`);
+  seenToolRoutes.add(routeKey);
 
   const args = expandArgs(t);
   const exposed = new Set();
@@ -137,9 +170,48 @@ for (const t of TOOL_OVERRIDES) {
       continue;
     }
     exposed.add(a.name);
+
+    // An arg entry with a key this generator never reads is not caught anywhere
+    // else: JS object literals silently accept unknown properties, so a typo'd
+    // or wrong flag (e.g. `optional: true` where the render logic only ever
+    // reads `a.required`) produces no error and no visible effect -- until the
+    // ONE value it happened to coincide with (the spec's own default) changes
+    // out from under it. Found 8 live instances of exactly that: every arg
+    // using `optional: true` rendered `.optional()` in src/tools.js only
+    // because the vendored spec's own required flag for that param already
+    // happened to be false, so the key was doing nothing and nothing detected
+    // it. Fail closed on any key outside this allowlist instead of accepting
+    // it silently.
+    const KNOWN_ARG_KEYS = new Set([
+      "name", "describe", "required", "header", "type", "enum", "min", "max", "minLength", "nullable", "local",
+    ]);
+    for (const k of Object.keys(a)) {
+      if (!KNOWN_ARG_KEYS.has(k)) {
+        bad(`tool ${t.name} arg "${a.name}" sets unrecognized key "${k}" (never read by this generator; did you mean "required: false"?)`);
+      }
+    }
+
     const p = ep.params.get(a.name);
 
-    if (!p && !a.header) {
+    // A local:true arg is consumed by a handler in this package (tool.local names
+    // it) and never reaches the API, e.g. twitter_feedback_send's `action` and
+    // `ids`. It is exempt from the spec-param check only on a tool that declares
+    // a local handler, so a stray flag cannot smuggle an undocumented arg onto an
+    // ordinary passthrough tool.
+    if (a.local && !t.local) {
+      bad(`tool ${t.name} arg "${a.name}" is local:true but the tool declares no local handler (set local: "<handler>" on the tool)`);
+      continue;
+    }
+    if (a.type === "strings" && !a.local) {
+      bad(`tool ${t.name} arg "${a.name}" is type:"strings" but not local:true; the API has no array-typed param, and buildQuery would send it as a comma-joined string`);
+      continue;
+    }
+    if (p && a.local) {
+      bad(`tool ${t.name} arg "${a.name}" is local:true but IS a real request param of ${t.endpoint}; drop the flag`);
+      continue;
+    }
+
+    if (!p && !a.header && !a.local) {
       bad(
         `tool ${t.name} arg "${a.name}" is not a request param of ${t.endpoint} ` +
           `(spec params: ${[...ep.params.keys()].join(", ") || "none"}). ` +
@@ -160,7 +232,16 @@ for (const t of TOOL_OVERRIDES) {
     if (!a.describe || a.describe.length < 10) {
       bad(`tool ${t.name} arg "${a.name}" has no usable description; a model reads this to decide how to call the tool`);
     }
-    finalArgs.push({ name: a.name, type, enum: a.enum, min: a.min, max: a.max, minLength: a.minLength, required, describe: a.describe });
+    if (type === "json" && !t.jsonBody) {
+      bad(
+        `tool ${t.name} arg "${a.name}" is type:"json" but the tool is not jsonBody:true; a non-jsonBody ` +
+          `tool sends args as query-string values, which cannot carry a real object.`,
+      );
+    }
+    if (a.nullable && required) {
+      bad(`tool ${t.name} arg "${a.name}" is nullable:true but required:true; nullable only makes sense on an optional arg`);
+    }
+    finalArgs.push({ name: a.name, type, enum: a.enum, min: a.min, max: a.max, minLength: a.minLength, required, nullable: a.nullable, describe: a.describe, local: Boolean(a.local) });
   }
 
   // Every spec param must be accounted for: exposed, or omitted with a reason.
@@ -185,14 +266,28 @@ for (const t of TOOL_OVERRIDES) {
   if (t.jsonBody && !t.write) bad(`tool ${t.name} sets jsonBody but is not a write`);
 
   const method = ep.method;
-  if (Boolean(t.write) !== (method === "POST")) {
+  // Reads are GET; writes are POST or DELETE (a DELETE mutates account state just
+  // as much as a POST write does, so it must carry write:true the same way).
+  if (Boolean(t.write) !== (method === "POST" || method === "DELETE")) {
     bad(
       `tool ${t.name}: the spec serves ${t.endpoint} as ${method} but the override marks it ` +
-        `${t.write ? "write:true" : "a read"}. Reads are GET, writes are POST.`,
+        `${t.write ? "write:true" : "a read"}. Reads are GET, writes are POST or DELETE.`,
     );
   }
+  if (t.jsonBody && method === "DELETE") {
+    bad(`tool ${t.name} sets jsonBody:true but is a DELETE; a DELETE route here takes no request body.`);
+  }
 
-  resolved.push({ ...t, path, method, args: finalArgs });
+  // Args that resolved against a path:true spec param travel in the URL, not the
+  // query string or JSON body; the runtime substitutes them via pathParams.
+  const pathParams = finalArgs.filter((a) => ep.params.get(a.name)?.path).map((a) => a.name);
+  for (const name of pathParamNames(t.endpoint)) {
+    if (!pathParams.includes(name)) {
+      bad(`tool ${t.name} targets ${t.endpoint}, whose path carries {${name}}, but no arg named "${name}" was exposed to fill it`);
+    }
+  }
+
+  resolved.push({ ...t, path, method, args: finalArgs, pathParams });
 }
 
 // Every spec endpoint needs a tool. This is the drift check that catches a route
@@ -225,10 +320,32 @@ function zodExpr(a) {
     e = "z.number()";
     if (a.min !== undefined) e += `.min(${a.min})`;
     if (a.max !== undefined) e += `.max(${a.max})`;
+  } else if (a.type === "strings") {
+    // A list of short strings (draft ids for twitter_feedback_send). Only ever
+    // used on a local:true arg; the API itself has no array-typed param.
+    e = "z.array(z.string())";
+  } else if (a.type === "json") {
+    // Arbitrary JSON object arg, for a param the handler reads as a real
+    // parsed object rather than a string (e.g. article/update_content's
+    // Draft.js content_state: { blocks, entityMap }). A plain z.string() here
+    // would make the MCP client send a JSON-encoded STRING, which a
+    // jsonBody:true tool then double-encodes into the request body, so the
+    // handler receives `typeof body.x === "string"` where it expects an
+    // object and rejects the call. Only valid on a jsonBody:true tool.
+    e = "z.record(z.string(), z.unknown())";
   } else {
     e = "z.string()";
     if (a.minLength !== undefined) e += `.min(${a.minLength})`;
   }
+  // Fixed 2026-08-16: a field whose own description promises "pass null to
+  // clear" (domain_filter) needs .nullable() -- without it, z.string().optional()
+  // accepts only string|undefined, so an MCP client following the documented
+  // contract and passing literal null gets a schema-validation rejection
+  // before the request is even sent. Only meaningful combined with .optional()
+  // (enforced above: nullable requires !required), since the two together are
+  // what let a client omit the field (leave unchanged) OR pass null (clear) as
+  // two distinct, both-valid states.
+  if (a.nullable) e += ".nullable()";
   if (!a.required) e += ".optional()";
   return `${e}.describe(\n        ${q(a.describe)},\n      )`;
 }
@@ -243,6 +360,10 @@ const body = resolved
     if (t.write) L.push("    write: true,");
     if (t.destructive) L.push("    destructive: true,");
     if (t.jsonBody) L.push("    jsonBody: true,");
+    if (t.pathParams && t.pathParams.length) L.push(`    pathParams: ${JSON.stringify(t.pathParams)},`);
+    if (t.local) L.push(`    local: ${q(t.local)},`);
+    const localArgs = t.args.filter((a) => a.local).map((a) => a.name);
+    if (localArgs.length) L.push(`    localArgs: ${JSON.stringify(localArgs)},`);
     L.push("    description:");
     L.push(`      ${q(t.description)},`);
     if (t.args.length === 0) {
@@ -261,6 +382,7 @@ const counts = {
   tools: resolved.length,
   reads: resolved.filter((t) => !t.write).length,
   writes: resolved.filter((t) => t.write).length,
+  jsonBody: resolved.filter((t) => t.jsonBody).length,
 };
 
 const rendered = `// GENERATED FILE. DO NOT EDIT BY HAND.
@@ -278,22 +400,31 @@ const rendered = `// GENERATED FILE. DO NOT EDIT BY HAND.
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
 // write actions, reads its params from the query string), except the per-call
-// inline credentials, which travel as x-* request headers, and the three
-// jsonBody tools, whose fields travel in a JSON request body. A tool with
-// \`method: "POST"\` is a write that acts on behalf of the authenticated account
-// behind your API key; reads are GET and default when \`method\` is omitted.
+// inline credentials, which travel as x-* request headers, the ${counts.jsonBody}
+// jsonBody tools, whose fields travel in a JSON request body, and any arg listed
+// in pathParams, which is substituted into the URL path (e.g. {id}) instead. A
+// tool with \`method: "POST"\` or \`method: "DELETE"\` is a write that acts on
+// behalf of the authenticated account behind your API key; reads are GET and
+// default when \`method\` is omitted.
 //
 // write:true       -> action mutates account/Twitter state (readOnlyHint:false)
 // destructive:true -> action removes/reverses state (delete, un-follow/like/RT/bookmark)
+// local:"<name>"   -> src/index.js dispatches the call to a handler in this
+//                     package instead of a plain passthrough (feedback's draft
+//                     queue); args flagged local:true in the overrides are
+//                     consumed there and never reach the API
+// pathParams        -> arg names substituted into the URL template, not sent as
+//                      query-string or body fields (e.g. ["id"] for /monitor/{id})
 import { z } from "zod";
 
 export const TOOLS = [
 ${body}
 ];
 
-// The query-string builder is hand-written logic, not catalog data, so it lives
-// in its own module and is re-exported here to keep this file's one import path.
-export { buildQuery } from "./query.js";
+// The query-string builder and the path-param substitution helper are
+// hand-written logic, not catalog data, so they live in their own module and
+// are re-exported here to keep this file's one import path.
+export { buildQuery, resolvePathParams, MissingPathParamError } from "./query.js";
 `;
 
 // ── 4. Write or check ────────────────────────────────────────────────────────
