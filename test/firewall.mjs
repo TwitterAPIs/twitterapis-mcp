@@ -1,5 +1,21 @@
 #!/usr/bin/env node
-// Publish firewall: assert that no cross-property identity can ship inside the npm package.
+// Publish firewall: assert that no cross-property identity can ship on ANY surface this repo
+// publishes. There are TWO, and scoping to one of them is how this gate went green over a live
+// leak once already.
+//
+//   1. `npm publish` uploads exactly what `npm pack` lists. Today: 9 files.
+//   2. `git push` uploads EVERY TRACKED FILE. Today: 37. This repo is PUBLIC, so every one of
+//      them is world-readable at raw.githubusercontent.com with no auth.
+//
+// The gate used to ask only question 1. It was green, honestly, every run — about a narrower
+// question than the one that mattered. The 28 tracked files outside the pack list were never
+// scanned, and one of them (this very file) was carrying the roster of foreign identities we
+// forbid publishing. The roster of names we refuse to publish WAS the thing published.
+//
+// So the population is now WHAT GIT PUBLISHES (`git ls-files`, union HEAD, resolved by the
+// registry) as well as what npm packs. Not a hardcoded file list, which cannot grow with the
+// repo, and not a filesystem walk, which would drag in gitignored files that `git push` never
+// transmits.
 //
 // This file deliberately carries NO list of banned terms. This repository is PUBLIC, so a
 // hardcoded roster of the identities we firewall would itself publish the association it exists
@@ -55,11 +71,22 @@ if (!existsSync(scanner)) {
   );
 }
 
-// 3. Hand it the true publish surface: package.json metadata plus exactly the files npm packs.
-//    `npm publish` uploads that set and nothing else, so that is the leak surface.
+// 3. Hand it BOTH publish surfaces in one run, so one report covers both and a coverage number
+//    is printed for each:
+//      --git-index           what `git push` transmits: this repo's index UNION HEAD, resolved
+//                            from `git ls-files`, so it grows with the repo on its own. Untracked
+//                            and gitignored paths are in no ref and reach no reader, so they are
+//                            correctly out of scope; a filesystem walk would flag them and block
+//                            every push, which is how a gate gets deleted.
+//      --npm-publish-surface what `npm publish` uploads: package.json metadata plus the packed
+//                            files. Kept, not replaced — the two sets are not nested. npm packs
+//                            from disk and can list a path the index does not carry, so dropping
+//                            this one would open a hole in the direction we just closed.
+//    The registry fails closed on either surface being unresolvable, so a git or npm failure is
+//    exit 2 (surface UNKNOWN), never a quieter scan.
 const run = spawnSync(
   process.env.PYTHON || "python3",
-  [scanner, "--tenant", tenant, "--npm-publish-surface", ROOT],
+  [scanner, "--tenant", tenant, "--git-index", ROOT, "--npm-publish-surface", ROOT],
   { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
 );
 
@@ -69,9 +96,13 @@ if (run.stderr) process.stderr.write(run.stderr);
 
 if (run.status !== 0) {
   fail(
-    `isolation registry exited ${run.status} — the publish surface is NOT certified`,
-    "remove the offending identity from the shipped files. Do not exempt it, and do not weaken the gate.",
+    `isolation registry exited ${run.status} — the publish surfaces are NOT certified`,
+    "remove the offending identity from the tracked/shipped files. Do not exempt it, and do not\n" +
+      "  weaken the gate. A finding on the git surface but not the npm one is still a real leak:\n" +
+      "  this repo is public, so every tracked file is readable by a stranger over HTTP.",
   );
 }
 
-console.log("\x1b[32m✓ firewall: npm publish surface certified clean by the isolation registry\x1b[0m");
+console.log(
+  "\x1b[32m✓ firewall: git publish surface AND npm publish surface certified clean by the isolation registry\x1b[0m",
+);
