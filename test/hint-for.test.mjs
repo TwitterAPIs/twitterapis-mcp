@@ -48,5 +48,56 @@ for (const status of [401, 402, 403, 409, 429, 500, 503]) {
 }
 check("an unmapped status yields no hint", hintFor(418, "/feedback") === "", hintFor(418, "/feedback"));
 
+// --- EXACT-STRING PINS ------------------------------------------------------
+// Everything above this line is a PROPERTY check: does the feedback hint avoid the
+// word "tweet", does it mention a feedback report, does the default still carry the
+// timeline sentence. Those catch the original defect and they are worth keeping.
+//
+// They do NOT catch a REWORD. A future edit could rewrite any of these three
+// sentences into something wrong, or copy the timeline sentence back onto the
+// feedback route in different words, and every property check above would still
+// pass. That is exactly how the original defect survived: it read plausibly.
+//
+// So the three strings a model actually receives are pinned BYTE FOR BYTE. A
+// deliberate reword is then a two-line change, this file and src/index.js, made on
+// purpose. A drive-by reword is a failing test. The point is not that these
+// sentences are sacred; it is that changing them cannot happen QUIETLY.
+const PINNED = {
+  "/feedback": " (not found. No feedback report with that id on this account, and an id from another account will not resolve here. Use the id returned by twitter_feedback_send action=send.)",
+  "/account/me": " (not found. That account resource does not exist for this key.)",
+  "/twitter/tweet/detail": " (not found. The user, tweet, or list may have been deleted or the id is wrong)",
+};
+for (const [path, expected] of Object.entries(PINNED)) {
+  const actual = hintFor(404, path);
+  check(
+    `404 on ${path} is byte-identical to its pinned string`,
+    actual === expected,
+    `\n      expected: ${JSON.stringify(expected)}\n      actual:   ${JSON.stringify(actual)}`,
+  );
+}
+
+// The pin above is only as good as its ability to fail. If `hintFor` returned the
+// empty string for everything, each comparison would fail loudly, which is right.
+// But a subtler regression is the ORIGINAL one: the feedback route silently falling
+// back to the default. Assert the two are DIFFERENT strings, so a future refactor
+// that deletes the NOT_FOUND_HINTS table cannot pass by making them identical.
+check(
+  "the feedback 404 and the default 404 are still DIFFERENT strings",
+  hintFor(404, "/feedback") !== hintFor(404, "/twitter/tweet/detail"),
+  "the feedback route has fallen back to the default hint again",
+);
+check(
+  "the account 404 and the default 404 are still DIFFERENT strings",
+  hintFor(404, "/account/me") !== hintFor(404, "/twitter/tweet/detail"),
+  "the account route has fallen back to the default hint again",
+);
+// And prove this file's comparison operator can actually fail, so a green run is
+// evidence rather than decoration.
+check(
+  "the pin comparison DOES reject a near-miss (self-test of the check itself)",
+  " (not found. That account resource does not exist for this key)" !== PINNED["/account/me"],
+  "the pin comparison accepted a string missing its final period",
+);
+
 console.log(`hint-for.test.mjs: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
