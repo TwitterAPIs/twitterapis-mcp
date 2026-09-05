@@ -902,6 +902,59 @@ console.log("\n── SEAM 12: the gate has no write path ───────�
   }
 }
 
+console.log("\n\u2500\u2500 SEAM 13: the git credential never reaches argv \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500");
+{
+  // Structural, and structural is the RIGHT instrument here: whether a secret is
+  // on the command line is a property of how the argv array is built, so the
+  // source IS the artifact. A behavioural test would have to read the process
+  // table of a live clone, which this estate forbids and which would be racy.
+  //
+  // WHAT THIS PINS. materializeGit used to do:
+  //     gitArgs.unshift("-c", `http.extraHeader=Authorization: Basic ${basic}`)
+  // which puts the credential on the process COMMAND LINE for the lifetime of the
+  // clone, readable by any local process listing. base64 is encoding, not
+  // encryption, so that is the token in the clear. It now goes through git's own
+  // out-of-band config channel, GIT_CONFIG_COUNT/KEY_n/VALUE_n, in the env object.
+  const gsrc = readFileSync(GATE, "utf8");
+  const gcode = gsrc.split("\n").filter((l) => !l.trim().startsWith("//") && !l.trim().startsWith("*")).join("\n");
+
+  const ARGV_HEADER = /gitArgs\s*\.\s*(?:unshift|push)\s*\([^)]*extraHeader/;
+  check(
+    "the credential is NOT pushed into the git argv array",
+    !ARGV_HEADER.test(gcode),
+    "found an extraHeader literal being pushed into gitArgs",
+  );
+  // Prove that scan CAN fire. A check that has never failed is unverified.
+  check(
+    "\u2026and that scan DOES flag the old argv form",
+    ARGV_HEADER.test('gitArgs.unshift("-c", `http.extraHeader=Authorization: Basic ${basic}`);'),
+    "the argv scan failed to flag the exact line this seam exists to prevent",
+  );
+  check(
+    "no `-c` flag carries an Authorization header anywhere in the gate",
+    !/"-c"\s*,\s*`?[^`"]*[Aa]uthorization/.test(gcode),
+    "an Authorization header is still being passed via a -c flag",
+  );
+
+  // The replacement must actually be present, or the first two checks pass simply
+  // because the auth path was deleted, which would be a silent capability loss.
+  for (const needed of ["GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_", "GIT_CONFIG_COUNT"]) {
+    check(`the env-config channel is used (${needed})`, gcode.includes(needed), `${needed} absent from the gate`);
+  }
+  check(
+    "the auth path still exists at all (basic auth header is still built)",
+    /x-access-token:/.test(gcode),
+    "the git auth path appears to have been removed rather than moved",
+  );
+  // A caller may already have set GIT_CONFIG_COUNT. Assigning 1 would silently
+  // DROP every entry they configured, so the gate must READ it before writing.
+  check(
+    "GIT_CONFIG_COUNT is read before it is written (entries are appended, not clobbered)",
+    /Number\.parseInt\(\s*env\.GIT_CONFIG_COUNT/.test(gcode),
+    "the gate assigns GIT_CONFIG_COUNT without reading the existing value",
+  );
+}
+
 // ═════════════════════════════════════════════════════════════════════════════
 console.log(`\n${"─".repeat(70)}`);
 if (fail > 0) {

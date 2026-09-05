@@ -587,8 +587,23 @@ function materializeGit(surface) {
     if (process.env[name]) { token = process.env[name]; break; }
   }
   if (token) {
+    // The credential goes through git's ENV config, never through argv. `-c
+    // http.extraHeader=...` sets the same key with the same effect, but it puts
+    // the header on the process COMMAND LINE, where any local process listing can
+    // read it for the lifetime of the clone. base64 is encoding, not encryption,
+    // so that is the credential in the clear. GIT_CONFIG_COUNT/KEY_n/VALUE_n is
+    // git's own supported way to pass config out of band (git >= 2.31; this repo
+    // requires node >= 18 and ships nothing older).
+    //
+    // Appending rather than assigning COUNT=1: if the caller already set
+    // GIT_CONFIG_COUNT for its own reasons, overwriting it would silently DROP
+    // every entry they configured.
     const basic = Buffer.from(`x-access-token:${token}`).toString("base64");
-    gitArgs.unshift("-c", `http.extraHeader=Authorization: Basic ${basic}`);
+    const parsed = Number.parseInt(env.GIT_CONFIG_COUNT || "0", 10);
+    const n = Number.isInteger(parsed) && parsed > 0 ? parsed : 0;
+    env[`GIT_CONFIG_KEY_${n}`] = "http.extraHeader";
+    env[`GIT_CONFIG_VALUE_${n}`] = `Authorization: Basic ${basic}`;
+    env.GIT_CONFIG_COUNT = String(n + 1);
   }
   try {
     execFileSync("git", [...gitArgs, surface.url, dest], { env, stdio: ["ignore", "pipe", "pipe"] });
