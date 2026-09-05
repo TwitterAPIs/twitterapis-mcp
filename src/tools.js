@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 98 tools (62 reads, 36 writes).
+// Catalog: 99 tools (63 reads, 36 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -825,6 +825,26 @@ export const TOOLS = [
     shape: {
       id: z.string().describe(
         "The server id of a sent report, as returned by twitter_feedback_send action \"send\" (a UUID). Not a local draft id.",
+      ),
+    },
+  },
+  {
+    name: "twitter_feedback_list",
+    path: "/feedback",
+    description:
+      "List the feedback reports this account has already SENT to twitterapis.com, newest first. Use it when the user asks what they have reported, or to find the server id of an earlier report so twitter_feedback_get can read its full status. NOT the same as twitter_feedback_send action \"list\", which shows local drafts that have not been sent yet. Each item carries id, type, title, area, status (new, triaged, shipped or declined), the team's response if any, created_at and updated_at, and never details or evidence, so paging this can never bulk-export a report's body: read one by id with twitter_feedback_get for that. Page with cursor while next_cursor is non-null. Free per call, and shares a 10-per-minute limit with the other feedback tools.",
+    shape: {
+      limit: z.number().int().min(1).max(100).optional().describe(
+        "Max reports to return, 1 to 100. Defaults to 25. Anything outside that range is rejected with 400 naming limit.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque continuation token from a previous response's next_cursor. Omit it to start from the newest report. A cursor that cannot be decoded is a 400 naming cursor, never a silently empty page.",
+      ),
+      status: z.enum(["new","triaged","shipped","declined"]).optional().describe(
+        "Optional. Return only reports in this state. Anything else is rejected with 400 naming status.",
+      ),
+      type: z.enum(["bug","idea","missing_capability"]).optional().describe(
+        "Optional. Return only reports of this kind. Anything else is rejected with 400 naming type.",
       ),
     },
   },

@@ -185,20 +185,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -339,20 +325,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -405,7 +377,7 @@
     },
     "/feedback": {
       "post": {
-        "operationId": "feedback",
+        "operationId": "feedback-post",
         "summary": "Send Feedback",
         "description": "Files a product feedback report against your account. It exists for AI agents (Claude Code, Cursor, any MCP client) working against this API: when a call fails, a capability is missing, or the user asks for it, the agent drafts a report locally, the user reviews it, and the client sends it here. The report reaches the team as a stored row plus a Slack post, and the returned id lets the agent read its status later. Free, never metered, rate limited to 10 per minute per key. Cost: Free per call.",
         "tags": [
@@ -469,11 +441,28 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "field",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "field": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "bad_request",
-                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                  "error": "invalid_request",
+                  "field": "title",
+                  "message": "title must be 120 characters or fewer (got 131)."
                 }
               }
             }
@@ -483,53 +472,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "unauthorized",
-                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "not_found",
-                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                  "error": "Invalid API key"
                 }
               }
             }
@@ -539,11 +493,44 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "Too many requests. Limit: 10 per minute."
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "HTTP 502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "The feedback service is temporarily unavailable. Retry shortly."
                 }
               }
             }
@@ -553,11 +540,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "server_error",
-                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                  "error": "Internal server error"
                 }
               }
             }
@@ -623,7 +617,270 @@
         {
           "url": "https://api.twitterapis.com"
         }
-      ]
+      ],
+      "get": {
+        "operationId": "feedback-get",
+        "summary": "List Feedback",
+        "description": "Returns the calling account's own feedback reports, newest first, keyset-paginated on (created_at desc, id desc). Each item carries the same summary fields as GET feedback/{id} (id, type, title, area, status, response, created_at, updated_at) and never details or evidence, so paging this endpoint can never turn into a bulk export of a report's full body: read one by id to get that. Free, never metered, and shares the 10-per-minute limiter with POST feedback and GET feedback/{id}. Cost: Free per call.",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/feedback?limit=10&status=triaged\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/feedback\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"limit\": 10, \"status\": \"triaged\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/feedback\");\nurl.search = new URLSearchParams({ limit: 10, status: \"triaged\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page through every feedback report your account has filed, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "feedback": {
+                      "type": "array",
+                      "description": "Array of reports, newest first: id, type, title, area, status, response, created_at, updated_at. Identical shape to a single GET feedback/{id} result; never details or evidence.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of reports in this page, never the account's total report count."
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "description": "The limit actually applied to this call: the requested value, or 25 if omitted."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Pass back as cursor to fetch the next page. Null exactly on the last page.",
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "feedback": [
+                    {
+                      "id": "9a2b6e31-9b7b-4a44-8d19-2b6ec1c9a411",
+                      "type": "bug",
+                      "title": "tweet/thread returns 500 on a quoted reply",
+                      "area": "tweet/thread",
+                      "status": "triaged",
+                      "response": "Reproduced. The quoted post was deleted mid-thread; a fix is in review.",
+                      "created_at": "2026-09-04T10:15:00.000Z",
+                      "updated_at": "2026-09-04T14:02:11.000Z"
+                    },
+                    {
+                      "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                      "type": "idea",
+                      "title": "add a webhook event for monitor degraded state",
+                      "area": "monitor webhooks",
+                      "status": "new",
+                      "response": null,
+                      "created_at": "2026-09-01T08:44:12.000Z",
+                      "updated_at": "2026-09-01T08:44:12.000Z"
+                    }
+                  ],
+                  "count": 2,
+                  "limit": 25,
+                  "next_cursor": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "field",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "field": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "invalid_request",
+                  "field": "limit",
+                  "message": "limit must be an integer from 1 to 100 (got \"0\")."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Invalid API key"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Too many requests. Limit: 10 per minute."
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "HTTP 502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "The feedback service is temporarily unavailable. Retry shortly."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "Internal server error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Max reports to return, 1 to 100. Defaults to 25. Anything else is rejected with 400 naming limit.",
+            "schema": {
+              "type": "integer",
+              "description": "Max reports to return, 1 to 100. Defaults to 25. Anything else is rejected with 400 naming limit.",
+              "example": "25"
+            },
+            "example": "25"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Opaque continuation token from a previous response's next_cursor. Omit it to start from the newest report. A cursor that cannot be decoded is 400 naming cursor, never a silently empty page.",
+            "schema": {
+              "type": "string",
+              "description": "Opaque continuation token from a previous response's next_cursor. Omit it to start from the newest report. A cursor that cannot be decoded is 400 naming cursor, never a silently empty page.",
+              "example": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wOS0wMVQwODo0NDoxMi4wMDBaIiwiaWQiOiI3YzllNjY3OSJ9"
+            },
+            "example": "eyJjcmVhdGVkX2F0IjoiMjAyNi0wOS0wMVQwODo0NDoxMi4wMDBaIiwiaWQiOiI3YzllNjY3OSJ9"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter to one of new, triaged, shipped or declined. Anything else is rejected with 400 naming status.",
+            "schema": {
+              "type": "string",
+              "description": "Filter to one of new, triaged, shipped or declined. Anything else is rejected with 400 naming status.",
+              "example": "new"
+            },
+            "example": "new"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filter to one of bug, idea or missing_capability. Anything else is rejected with 400 naming type.",
+            "schema": {
+              "type": "string",
+              "description": "Filter to one of bug, idea or missing_capability. Anything else is rejected with 400 naming type.",
+              "example": "bug"
+            },
+            "example": "bug"
+          }
+        ]
+      }
     },
     "/feedback/{id}": {
       "get": {
@@ -678,7 +935,8 @@
                     },
                     "area": {
                       "type": "string",
-                      "description": "The endpoint or feature named at filing, or null if none was given."
+                      "description": "The endpoint or feature named at filing, or null if none was given.",
+                      "nullable": true
                     },
                     "status": {
                       "type": "string",
@@ -686,7 +944,8 @@
                     },
                     "response": {
                       "type": "string",
-                      "description": "The team's reply text, or null until one is written."
+                      "description": "The team's reply text, or null until one is written.",
+                      "nullable": true
                     },
                     "created_at": {
                       "type": "string",
@@ -711,44 +970,23 @@
               }
             }
           },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "bad_request",
-                  "message": "Missing or malformed parameter. Fix the request before retrying."
-                }
-              }
-            }
-          },
           "401": {
             "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "unauthorized",
-                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "error": "Invalid API key"
                 }
               }
             }
@@ -758,11 +996,23 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
                   "error": "not_found",
-                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                  "message": "No feedback with that id on this account."
                 }
               }
             }
@@ -772,11 +1022,44 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "Too many requests. Limit: 10 per minute."
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "HTTP 502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "The feedback service is temporarily unavailable. Retry shortly."
                 }
               }
             }
@@ -786,16 +1069,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "server_error",
-                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                  "error": "Internal server error"
                 }
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The id segment of the path, as returned by the endpoint that created the resource.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "servers": [
         {
@@ -852,7 +1153,8 @@
                     },
                     "username": {
                       "type": "string",
-                      "description": "The X handle resolved from the session, or null when it could not be resolved."
+                      "description": "The X handle resolved from the session, or null when it could not be resolved.",
+                      "nullable": true
                     }
                   }
                 },
@@ -888,20 +1190,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -1086,20 +1374,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "403": {
             "description": "Forbidden",
             "content": {
@@ -1204,11 +1478,13 @@
                     },
                     "username": {
                       "type": "string",
-                      "description": "The X handle the stored session resolved to when it was registered. Read back from storage, not from anything you send, so it is the field that settles whether you are acting as the account you expect. Null when resolution never succeeded."
+                      "description": "The X handle the stored session resolved to when it was registered. Read back from storage, not from anything you send, so it is the field that settles whether you are acting as the account you expect. Null when resolution never succeeded.",
+                      "nullable": true
                     },
                     "twitter_user_id": {
                       "type": "string",
-                      "description": "The numeric X user id for the same account. Null when resolution never succeeded."
+                      "description": "The numeric X user id for the same account. Null when resolution never succeeded.",
+                      "nullable": true
                     },
                     "status": {
                       "type": "string",
@@ -1224,7 +1500,8 @@
                     },
                     "last_used_at": {
                       "type": "string",
-                      "description": "ISO timestamp of the last call that acted as this session. Null if it has never been used. A last_used_at that stopped moving is often the first sign of a stalled integration."
+                      "description": "ISO timestamp of the last call that acted as this session. Null if it has never been used. A last_used_at that stopped moving is often the first sign of a stalled integration.",
+                      "nullable": true
                     },
                     "egress": {
                       "type": "object",
@@ -1292,20 +1569,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -1421,11 +1684,23 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "bad_request",
-                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                  "error": "two_factor_required",
+                  "message": "This account has 2FA enabled. Include `totp_secret` in the request body."
                 }
               }
             }
@@ -1435,11 +1710,23 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "unauthorized",
-                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                  "error": "bad_credentials",
+                  "message": "Username or password was rejected by Twitter. A missing or revoked API key also answers 401, with error unauthorized."
                 }
               }
             }
@@ -1449,7 +1736,19 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
                   "error": "insufficient_credits",
@@ -1458,30 +1757,54 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden",
+          "409": {
+            "description": "HTTP 409",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "error": "account_locked",
+                  "message": "This account is locked; confirm it from the app, then retry."
                 }
               }
             }
           },
-          "404": {
-            "description": "Not found",
+          "422": {
+            "description": "HTTP 422",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "not_found",
-                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                  "error": "captcha_required",
+                  "message": "Login requires a captcha that could not be solved automatically."
                 }
               }
             }
@@ -1491,25 +1814,75 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
                   "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "message": "Too many requests. Either this API key hit its per-minute limit or Twitter throttled the login itself. Back off and retry with exponential backoff."
                 }
               }
             }
           },
-          "5XX": {
-            "description": "Server error",
+          "502": {
+            "description": "HTTP 502",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
                 },
                 "example": {
-                  "error": "server_error",
-                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                  "error": "login_failed",
+                  "message": "Login could not be completed."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "login_unavailable",
+                  "message": "Login egress is exhausted. Try again shortly."
                 }
               }
             }
@@ -2666,7 +3039,8 @@
                     },
                     "next_cursor": {
                       "type": "string",
-                      "description": "Opaque cursor for the next page. Pass it straight back as ?cursor=. Null when there is no further page."
+                      "description": "Opaque cursor for the next page. Pass it straight back as ?cursor=. Null when there is no further page.",
+                      "nullable": true
                     },
                     "has_more": {
                       "type": "boolean",
@@ -3454,14 +3828,14 @@
                       "description": "One of alive, suspended, not_found, or unavailable. `unavailable` means X reported a state we do not map to the other three; the reason field carries its wording."
                     },
                     "id": {
-                      "type": "object",
+                      "type": "string",
                       "description": "The numeric user ID when the account is alive; null otherwise.",
-                      "additionalProperties": true
+                      "nullable": true
                     },
                     "reason": {
-                      "type": "object",
+                      "type": "string",
                       "description": "X's own explanation when it gives one; null for a healthy account.",
-                      "additionalProperties": true
+                      "nullable": true
                     }
                   }
                 },
@@ -4895,7 +5269,8 @@
                           "$ref": "#/components/schemas/Relationship"
                         }
                       ],
-                      "description": "The directional relationship between source and target. Null when either user is not found."
+                      "description": "The directional relationship between source and target. Null when either user is not found.",
+                      "nullable": true
                     }
                   }
                 },
@@ -6701,9 +7076,9 @@
                       "description": "Number of tweets returned in the flat array."
                     },
                     "next_cursor": {
-                      "type": "object",
+                      "type": "string",
                       "description": "Non-null means MORE HISTORY REMAINS and this call was truncated (by max, or by the server-side time budget): call again with cursor set to this value. Null means the history is genuinely exhausted. A client that ignores this field will silently receive only part of the history.",
-                      "additionalProperties": true
+                      "nullable": true
                     },
                     "has_more": {
                       "type": "boolean",
@@ -6914,11 +7289,13 @@
                     },
                     "message_id": {
                       "type": "string",
-                      "description": "ID of the sent message, or null if it failed."
+                      "description": "ID of the sent message, or null if it failed.",
+                      "nullable": true
                     },
                     "conversation_id": {
                       "type": "string",
-                      "description": "ID of the conversation the message landed in, or null if the upstream response did not include it."
+                      "description": "ID of the conversation the message landed in, or null if the upstream response did not include it.",
+                      "nullable": true
                     },
                     "recipient_id": {
                       "type": "string",
@@ -9978,6 +10355,7 @@
                       "type": "object",
                       "description": "The Space, or null with a 404 when the id resolves to nothing.",
                       "additionalProperties": true,
+                      "nullable": true,
                       "properties": {
                         "id": {
                           "type": "string",
@@ -10059,11 +10437,13 @@
                               "$ref": "#/components/schemas/Tweet"
                             }
                           ],
-                          "description": "The wrapper tweet X mints so the Space can be shared, or null."
+                          "description": "The wrapper tweet X mints so the Space can be shared, or null.",
+                          "nullable": true
                         },
                         "community_id": {
                           "type": "string",
-                          "description": "Set when the Space is hosted inside a Community, otherwise null."
+                          "description": "Set when the Space is hosted inside a Community, otherwise null.",
+                          "nullable": true
                         },
                         "mentioned_user_ids": {
                           "type": "array",
@@ -10341,7 +10721,8 @@
                           "$ref": "#/components/schemas/Community"
                         }
                       ],
-                      "description": "The community, or null with a 404 when the id resolves to nothing. This is the shared Community object, and this endpoint returns the REDUCED form of it: admin, invites_policy, question, search_tags and members_facepile_ids come back empty here, moderator_count comes back 0, and creator comes back with id and name null. Community Memberships returns the same 24 keys populated. Each field's own row says which endpoint fills it."
+                      "description": "The community, or null with a 404 when the id resolves to nothing. This is the shared Community object, and this endpoint returns the REDUCED form of it: admin, invites_policy, question, search_tags and members_facepile_ids come back empty here, moderator_count comes back 0, and creator comes back with id and name null. Community Memberships returns the same 24 keys populated. Each field's own row says which endpoint fills it.",
+                      "nullable": true
                     }
                   }
                 },
@@ -10603,14 +10984,16 @@
                           },
                           "role": {
                             "type": "string",
-                            "description": "THAT MEMBER's role in this community: Admin, Moderator or Member. This one is NOT caller-relative, unlike the role field on the community object itself, and it is the reason this endpoint exists. Null when X did not label the row, which is not the same as Member: a roster we cannot role-label has unknown roles, and reading null as Member would deny moderators."
+                            "description": "THAT MEMBER's role in this community: Admin, Moderator or Member. This one is NOT caller-relative, unlike the role field on the community object itself, and it is the reason this endpoint exists. Null when X did not label the row, which is not the same as Member: a roster we cannot role-label has unknown roles, and reading null as Member would deny moderators.",
+                            "nullable": true
                           }
                         }
                       }
                     },
                     "next_cursor": {
                       "type": "string",
-                      "description": "Opaque cursor for the next page, or null when X sent none. Absence of this cursor is the only end-of-list signal X gives on this operation."
+                      "description": "Opaque cursor for the next page, or null when X sent none. Absence of this cursor is the only end-of-list signal X gives on this operation.",
+                      "nullable": true
                     },
                     "has_more": {
                       "type": "boolean",
@@ -10842,14 +11225,16 @@
                           },
                           "role": {
                             "type": "string",
-                            "description": "That account's role in this community, expected to be Moderator or Admin here. Like the role on a Community Members row, this one is NOT caller-relative and is returned in full: it describes that account, is identical for every caller, and is the content of the endpoint. It is returned rather than assumed constant, so a moderator roster that starts carrying a mixed role set surfaces instead of being silently flattened. Null when X did not label the row, which is not the same as Member."
+                            "description": "That account's role in this community, expected to be Moderator or Admin here. Like the role on a Community Members row, this one is NOT caller-relative and is returned in full: it describes that account, is identical for every caller, and is the content of the endpoint. It is returned rather than assumed constant, so a moderator roster that starts carrying a mixed role set surfaces instead of being silently flattened. Null when X did not label the row, which is not the same as Member.",
+                            "nullable": true
                           }
                         }
                       }
                     },
                     "next_cursor": {
                       "type": "string",
-                      "description": "Opaque cursor for the next page, or null when X sent none."
+                      "description": "Opaque cursor for the next page, or null when X sent none.",
+                      "nullable": true
                     },
                     "has_more": {
                       "type": "boolean",
@@ -11070,7 +11455,8 @@
                     "pinned": {
                       "type": "object",
                       "description": "The community's PINNED post as a full tweet object, or null when the community has none. It is its own field and is NOT included in tweets: X delivers it under a separate timeline instruction and does not repeat it in the feed, so a parser that reads only the feed drops it without a trace. In the captured community it was the rules post, which is usually the single most useful item in the response. A client that wants one flat list should read pinned first, then tweets.",
-                      "additionalProperties": true
+                      "additionalProperties": true,
+                      "nullable": true
                     },
                     "tweets": {
                       "type": "array",
@@ -11081,7 +11467,8 @@
                     },
                     "next_cursor": {
                       "type": "string",
-                      "description": "Opaque cursor for the next page, or null when there is none. Pass it back as ?cursor=."
+                      "description": "Opaque cursor for the next page, or null when there is none. Pass it back as ?cursor=.",
+                      "nullable": true
                     },
                     "has_more": {
                       "type": "boolean",
@@ -11319,7 +11706,8 @@
                     },
                     "next_cursor": {
                       "type": "string",
-                      "description": "Opaque cursor for the next page, or null when there is none."
+                      "description": "Opaque cursor for the next page, or null when there is none.",
+                      "nullable": true
                     },
                     "has_more": {
                       "type": "boolean",
@@ -11781,7 +12169,8 @@
                     },
                     "next_cursor": {
                       "type": "string",
-                      "description": "Opaque cursor for the next page, or null when there is none."
+                      "description": "Opaque cursor for the next page, or null when there is none.",
+                      "nullable": true
                     },
                     "has_more": {
                       "type": "boolean",
@@ -12337,9 +12726,9 @@
                       "description": "The account the write targeted."
                     },
                     "member_count": {
-                      "type": "object",
+                      "type": "integer",
                       "description": "The List's member count after the write, read back from X as proof. Null when X returned no list object, which is the not-applied signal.",
-                      "additionalProperties": true
+                      "nullable": true
                     },
                     "list": {
                       "type": "object",
@@ -12546,9 +12935,9 @@
                       "description": "The account the write targeted."
                     },
                     "member_count": {
-                      "type": "object",
+                      "type": "integer",
                       "description": "The List's member count after the write, read back from X as proof. Null when X returned no list object, which is the not-applied signal.",
-                      "additionalProperties": true
+                      "nullable": true
                     },
                     "list": {
                       "type": "object",
@@ -14417,11 +14806,13 @@
                     },
                     "tweet_id": {
                       "type": "string",
-                      "description": "Numeric ID of the created tweet, or null if the ID could not be resolved."
+                      "description": "Numeric ID of the created tweet, or null if the ID could not be resolved.",
+                      "nullable": true
                     },
                     "url": {
                       "type": "string",
-                      "description": "Canonical x.com URL of the created tweet, or null."
+                      "description": "Canonical x.com URL of the created tweet, or null.",
+                      "nullable": true
                     }
                   }
                 },
@@ -16060,7 +16451,8 @@
                     "article": {
                       "type": "object",
                       "description": "The published article, or null if no article was found at that tweet id/URL. Full shape when present: id, rest_id, title, preview_text, lifecycle (Published), content_state, cover_media, media_entities, author, created_at_secs, modified_at_secs, first_published_at_secs, visibility_setting (Public), tweet_id, public_url.",
-                      "additionalProperties": true
+                      "additionalProperties": true,
+                      "nullable": true
                     }
                   }
                 },
@@ -16288,7 +16680,8 @@
                     },
                     "next_cursor": {
                       "type": "string",
-                      "description": "Opaque cursor for the next page, or null when the list ends."
+                      "description": "Opaque cursor for the next page, or null when the list ends.",
+                      "nullable": true
                     },
                     "articles": {
                       "type": "array",
@@ -16708,7 +17101,8 @@
                     },
                     "conversation_id": {
                       "type": "string",
-                      "description": "The conversation this turn belongs to, whether you supplied it or we opened it. Pass it back on the next call to continue. Null only if X returned no id."
+                      "description": "The conversation this turn belongs to, whether you supplied it or we opened it. Pass it back on the next call to continue. Null only if X returned no id.",
+                      "nullable": true
                     },
                     "response_id": {
                       "type": "string",
@@ -17212,12 +17606,17 @@
                       "description": "\"active\" or \"paused\"."
                     },
                     "webhook_ids": {
-                      "type": "string",
-                      "description": "The restriction set passed at create, or null for the default (deliver to all)."
+                      "type": "array",
+                      "description": "The restriction set passed at create, or null for the default (deliver to all).",
+                      "items": {
+                        "type": "string"
+                      },
+                      "nullable": true
                     },
                     "domain_filter": {
                       "type": "string",
-                      "description": "The normalized domain filter passed at create, or null if none was set (deliver every new post)."
+                      "description": "The normalized domain filter passed at create, or null if none was set (deliver every new post).",
+                      "nullable": true
                     },
                     "include_replies": {
                       "type": "boolean",
@@ -17282,20 +17681,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -17370,9 +17755,12 @@
                     "example": "elonmusk"
                   },
                   "webhook_ids": {
-                    "type": "string",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
                     "description": "Array of webhook ids (from POST /twitter/webhook) to restrict delivery to. Omit to deliver to every active webhook on the account, the default.",
-                    "example": "[]"
+                    "example": []
                   },
                   "domain_filter": {
                     "type": "string",
@@ -17488,20 +17876,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -17611,12 +17985,17 @@
                       "description": "Running count of possibly-missed events, never reset by an update."
                     },
                     "webhook_ids": {
-                      "type": "string",
-                      "description": "The current restriction set, or null for the default (deliver to all)."
+                      "type": "array",
+                      "description": "The current restriction set, or null for the default (deliver to all).",
+                      "items": {
+                        "type": "string"
+                      },
+                      "nullable": true
                     },
                     "domain_filter": {
                       "type": "string",
-                      "description": "The current normalized domain filter after this update, or null if none is set (deliver every new post)."
+                      "description": "The current normalized domain filter after this update, or null if none is set (deliver every new post).",
+                      "nullable": true
                     },
                     "updated_at": {
                       "type": "string",
@@ -17662,20 +18041,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -17750,9 +18115,12 @@
                     "example": "paused"
                   },
                   "webhook_ids": {
-                    "type": "string",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
                     "description": "Array of webhook ids to restrict delivery to. Send an empty array to clear the restriction back to \"deliver to every active webhook\". Omit the field entirely to leave it unchanged.",
-                    "example": "[]"
+                    "example": []
                   },
                   "domain_filter": {
                     "type": "string",
@@ -17768,7 +18136,18 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The id segment of the path, as returned by the endpoint that created the resource.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       },
       "delete": {
         "operationId": "monitor-id-delete",
@@ -17853,20 +18232,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -17909,7 +18274,18 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The id segment of the path, as returned by the endpoint that created the resource.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/monitor/{id}/health": {
@@ -17973,11 +18349,13 @@
                     },
                     "last_tweet_id": {
                       "type": "string",
-                      "description": "The most recent tweet id this monitor has delivered, or null before its first poll."
+                      "description": "The most recent tweet id this monitor has delivered, or null before its first poll.",
+                      "nullable": true
                     },
                     "last_poll_at": {
                       "type": "string",
-                      "description": "ISO 8601 timestamp of the most recent poll, or null before the first one."
+                      "description": "ISO 8601 timestamp of the most recent poll, or null before the first one.",
+                      "nullable": true
                     }
                   }
                 },
@@ -18017,20 +18395,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -18077,7 +18441,18 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The id segment of the path, as returned by the endpoint that created the resource.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/monitor/health": {
@@ -18173,20 +18548,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -18351,20 +18712,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -18504,20 +18851,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -18686,20 +19019,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -18889,20 +19208,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -19048,20 +19353,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -19234,20 +19525,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -19342,11 +19619,13 @@
                     },
                     "status_code": {
                       "type": "integer",
-                      "description": "The HTTP status your endpoint returned, or null if the request failed before a response was received (timeout, connection refused, DNS failure, or an egress-safety refusal)."
+                      "description": "The HTTP status your endpoint returned, or null if the request failed before a response was received (timeout, connection refused, DNS failure, or an egress-safety refusal).",
+                      "nullable": true
                     },
                     "error": {
                       "type": "string",
-                      "description": "Human-readable failure reason when delivered is false, or null on success."
+                      "description": "Human-readable failure reason when delivered is false, or null on success.",
+                      "nullable": true
                     }
                   }
                 },
@@ -19383,20 +19662,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
                 }
               }
             }
@@ -19457,7 +19722,18 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The id segment of the path, as returned by the endpoint that created the resource.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/webhook/{id}/redrive": {
@@ -19559,20 +19835,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "403": {
             "description": "Forbidden",
             "content": {
@@ -19651,7 +19913,18 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The id segment of the path, as returned by the endpoint that created the resource.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/webhook/{id}": {
@@ -19738,20 +20011,6 @@
               }
             }
           },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -19794,7 +20053,18 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The id segment of the path, as returned by the endpoint that created the resource.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     }
   },

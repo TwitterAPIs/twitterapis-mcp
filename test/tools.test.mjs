@@ -41,8 +41,11 @@ const writes = TOOLS.filter((t) => t.write);
 // Bumped 96 -> 98 on 2026-09-04 with twitter_feedback_send (POST /feedback, a
 // write with a local draft queue) and twitter_feedback_get (GET /feedback/{id},
 // a read): 98 endpoints, 62 reads and 36 writes, still exact parity.
-const EXPECTED_TOOLS = 98;
-const EXPECTED_READS = 62;
+// Bumped 98 -> 99 on 2026-09-05 with twitter_feedback_list (GET /feedback), which
+// the API shipped after 0.9.7 and which no tool covered: 99 endpoints, 63 reads
+// and 36 writes, still exact parity.
+const EXPECTED_TOOLS = 99;
+const EXPECTED_READS = 63;
 const EXPECTED_WRITES = 36;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
@@ -92,7 +95,7 @@ check("pathParams match {name} templates in path", TOOLS.every((t) => {
 // resolution. Every call to any of these 5 tools failed with a 400 "Provide
 // `handle`/`url`/... in the JSON body" error, live-reproduced against
 // production before this fix (products/twitterapis-backend, monitor.ts /
-// webhook.ts / getxapi-stream-compat.ts).
+// webhook.ts / the x_user_stream compat module).
 const JSON_BODY_WRITES = [
   "twitter_feedback_send", // POST /feedback reads a JSON body (2026-09-04)
   "twitter_media_upload", "twitter_customer_session", "twitter_user_login", "twitter_article_update_content",
