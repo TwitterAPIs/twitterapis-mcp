@@ -1,0 +1,29 @@
+{
+  "_why": "PINNED constraints extracted from the schema server.json DECLARES in its own $schema field. The PIN is what the gate enforces; the live schema is compared against it only to report DRIFT, and a disagreement BLOCKS rather than silently adopting the new bound. A gate that updates itself to match whatever it finds has stopped being a claim about anything, and a network failure at publish time must never be able to widen a limit.",
+  "_regenerate": "node scripts/refresh-registry-constraints.mjs",
+  "_source_schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "_generated_at": "2026-09-06",
+  "required": [
+    "name",
+    "description",
+    "version"
+  ],
+  "fields": {
+    "description": {
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "name": {
+      "minLength": 3,
+      "maxLength": 200,
+      "pattern": "^[a-zA-Z0-9.-]+/[a-zA-Z0-9._-]+$"
+    },
+    "title": {
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "version": {
+      "maxLength": 255
+    }
+  }
+}
