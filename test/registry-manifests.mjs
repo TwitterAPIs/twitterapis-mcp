@@ -110,6 +110,24 @@ for (const req of PIN.required ?? []) {
   );
 }
 
+// NPM TRUNCATES A LONG DESCRIPTION SILENTLY, WITH NO ERROR AT ALL.
+// The MCP registry 422s on an over-long description, which is loud and gets fixed.
+// npm just publishes a shortened one, so the package page shows a sentence cut off
+// mid-word and nothing anywhere reports it. Found on a sibling product 2026-09-06
+// whose 394-character description had been rendering as "...register/test/dele"
+// for an unknown length of time.
+//
+// 255 is npm's own limit. Ours is comfortably under it today and had 21 characters
+// of headroom with nothing asserting it, which is exactly how the sibling drifted
+// over: one added clause and it goes, quietly.
+const NPM_DESCRIPTION_MAX = 255;
+if (typeof pkg.description === "string") {
+  check(
+    pkg.description.length <= NPM_DESCRIPTION_MAX,
+    `package.json: description is ${pkg.description.length} chars, npm SILENTLY truncates over ${NPM_DESCRIPTION_MAX} (no error, the package page just shows a cut-off sentence)`,
+  );
+}
+
 // Reverse-DNS, exactly one slash. Copied from the live schema's own pattern
 // (static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json), not
 // from memory: a name that fails this is rejected at publish time.
