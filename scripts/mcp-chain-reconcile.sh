@@ -141,27 +141,84 @@ if ! command -v node >/dev/null 2>&1; then
   exit 2
 fi
 
+# A DRIFT VERDICT REQUIRES POSITIVE EVIDENCE THAT THE GATE REACHED ONE.
+#
+# MEASURED THREE TIMES IN PRODUCTION (row #67), in this job's scheduled-runner log:
+#
+#     Error: EPERM: operation not permitted, uv_cwd
+#         at resolveMainPath (node:internal/modules/run_main:39:38)
+#         at Function.executeUserEntryPoint [as runMain]
+#     mcp-chain-reconcile: DRIFT — see findings above. Remediation is operator-gated.
+#
+# Read that stack carefully: resolveMainPath is Node resolving the ENTRY-POINT PATH,
+# which needs process.cwd(). It fails BEFORE a single line of the gate is loaded. So no
+# amount of try/catch inside reconcile-mcp-publish-chain.mjs can ever catch this — the
+# gate does not run, and the fix has to live here, in the only layer that is executing.
+#
+# Node exits 1 when it cannot start, and 1 is the code this contract assigns to DRIFT.
+# The `*)` arm below was already careful about codes it does not recognise, but 1 IS
+# recognised, so a crash walked straight through it and was published as a finding, with
+# remediation described as operator-gated. It asked a human to fix a condition it never
+# measured, and it poisoned the record: a DRIFT report that was really a crash gets cited
+# later as evidence the chain drifted.
+#
+# THE TEST IS THE CLASS, NOT THE SYMPTOM. Rather than special-casing EPERM (or ENOENT, or
+# a missing interpreter, or a TCC denial, each of which produces this same shape), the
+# wrapper now requires the gate's own verdict marker. reconcile-mcp-publish-chain.mjs
+# prints "RESULT:" on both the PASS and FAIL paths and on no other path, so its absence
+# means the gate never reached a verdict, whatever the reason. Absence of the marker with
+# a non-zero status is CANNOT EVALUATE (exit 2), never DRIFT.
+#
+# Output goes to a file and is echoed back verbatim, so the operator still sees
+# everything; the file exists only so this script can ask whether a verdict was produced.
+# `grep -q` on a FILE, never `cmd | grep`, because a pipeline's $? is the filter's.
+GATE_OUT="$(mktemp -t mcp-chain-gate)"
+cleanup_gate_out() { rm -f "$GATE_OUT"; }
+trap cleanup_gate_out EXIT
+
 set +e
 node scripts/reconcile-mcp-publish-chain.mjs \
   --mode=reconcile \
   ${TENANT_ARGS[@]+"${TENANT_ARGS[@]}"} \
   --head-dir "$ARCHIVE_DIR" \
-  "$@"
+  "$@" > "$GATE_OUT" 2>&1
 STATUS=$?
 set -e
 
+cat "$GATE_OUT"
+
+# An EMPTY capture is itself the strongest evidence the gate never ran, and it is the
+# shape that greps clean, so it is asserted rather than inferred.
+GATE_BYTES=$(wc -c < "$GATE_OUT" | tr -d ' ')
+GATE_REACHED_VERDICT=0
+if [ "$GATE_BYTES" -gt 0 ] && grep -q "RESULT:" "$GATE_OUT"; then
+  GATE_REACHED_VERDICT=1
+fi
+
 echo
-case "$STATUS" in
-  0) echo "  mcp-chain-reconcile: PASS — origin/main ($MAIN_SHA) reconciles with the registry." ;;
-  1) echo "  mcp-chain-reconcile: DRIFT — see findings above. Remediation is operator-gated." ;;
-  2) echo "  mcp-chain-reconcile: COULD NOT RUN (fail-closed). A surface was unreachable." ;;
-  *)
-    # Anything the gate does not define is a HARNESS failure, not a verdict about
-    # the chain. Reporting it as 1 would read as "drift found", which is a claim
-    # this script has no evidence for — so it is normalised to 2 (could not run).
-    echo "  mcp-chain-reconcile: unexpected exit $STATUS from the gate — treating as COULD NOT RUN (fail-closed)." >&2
-    STATUS=2
-    ;;
-esac
+if [ "$STATUS" -ne 0 ] && [ "$GATE_REACHED_VERDICT" -eq 0 ]; then
+  echo "  mcp-chain-reconcile: CANNOT EVALUATE (exit 2, fail-closed)." >&2
+  echo "    The gate exited $STATUS WITHOUT producing a verdict line, so it did not reach" >&2
+  echo "    a conclusion about the publish chain. This is an INSTRUMENT FAILURE, not a" >&2
+  echo "    finding: nothing about the chain was measured, and nothing here should be read" >&2
+  echo "    as drift. Captured ${GATE_BYTES} byte(s) of gate output above." >&2
+  echo "    Usual causes: node could not start (a deleted or unreadable working directory" >&2
+  echo "    makes process.cwd() fail during entry-point resolution), no interpreter on" >&2
+  echo "    PATH, or the process lacked permission to read the repo." >&2
+  STATUS=2
+else
+  case "$STATUS" in
+    0) echo "  mcp-chain-reconcile: PASS — origin/main ($MAIN_SHA) reconciles with the registry." ;;
+    1) echo "  mcp-chain-reconcile: DRIFT — see findings above. Remediation is operator-gated." ;;
+    2) echo "  mcp-chain-reconcile: COULD NOT RUN (fail-closed). A surface was unreachable." ;;
+    *)
+      # Anything the gate does not define is a HARNESS failure, not a verdict about
+      # the chain. Reporting it as 1 would read as "drift found", which is a claim
+      # this script has no evidence for — so it is normalised to 2 (could not run).
+      echo "  mcp-chain-reconcile: unexpected exit $STATUS from the gate — treating as COULD NOT RUN (fail-closed)." >&2
+      STATUS=2
+      ;;
+  esac
+fi
 
 exit "$STATUS"
