@@ -21,7 +21,10 @@
 # EXIT CODES (passed through from the gate)
 #   0  chain reconciles
 #   1  DRIFT
-#   2  the gate could not run — FAIL-CLOSED, never treated as "n/a"
+#   2  the gate could not run — FAIL-CLOSED, never treated as "n/a". ALSO returned when
+#      the gate exited non-zero WITHOUT producing a verdict marker, i.e. it never reached
+#      a conclusion: that is CANNOT EVALUATE, an instrument failure, and deliberately not
+#      passed through as the gate's own 1, which this contract would read as DRIFT.
 #
 # READ-ONLY. Never publishes, never pushes, never version-bumps.
 #
@@ -44,7 +47,13 @@ cd "$REPO_ROOT"
 
 WORK="$(mktemp -d)"
 # shellcheck disable=SC2064  # intentional: expand WORK now, at trap-set time
-trap "rm -rf '$WORK'" EXIT
+# ONE handler, because a second `trap ... EXIT` REPLACES the first rather than chaining.
+# Adding a separate trap for the gate-output file silently disabled this one and leaked a
+# full origin/main archive on every run, unbounded on a cron box. GATE_OUT is initialised
+# empty so the handler is safe before it is assigned.
+GATE_OUT=""
+cleanup_all() { rm -rf "$WORK"; [ -n "$GATE_OUT" ] && rm -f "$GATE_OUT"; return 0; }
+trap cleanup_all EXIT
 
 # NOTE: macOS ships bash 3.2, where `"${arr[@]}"` on an EMPTY array is an unbound
 # -variable error under `set -u`. Building the argument list as a plain string and
@@ -172,9 +181,11 @@ fi
 # Output goes to a file and is echoed back verbatim, so the operator still sees
 # everything; the file exists only so this script can ask whether a verdict was produced.
 # `grep -q` on a FILE, never `cmd | grep`, because a pipeline's $? is the filter's.
-GATE_OUT="$(mktemp -t mcp-chain-gate)"
-cleanup_gate_out() { rm -f "$GATE_OUT"; }
-trap cleanup_gate_out EXIT
+# `.XXXXXX` because GNU mktemp -t requires a template with X's while BSD does not, and
+# this script's own header advertises a laptop OR a cron box. `|| exit 2` rather than
+# letting `set -e` kill us: an aborted script exits 1, and 1 is the code this contract
+# reads as DRIFT, which is the very confusion this change exists to end.
+GATE_OUT="$(mktemp -t mcp-chain-gate.XXXXXX)" || exit 2
 
 set +e
 node scripts/reconcile-mcp-publish-chain.mjs \
@@ -205,7 +216,14 @@ if [ "$GATE_BYTES" -gt 0 ] && grep -qE 'RESULT:|"exit":' "$GATE_OUT"; then
 fi
 
 echo
-if [ "$STATUS" -ne 0 ] && [ "$GATE_REACHED_VERDICT" -eq 0 ]; then
+# `-ne 2` matters. Exit 2 ALREADY means could-not-run, and a human-mode fail2 prints its
+# reason to stderr without any verdict marker, so without this the wrapper replaced the
+# gate's own accurate cause ("a surface that cannot be read is a FAILURE") with a guess
+# about node failing to start. Exit code was unchanged either way, so this was never a
+# fail-open, but it misdirected diagnosis for the registry-unreachable case and left the
+# `2)` arm dead in human mode. The rewrite exists for a non-zero code that is NOT already
+# a could-not-run, which in practice is 1.
+if [ "$STATUS" -ne 0 ] && [ "$STATUS" -ne 2 ] && [ "$GATE_REACHED_VERDICT" -eq 0 ]; then
   echo "  mcp-chain-reconcile: CANNOT EVALUATE (exit 2, fail-closed)." >&2
   echo "    The gate exited $STATUS WITHOUT producing a verdict line, so it did not reach" >&2
   echo "    a conclusion about the publish chain. This is an INSTRUMENT FAILURE, not a" >&2

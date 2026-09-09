@@ -57,8 +57,8 @@ process.exit($1);
 STUB
 }
 
-run() {
-  ( cd "$TMP/repo" && bash scripts/mcp-chain-reconcile.sh ) > "$TMP/out" 2>&1
+run() {  # any args are forwarded to the wrapper, which forwards them to the gate
+  ( cd "$TMP/repo" && bash scripts/mcp-chain-reconcile.sh "$@" ) > "$TMP/out" 2>&1
   echo $?
 }
 
@@ -86,10 +86,24 @@ note "says PASS" "$(grep -c 'mcp-chain-reconcile: PASS' "$TMP/out")" "1"
 note "does NOT say CANNOT EVALUATE" "$(grep -c 'CANNOT EVALUATE' "$TMP/out")" "0"
 
 echo "=== 4. the gate's own exit 2 is still reported as COULD NOT RUN ==="
-stub 2 '"  RESULT: FAIL (exit 1) — unreachable surface"'
+# The REAL shape of a human-mode fail2: exit 2, reason on stderr, and NO verdict marker.
+# The previous version of this control stubbed exit 2 WHILE printing "RESULT:", which the
+# gate can never do (RESULT: only ever precedes exit 0 or 1), so it pinned an impossible
+# case and left the real one untested.
+cat > "$TMP/repo/scripts/reconcile-mcp-publish-chain.mjs" <<'F2STUB'
+console.error("\n  MCP PUBLISH-CHAIN GATE — COULD NOT RUN (exit 2, fail-closed)\n");
+console.error("    npm view returned an empty body. A surface that cannot be read is a FAILURE.\n");
+process.exit(2);
+F2STUB
 RC=$(run)
 note "exits 2" "$RC" "2"
-note "says COULD NOT RUN" "$(grep -c 'COULD NOT RUN' "$TMP/out")" "1"
+# Anchored on the WRAPPER's own prefix, not the bare phrase: the stub's stderr contains
+# "COULD NOT RUN" as well, so a bare match counts both and the control fails for a reason
+# that has nothing to do with the wrapper's verdict.
+note "says COULD NOT RUN, keeping the gate's own cause" "$(grep -c 'mcp-chain-reconcile: COULD NOT RUN' "$TMP/out")" "1"
+# The rewrite must NOT fire on exit 2: 2 already means could-not-run, and replacing the
+# gate's stated reason with a guess about node failing to start misdirects diagnosis.
+note "does NOT overwrite it with the node-start guess" "$(grep -c 'INSTRUMENT FAILURE' "$TMP/out")" "0"
 
 echo "=== 5. a crash that DID emit output but no verdict is still CANNOT EVALUATE ==="
 # Guards the narrower reading "empty output means crash". Output is not the test, a
@@ -111,17 +125,30 @@ cat > "$TMP/repo/scripts/reconcile-mcp-publish-chain.mjs" <<'JSONSTUB'
 console.log(JSON.stringify({ ok: false, exit: 1, mode: "reconcile", violations: [{ hop: "npm" }] }));
 process.exit(1);
 JSONSTUB
-RC=$(run)
+RC=$(run --json)
 note "exits 1" "$RC" "1"
 note "says DRIFT" "$(grep -c 'mcp-chain-reconcile: DRIFT' "$TMP/out")" "1"
 note "does NOT say CANNOT EVALUATE" "$(grep -c 'CANNOT EVALUATE' "$TMP/out")" "0"
 
 echo "=== 7. POSITIVE: a crash in --json mode is still CANNOT EVALUATE ==="
-# The JSON marker must not be so loose that a crash satisfies it.
-printf 'process.exit(1);\n' > "$TMP/repo/scripts/reconcile-mcp-publish-chain.mjs"
-RC=$(run)
+# THIS CONTROL EXISTS TO CONSTRAIN THE MARKER REGEX, and its first version could not:
+# it was byte-identical to control 1, never passed --json, and emitted NO output, so
+# GATE_BYTES=0 short-circuited before grep ever ran. A reviewer proved it vacuous by
+# loosening the marker to a bare `exit` word and watching the whole suite still pass.
+# So the crash stub now EMITS a realistic Node crash trace -- which contains the word
+# "exit" but never the JSON key `"exit":` -- and the case runs in --json mode.
+cat > "$TMP/repo/scripts/reconcile-mcp-publish-chain.mjs" <<'CRASHSTUB'
+console.error("node:internal/modules/run_main:39");
+console.error("Error: EPERM: operation not permitted, uv_cwd");
+console.error("    at process.exit [as exit] (node:internal/process/per_thread:189:13)");
+console.error("    at resolveMainPath (node:internal/modules/run_main:39:38)");
+process.exit(1);
+CRASHSTUB
+RC=$(run --json)
 note "exits 2" "$RC" "2"
 note "says CANNOT EVALUATE" "$(grep -c 'CANNOT EVALUATE' "$TMP/out")" "1"
+note "the crash trace really did contain the bare word exit" "$(grep -c 'process.exit' "$TMP/out")" "1"
+note "but carried no JSON verdict key" "$(grep -c '\"exit\":' "$TMP/out")" "0"
 
 echo
 if [ "$FAILS" -ne 0 ]; then
