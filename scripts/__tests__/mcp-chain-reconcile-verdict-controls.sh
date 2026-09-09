@@ -99,6 +99,30 @@ RC=$(run)
 note "exits 2" "$RC" "2"
 note "says CANNOT EVALUATE" "$(grep -c 'CANNOT EVALUATE' "$TMP/out")" "1"
 
+echo "=== 6. NEGATIVE: a GENUINE drift in --json mode must still report DRIFT ==="
+# The gate has two output modes and this wrapper forwards "$@". Under --json it prints no
+# "RESULT:" line at all, only a JSON object. A marker check that knew only about
+# "RESULT:" would call a real --json drift CANNOT EVALUATE, i.e. swallow a finding. That
+# is the opposite failure to the one this fix exists to close and the more dangerous one,
+# so it is pinned here rather than left to a reader to notice.
+# Written directly rather than through stub(), because the JSON body's own quotes do not
+# survive that helper's heredoc cleanly.
+cat > "$TMP/repo/scripts/reconcile-mcp-publish-chain.mjs" <<'JSONSTUB'
+console.log(JSON.stringify({ ok: false, exit: 1, mode: "reconcile", violations: [{ hop: "npm" }] }));
+process.exit(1);
+JSONSTUB
+RC=$(run)
+note "exits 1" "$RC" "1"
+note "says DRIFT" "$(grep -c 'mcp-chain-reconcile: DRIFT' "$TMP/out")" "1"
+note "does NOT say CANNOT EVALUATE" "$(grep -c 'CANNOT EVALUATE' "$TMP/out")" "0"
+
+echo "=== 7. POSITIVE: a crash in --json mode is still CANNOT EVALUATE ==="
+# The JSON marker must not be so loose that a crash satisfies it.
+printf 'process.exit(1);\n' > "$TMP/repo/scripts/reconcile-mcp-publish-chain.mjs"
+RC=$(run)
+note "exits 2" "$RC" "2"
+note "says CANNOT EVALUATE" "$(grep -c 'CANNOT EVALUATE' "$TMP/out")" "1"
+
 echo
 if [ "$FAILS" -ne 0 ]; then
   echo "CONTROLS FAILED: $FAILS"

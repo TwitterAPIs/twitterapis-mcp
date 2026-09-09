@@ -191,7 +191,16 @@ cat "$GATE_OUT"
 # shape that greps clean, so it is asserted rather than inferred.
 GATE_BYTES=$(wc -c < "$GATE_OUT" | tr -d ' ')
 GATE_REACHED_VERDICT=0
-if [ "$GATE_BYTES" -gt 0 ] && grep -q "RESULT:" "$GATE_OUT"; then
+# TWO VERDICT SHAPES, because the gate has two output modes and this wrapper forwards
+# "$@" to it. In human mode it prints "RESULT:"; under --json it prints NO "RESULT:" at
+# all, only a JSON object whose first keys are `ok` and `exit`. Matching "RESULT:" alone
+# would therefore classify a GENUINE --json drift as CANNOT EVALUATE, i.e. this fix would
+# silently swallow a real finding — the opposite failure to the one it exists to close,
+# and the more dangerous direction. Self-caught before merge by walking every exit path:
+# `const exit = failed ? 1 : 0` is shared, but the --json branch returns at its own
+# process.exit(exit) well above the line that prints RESULT.
+# A Node crash produces a stack trace, which carries neither marker.
+if [ "$GATE_BYTES" -gt 0 ] && grep -qE 'RESULT:|"exit":' "$GATE_OUT"; then
   GATE_REACHED_VERDICT=1
 fi
 
