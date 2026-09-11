@@ -1,5 +1,6 @@
 // Unit tests for the tool catalog + query builder. No network, no SDK server.
 import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "../src/tools.js";
+import { readFileSync } from "node:fs";
 
 let pass = 0, fail = 0;
 const check = (name, cond) => { if (cond) { pass++; } else { fail++; console.error("  FAIL:", name); } };
@@ -254,6 +255,13 @@ check("tweets_complete documents next_cursor as the completion signal", /next_cu
 check("tweets_complete warns the response can be truncated", /truncat/i.test(C_DESC));
 check("tweets_complete documents flat per-call billing", /per CALL/i.test(C_DESC));
 check("no tool promises a full history in one call", !TOOLS.some((t) => /full back-catalogue in one call|near-complete/i.test(t.description || "")));
+
+// The server instructions ask for a rare-term control before an "ignored
+// parameter" report: a generic query on a score-ordered sort returns the global
+// listing, which reads exactly like a dropped parameter and is not one.
+const INDEX_SRC = readFileSync(new URL("../src/index.js", import.meta.url), "utf8");
+check("instructions ask for a distinctive-value control before an ignored-parameter report", /re-run the call with a distinctive value that could only match if the parameter was honoured/.test(INDEX_SRC));
+check("instructions say to retitle the report by what the control showed", /title it that way and say what the control showed/.test(INDEX_SRC));
 
 console.log(`tools.test: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

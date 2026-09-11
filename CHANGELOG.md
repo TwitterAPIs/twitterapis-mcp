@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.9 (2026-09-11)
+
+### Changed
+
+- **The server instructions now ask for a control before an "ignored parameter" report.** A generic query on a score-ordered sort returns the site-wide listing, which reads exactly like a dropped parameter and is not one. Before drafting a report that a parameter is ignored or a field is empty, the model is told to re-run with a distinctive value that could only match if the parameter was honoured, and with the phrase quoted, then title the report by what the control showed.
+- **`scripts/prepublish-version-class.mjs`, run by `prepublishOnly`, refuses a patch bump when the tool catalog grew.** It reads the published tarball from npm, counts the catalog on both sides, and blocks a publish whose version is a patch over the published one while the catalog is larger. Fails closed when npm cannot be read. `--selftest` covers both directions offline.
+
 ## 0.9.8 (2026-09-04)
 
 ### Added
