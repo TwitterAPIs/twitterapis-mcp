@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "twitterapis-mcp",
   "display_name": "TwitterAPIs",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "icon": "icon.png",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
   "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
@@ -274,6 +274,10 @@
     {
       "name": "twitter_delete_tweet",
       "description": "Delete a tweet AS your authenticated account. Irreversible: the tweet is permanently removed. You can only delete tweets your authenticated account authored. Provide the tweet id or url. Requires write capability behind your key."
+    },
+    {
+      "name": "twitter_update_profile",
+      "description": "Change the display name, bio, location or link on your authenticated account's own X profile. This is a PARTIAL update: send only the fields you want to change and everything you omit keeps its current value, so passing just a name will NOT wipe the bio. An empty string does NOT clear a field: the API trims it and treats it exactly like an omitted field, so there is currently no way to blank a bio or a location through this tool. At least one of name, description, location or url is required, and a request whose only values are empty strings is refused with that same 400. It writes a real profile and takes effect immediately with no undo, so read the current values with twitter_user_info first if you may need to restore them. Requires an authenticated session behind your key. Returns ok and updated_fields, which echoes the field names you SENT rather than a diff against the previous profile."
     },
     {
       "name": "twitter_draft_create",

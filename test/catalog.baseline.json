@@ -1,5 +1,5 @@
 {
-  "toolCount": 106,
+  "toolCount": 107,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -59,6 +59,7 @@
     "twitter_dm_send",
     "twitter_create_tweet",
     "twitter_delete_tweet",
+    "twitter_update_profile",
     "twitter_draft_create",
     "twitter_draft_edit",
     "twitter_draft_delete",
@@ -851,19 +852,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -1564,19 +1565,19 @@
             "maximum": 9007199254740991
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -1601,19 +1602,19 @@
         "type": "object",
         "properties": {
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -1876,19 +1877,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -1925,19 +1926,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -1974,19 +1975,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2023,19 +2024,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2079,19 +2080,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2119,19 +2120,19 @@
         "type": "object",
         "properties": {
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2168,19 +2169,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2208,19 +2209,19 @@
         "type": "object",
         "properties": {
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2252,19 +2253,19 @@
             "description": "The conversation_id from a twitter_dm_list entry identifying which DM thread to read."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2306,19 +2307,19 @@
             "description": "The Direct Message body text to send (non-empty)."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2370,19 +2371,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2420,19 +2421,76 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "twitter_update_profile": {
+      "name": "twitter_update_profile",
+      "path": "/twitter/user/update_profile",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": true,
+      "description": "Change the display name, bio, location or link on your authenticated account's own X profile. This is a PARTIAL update: send only the fields you want to change and everything you omit keeps its current value, so passing just a name will NOT wipe the bio. An empty string does NOT clear a field: the API trims it and treats it exactly like an omitted field, so there is currently no way to blank a bio or a location through this tool. At least one of name, description, location or url is required, and a request whose only values are empty strings is refused with that same 400. It writes a real profile and takes effect immediately with no undo, so read the current values with twitter_user_info first if you may need to restore them. Requires an authenticated session behind your key. Returns ok and updated_fields, which echoes the field names you SENT rather than a diff against the previous profile.",
+      "args": [
+        "name",
+        "description",
+        "location",
+        "url",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Optional. New display name, up to 50 characters. Omit to leave it unchanged.",
+            "type": "string"
+          },
+          "description": {
+            "description": "Optional. New bio. An empty string does NOT clear it: the API trims empty values and treats them as absent, so the current bio is left alone either way.",
+            "type": "string"
+          },
+          "location": {
+            "description": "Optional. New location text. Same rule: an empty string is treated as absent and leaves the current value alone.",
+            "type": "string"
+          },
+          "url": {
+            "description": "Optional. New profile link.",
+            "type": "string"
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2480,19 +2538,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2549,19 +2607,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2597,19 +2655,19 @@
             "description": "Numeric id of the draft to delete, from twitter_draft_list. Also accepted by the API as draft_tweet_id."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2642,19 +2700,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2710,19 +2768,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2758,19 +2816,19 @@
             "description": "Numeric id of the scheduled post to cancel, from twitter_scheduled_list. Also accepted by the API as scheduled_tweet_id."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -2803,19 +2861,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2850,19 +2908,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2897,19 +2955,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2944,19 +3002,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -2991,19 +3049,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -3038,19 +3096,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -3085,19 +3143,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -3129,19 +3187,19 @@
             "description": "Numeric user id of the account to follow. Resolve a handle to a user_id first with twitter_user_info."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3176,19 +3234,19 @@
             "description": "Numeric user id of the account to unfollow."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3229,19 +3287,19 @@
             "description": "Numeric user id of the account to add. Resolve a handle to a user_id first with twitter_user_info."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3283,19 +3341,19 @@
             "description": "Numeric user id of the account to remove. Resolve a handle to a user_id first with twitter_user_info."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3342,19 +3400,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3512,19 +3570,19 @@
             "description": "Base64-encoded image bytes to upload. Sent in the JSON request body."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3559,19 +3617,19 @@
             "description": "Numeric media id returned by twitter_media_upload, e.g. '1234567890123456789'."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3599,19 +3657,19 @@
         "type": "object",
         "properties": {
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -3654,19 +3712,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3709,19 +3767,19 @@
             "description": "The new article title (non-empty)."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3767,19 +3825,19 @@
             "description": "Draft.js content state object: { blocks: [...], entityMap: [...] }. You construct this JSON yourself (it is the same shape the X Article editor produces); it is passed through to X verbatim and not validated here."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3830,19 +3888,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3877,19 +3935,19 @@
             "description": "The article's entity id, from twitter_article_create or twitter_article_list. Must currently be Published."
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
@@ -3932,19 +3990,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -3990,19 +4048,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         }
@@ -4048,19 +4106,19 @@
             "type": "string"
           },
           "auth_token": {
-            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+            "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
             "type": "string"
           },
           "ct0": {
-            "description": "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+            "description": "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           },
           "user_agent": {
-            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+            "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
         },
