@@ -91,7 +91,7 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-99 tools: 63 reads and 36 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Four of the reads are free account lookups (`twitter_account_me`, `twitter_account_payments`, `twitter_feedback_get`, `twitter_feedback_list`); the 14 monitoring tools and `twitter_feedback_send` are also free (account administration, not metered reads).
+106 tools: 65 reads and 41 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Four of the reads are free account lookups (`twitter_account_me`, `twitter_account_payments`, `twitter_feedback_get`, `twitter_feedback_list`); the 14 monitoring tools and `twitter_feedback_send` are also free (account administration, not metered reads).
 
 Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **most write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark, monitor/webhook delete) are annotated `destructiveHint: true` so MCP clients can prompt before running them. The **monitoring** and **feedback** tools (see below) are the exception: they administer your twitterapis.com account, not an X session, so they need only your API key, no linked session and no inline credentials.
 
@@ -169,6 +169,22 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_list_create` | Create a Twitter/X List owned by your session (`name`, optional `description` / `is_private`) |
 | `twitter_list_add_member` / `twitter_list_remove_member` | Add / remove one account on a List you own; `member_count` comes back as proof the write landed |
 | `twitter_media_upload` | Upload a base64 image, returns a `media_id` for `twitter_create_tweet` |
+
+### Drafts and scheduled posts _(require a linked X session)_
+
+A **draft** is private and never posts. A **scheduled** post **will publish publicly** at its `execute_at` unless you cancel it first. Both lists read only your own account.
+
+| Tool | What it does |
+|---|---|
+| `twitter_draft_create` | Save a private draft on your account; nothing is posted |
+| `twitter_draft_edit` | Replace one draft's contents by `id`; the fields you send become the draft |
+| `twitter_draft_delete` | Delete a draft by `id`; it was never public, so nothing is retracted |
+| `twitter_draft_list` | List your drafts, each with `text` and `thread_truncated` |
+| `twitter_scheduled_create` | Schedule a post for a future `execute_at` in epoch **seconds**, not milliseconds |
+| `twitter_scheduled_delete` | Cancel a pending scheduled post before it sends |
+| `twitter_scheduled_list` | List your pending queue; `execute_at` comes back in epoch seconds |
+
+Both list tools can return `partial: true`, which means X's answer was read but not fully understood. It is **not** the same as an empty list: on a clean read the flag is absent entirely, so an empty array with no `partial` means you genuinely have nothing queued or drafted.
 
 ### Articles _(X's long-form "Notes" feature; writes require a linked X session)_
 
@@ -323,7 +339,7 @@ Calls are billed to your twitterapis.com account. Almost every endpoint is $0.00
 
 **Do I need an X (Twitter) developer account?** No. Get an API key at [twitterapis.com/signup](https://www.twitterapis.com/signup); there is no application or approval step.
 
-**Is it read-only?** No. 63 read tools work with just your API key; 36 write actions (post, like, retweet, follow, DM, media upload, List create/add member/remove member, article create/edit/publish/delete, monitor/webhook create/update/delete, feedback send) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD and feedback, which are account administration and need only your API key.
+**Is it read-only?** No. 65 read tools work with just your API key; 41 write actions (post, save or schedule a post, like, retweet, follow, DM, media upload, List create/add member/remove member, article create/edit/publish/delete, monitor/webhook create/update/delete, feedback send) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD and feedback, which are account administration and need only your API key.
 
 **Which clients are supported?** Claude Desktop, Cursor, Windsurf, and VS Code (Copilot agent mode), or any Model Context Protocol client.
 

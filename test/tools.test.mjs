@@ -45,9 +45,14 @@ const writes = TOOLS.filter((t) => t.write);
 // Bumped 98 -> 99 on 2026-09-05 with twitter_feedback_list (GET /feedback), which
 // the API shipped after 0.9.7 and which no tool covered: 99 endpoints, 63 reads
 // and 36 writes, still exact parity.
-const EXPECTED_TOOLS = 99;
-const EXPECTED_READS = 63;
-const EXPECTED_WRITES = 36;
+// Bumped 99 -> 106 on 2026-09-13 with the seven compose tools (#123): five writes
+// (draft create/edit/delete, scheduled create/delete) and two reads (draft/list,
+// scheduled/list). The API had shipped them dark behind two env flags, verified
+// them end to end against a real customer session, then published them and removed
+// the flags. 106 endpoints, 65 reads and 41 writes, still exact parity.
+const EXPECTED_TOOLS = 106;
+const EXPECTED_READS = 65;
+const EXPECTED_WRITES = 41;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
