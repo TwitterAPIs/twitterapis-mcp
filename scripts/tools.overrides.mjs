@@ -924,6 +924,134 @@ export const TOOL_OVERRIDES = [
       "@INLINE",
     ],
   },
+  // ── Writes + reads: the compose surface (drafts and scheduled posts) ───────
+  // The one thing a model cannot read off the schema is which of these two
+  // families actually posts. A DRAFT is private and NEVER posts. A SCHEDULED
+  // post WILL publish publicly at its execute_at unless it is cancelled first.
+  // Every description below says so in its first two sentences, because a model
+  // choosing between them on the word "create" alone will get it wrong.
+  {
+    name: "twitter_draft_create",
+    endpoint: "/draft/create",
+    write: true,
+    description:
+      "Save a PRIVATE draft tweet on your authenticated account. Nothing is posted and nobody can see it: the draft lands in X's own composer under Drafts until a human publishes or deletes it. Use this when a person still has to approve the wording. Use twitter_create_tweet to post right now, and twitter_scheduled_create when it should go out on its own at a known time. Requires an authenticated session behind your key. Returns ok and draft_tweet_id. A null draft_tweet_id means X refused the create, answers 422, and is not billed.",
+    args: [
+      { name: "text", minLength: 1,
+        describe:
+          "The draft body text. Required: a draft with no text is refused with 400, so a media-only draft cannot be created through this API." },
+      { name: "reply_to",
+        describe:
+          "Optional. Numeric id of the tweet this draft replies to. Send it as a string; X ids are 19 digits and an unquoted number is refused rather than silently rounded to a different tweet." },
+      { name: "quote",
+        describe:
+          "Optional. Numeric id of the tweet this draft quotes. Send it as a string, same reason as reply_to." },
+      { name: "media_ids",
+        describe:
+          "Optional. Comma-separated media id(s) from a prior media upload to attach. Up to 4." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_draft_edit",
+    endpoint: "/draft/edit",
+    write: true,
+    description:
+      "Replace the contents of one existing PRIVATE draft on your authenticated account. The fields you send BECOME the draft rather than merging into it, so anything you leave out is dropped, including media. Get the id from twitter_draft_list or from the twitter_draft_create call that saved it. Still posts nothing. Requires an authenticated session behind your key. Returns ok and the draft_tweet_id you edited.",
+    args: [
+      { name: "id",
+        describe:
+          "Numeric id of the draft to edit, from twitter_draft_list. Also accepted by the API as draft_tweet_id." },
+      { name: "text", minLength: 1,
+        describe:
+          "The replacement draft body text. Required: an edit with no text is refused with 400." },
+      { name: "reply_to",
+        describe:
+          "Optional. Numeric id of the tweet this draft replies to. Send it as a string." },
+      { name: "quote",
+        describe:
+          "Optional. Numeric id of the tweet this draft quotes. Send it as a string." },
+      { name: "media_ids",
+        describe:
+          "Optional. Comma-separated media id(s) to attach. Omitting this drops whatever media the draft had; it is not merged." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_draft_delete",
+    endpoint: "/draft/delete",
+    write: true, destructive: true,
+    description:
+      "Delete one PRIVATE draft from your authenticated account by id. Irreversible, but low-stakes in a way twitter_delete_tweet is not: a draft was never public, so this retracts nothing and notifies nobody. Use twitter_delete_tweet for a post that is already live. Requires an authenticated session behind your key. Returns ok, deleted, and the draft_tweet_id you targeted.",
+    args: [
+      { name: "id",
+        describe:
+          "Numeric id of the draft to delete, from twitter_draft_list. Also accepted by the API as draft_tweet_id." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_draft_list",
+    endpoint: "/draft/list",
+    description:
+      "List the PRIVATE drafts saved on your authenticated account. This is where a draft id comes from for an edit or a delete. Reads only your own account: drafts are private to the account that holds them, so there is no way to read anyone else's. Requires an authenticated session behind your key. Returns drafts (each with draft_tweet_id, text, thread_truncated), count, and sometimes partial. thread_truncated true means the draft is a THREAD and text is only its first tweet, which is a parse that succeeded. partial true means X's answer was read but not fully understood, which is NOT 'you have no drafts': it is absent entirely on a clean read, so an empty drafts array with no partial flag means the account genuinely has none. One call returns the whole list; there is no cursor and no timestamp on a draft row.",
+    args: [
+      { name: "ascending", type: "boolean", required: false,
+        describe:
+          "Optional. Pass the STRING \"true\" to ask X for the oldest draft first. Anything else, including omitting it, sends ascending=false, which is what X's own composer sends. The resulting order is X's and is not re-sorted, so do not promise a user newest-first." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_scheduled_create",
+    endpoint: "/scheduled/create",
+    write: true,
+    description:
+      "Schedule a tweet to POST PUBLICLY at a future instant from your authenticated account. This is NOT a draft: it goes out on its own at execute_at whether or not anyone is watching, unless it is cancelled first with twitter_scheduled_delete. Use twitter_draft_create when a human still has to approve the wording. execute_at is epoch SECONDS, never milliseconds: Date.now() returns milliseconds, so divide by 1000, and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It must also be strictly in the future. Requires an authenticated session behind your key. Returns ok, scheduled_tweet_id, and the execute_at you sent.",
+    args: [
+      { name: "text", minLength: 1,
+        describe:
+          "The tweet body text that will be published. Required: a scheduled post with no text is refused with 400." },
+      { name: "execute_at", type: "int",
+        describe:
+          "When to post, as epoch SECONDS in the future (for example 1829752200). NOT milliseconds: a value of 1000000000000 or more is rejected as a millisecond timestamp. Also accepted by the API as schedule_at." },
+      { name: "reply_to",
+        describe:
+          "Optional. Numeric id of the tweet this post replies to. Send it as a string." },
+      { name: "quote",
+        describe:
+          "Optional. Numeric id of the tweet this post quotes. Send it as a string." },
+      { name: "media_ids",
+        describe:
+          "Optional. Comma-separated media id(s) from a prior media upload to attach. Up to 4." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_scheduled_delete",
+    endpoint: "/scheduled/delete",
+    write: true, destructive: true,
+    description:
+      "Cancel one PENDING scheduled post on your authenticated account so it never publishes. Only works before its execute_at: once the post has gone out there is no scheduled row left to cancel, and the thing to remove is the resulting tweet, with twitter_delete_tweet. Get the id from twitter_scheduled_list. Requires an authenticated session behind your key. Returns ok, deleted, and the scheduled_tweet_id you targeted.",
+    args: [
+      { name: "id",
+        describe:
+          "Numeric id of the scheduled post to cancel, from twitter_scheduled_list. Also accepted by the API as scheduled_tweet_id." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_scheduled_list",
+    endpoint: "/scheduled/list",
+    description:
+      "List the posts QUEUED to publish on your authenticated account. This is where a scheduled id comes from for a cancel, and it is worth reading before scheduling anything so a retry in your own code does not quietly queue the same post twice. Rows carry X's own state label verbatim (for example Scheduled), and a row that has already published leaves the queue and becomes an ordinary tweet. Requires an authenticated session behind your key. Returns scheduled (each with scheduled_tweet_id, text, thread_truncated, execute_at, state), count, and sometimes partial. thread_truncated is INFERRED on this endpoint rather than captured: a scheduled row carries the same compose payload a draft row does, and the captured scheduled row elides that body, so the flag is sound and fail-safe (an absent key yields false) but has not been seen true. execute_at comes back in epoch SECONDS: X answers this operation in milliseconds and the value is normalised, so a timestamp read here can be passed straight back into twitter_scheduled_create. partial true means X's answer was read but not fully understood, which is not the same as an empty queue; on a clean read it is absent entirely.",
+    args: [
+      { name: "ascending", type: "boolean", required: false,
+        describe:
+          "Optional. Pass the STRING \"true\" for the oldest row first. Anything else, including omitting it, returns X's default order." },
+      "@INLINE",
+    ],
+  },
   // ── Writes: engagement (favorite / retweet / bookmark) + inverses ──────────
   {
     name: "twitter_favorite_tweet",

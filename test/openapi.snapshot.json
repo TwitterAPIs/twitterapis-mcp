@@ -62,7 +62,7 @@
     },
     {
       "name": "Write Actions",
-      "description": "Act on behalf of an authenticated account: like, retweet, bookmark, and follow, each with its undo. Billed at $0.0008 per call, the same as a standard read."
+      "description": "Act on behalf of an authenticated account: post, delete, like, retweet, bookmark and follow, each with its undo, plus the compose surface (private drafts and scheduled posts). MOST of these bill at $0.0008 per call, the same as a standard read, but not all: tweet/create, draft/create, draft/edit, draft/list, scheduled/create and scheduled/list are $0.0016. Read the price on the endpoint, never off this line."
     },
     {
       "name": "Articles",
@@ -15142,6 +15142,1349 @@
               "type": "string",
               "description": "Status URL of the tweet to delete, for example https://x.com/you/status/1759123456789012345. Provide either id or url."
             }
+          }
+        ]
+      }
+    },
+    "/draft/create": {
+      "post": {
+        "operationId": "draft-create",
+        "summary": "Create Draft Tweet",
+        "description": "Save a draft tweet on the account behind your registered session. A draft is private to that account and is never published: it appears in X's own composer under Drafts until you post or delete it. Accepts text, up to 4 media_ids, a reply_to and a quote, exactly like tweet/create. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/draft/create\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"text\": \"Draft: our Q1 changelog is nearly done.\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/draft/create\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"text\": \"Draft: our Q1 changelog is nearly done.\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/draft/create\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ text: \"Draft: our Q1 changelog is nearly done.\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Save a private draft on your own account. Nothing is posted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when X returned an id for the new draft."
+                    },
+                    "draft_tweet_id": {
+                      "type": "string",
+                      "description": "Numeric ID of the saved draft, or null when X refused the create. A null here answers 422 and is not billed.",
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "draft_tweet_id": "2086650228950683648"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "The draft body. A draft with no text is refused with 400.",
+                    "example": "Draft: our Q1 changelog is nearly done."
+                  },
+                  "media_ids": {
+                    "type": "string",
+                    "description": "Up to 4 media IDs from media/upload, as a comma-separated string or a JSON array. Omit for a text-only draft.",
+                    "example": "1899999999999999999"
+                  },
+                  "reply_to": {
+                    "type": "string",
+                    "description": "ID of the tweet this draft replies to (send it as a string; X IDs are 19 digits).",
+                    "example": "2080297101888733302"
+                  },
+                  "quote": {
+                    "type": "string",
+                    "description": "ID of the tweet this draft quotes (send it as a string; X IDs are 19 digits).",
+                    "example": "1900000000000000000"
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/draft/edit": {
+      "post": {
+        "operationId": "draft-edit",
+        "summary": "Edit Draft Tweet",
+        "description": "Replace an existing draft's contents on the account behind your registered session. The fields you send become the draft in full: text is required, and media_ids, reply_to and quote are re-applied rather than merged, so send everything the draft should keep. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/draft/edit\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"2086650228950683648\", \"text\": \"Draft v2: the Q1 changelog ships Thursday.\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/draft/edit\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"2086650228950683648\", \"text\": \"Draft v2: the Q1 changelog ships Thursday.\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/draft/edit\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"2086650228950683648\", text: \"Draft v2: the Q1 changelog ships Thursday.\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Replace the contents of an existing draft on your own account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the edit call reached X and X answered success. The response body is not re-read, so this is transport-level success rather than a re-read of the stored draft."
+                    },
+                    "draft_tweet_id": {
+                      "type": "string",
+                      "description": "The draft ID you edited, echoed back."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "draft_tweet_id": "2086650228950683648"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "ID of the draft to edit, from draft/list. Also accepted as draft_tweet_id.",
+                    "example": "2086650228950683648"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "The replacement draft body. Required: an edit with no text is refused with 400.",
+                    "example": "Draft v2: the Q1 changelog ships Thursday."
+                  },
+                  "media_ids": {
+                    "type": "string",
+                    "description": "Up to 4 media IDs from media/upload, as a comma-separated string or a JSON array. Omitting it drops the media the draft had; it is not merged.",
+                    "example": "1899999999999999999"
+                  },
+                  "reply_to": {
+                    "type": "string",
+                    "description": "ID of the tweet this draft replies to (send it as a string).",
+                    "example": "2080297101888733302"
+                  },
+                  "quote": {
+                    "type": "string",
+                    "description": "ID of the tweet this draft quotes (send it as a string).",
+                    "example": "1900000000000000000"
+                  }
+                },
+                "required": [
+                  "id",
+                  "text"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/draft/delete": {
+      "post": {
+        "operationId": "draft-delete",
+        "summary": "Delete Draft Tweet",
+        "description": "Delete a draft owned by the account behind your registered session, identified by its id. The draft is removed from X's composer. Nothing was ever public, so this publishes nothing and retracts nothing. Billed at $0.0008 per call, the same as a standard read. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/draft/delete\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"2086650228950683648\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/draft/delete\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"2086650228950683648\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/draft/delete\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"2086650228950683648\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete a draft from your own account by ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the delete call reached X and X answered success (mirrors deleted)."
+                    },
+                    "deleted": {
+                      "type": "boolean",
+                      "description": "True when the delete call reached X and X answered success. X answers this operation with a confirmation rather than an id, so the body is not parsed for a per-row field: this is transport-level success, not a re-read of your drafts."
+                    },
+                    "draft_tweet_id": {
+                      "type": "string",
+                      "description": "The draft ID you asked to delete, echoed back."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "deleted": true,
+                  "draft_tweet_id": "2086650228950683648"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "ID of the draft to delete, from draft/list. Also accepted as draft_tweet_id.",
+                    "example": "2086650228950683648"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/draft/list": {
+      "get": {
+        "operationId": "draft-list",
+        "summary": "List Draft Tweets",
+        "description": "List every draft on the account behind your registered session. Each row carries the draft id, its text, and thread_truncated, which is true when the draft is a thread and the text you get is only its first tweet. Ordering is X's: pass ascending=true to ask for the oldest first, omit it for X's default. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/draft/list\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/draft/list\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/draft/list\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List the drafts saved on your own account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "drafts": {
+                      "type": "array",
+                      "description": "The drafts on this account. An empty array with no partial flag is an honest empty list.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "draft_tweet_id": {
+                            "type": "string",
+                            "description": "Numeric ID of the draft. This is the id to pass to draft/edit and draft/delete."
+                          },
+                          "text": {
+                            "type": "string",
+                            "description": "The draft body. Null when that row's text could not be read, which also sets partial on the response.",
+                            "nullable": true
+                          },
+                          "thread_truncated": {
+                            "type": "boolean",
+                            "description": "True when the draft is a THREAD and text is only its first tweet. The parse succeeded; the feature is narrower than the data. False for an ordinary single-tweet draft."
+                          }
+                        }
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of rows in drafts."
+                    },
+                    "partial": {
+                      "type": "boolean",
+                      "description": "Present and true only when the answer was read but not fully understood. ANY ONE of these sets it: a row was dropped, a row's text could not be read, a row's thread shape could not be read, or the envelope itself could not be read. ABSENT on a clean read, including a clean empty list, so an empty drafts array with no partial flag means you have no drafts rather than that we could not tell."
+                    }
+                  }
+                },
+                "example": {
+                  "drafts": [
+                    {
+                      "draft_tweet_id": "2086650228950683648",
+                      "text": "Draft: our Q1 changelog is nearly done.",
+                      "thread_truncated": false
+                    }
+                  ],
+                  "count": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ascending",
+            "in": "query",
+            "required": false,
+            "description": "Pass true to ask X for the oldest draft first. Anything else, including omitting it, sends ascending=false, which is what X's own composer sends. The resulting order is X's and is not re-sorted here.",
+            "schema": {
+              "type": "boolean",
+              "description": "Pass true to ask X for the oldest draft first. Anything else, including omitting it, sends ascending=false, which is what X's own composer sends. The resulting order is X's and is not re-sorted here.",
+              "example": "false"
+            },
+            "example": "false"
+          }
+        ]
+      }
+    },
+    "/scheduled/create": {
+      "post": {
+        "operationId": "scheduled-create",
+        "summary": "Schedule Tweet",
+        "description": "Schedule a tweet from the account behind your registered session for a future instant. Unlike a draft, this WILL post publicly at execute_at unless you delete it first. execute_at is epoch SECONDS and must be in the future; a millisecond value is refused by name rather than scheduled tens of thousands of years out. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/scheduled/create\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"text\": \"The Q1 changelog is live.\", \"execute_at\": 1829752200}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/scheduled/create\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"text\": \"The Q1 changelog is live.\", \"execute_at\": 1829752200},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/scheduled/create\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ text: \"The Q1 changelog is live.\", execute_at: 1829752200 }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Schedule a tweet to post publicly at a future instant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when X returned an id for the scheduled post."
+                    },
+                    "scheduled_tweet_id": {
+                      "type": "string",
+                      "description": "Numeric ID of the scheduled post, or null when X refused it. A null here answers 422 and is not billed.",
+                      "nullable": true
+                    },
+                    "execute_at": {
+                      "type": "integer",
+                      "description": "The instant you scheduled, echoed back in epoch SECONDS, the same unit you sent."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "scheduled_tweet_id": "2086650228950683649",
+                  "execute_at": 1829752200
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "The tweet body. Required: a scheduled post with no text is refused with 400.",
+                    "example": "The Q1 changelog is live."
+                  },
+                  "execute_at": {
+                    "type": "integer",
+                    "description": "When to post, as epoch SECONDS in the future. A value at or above 1000000000000 is rejected as milliseconds, with a message saying so, rather than accepted. Also accepted as schedule_at.",
+                    "example": "1829752200"
+                  },
+                  "media_ids": {
+                    "type": "string",
+                    "description": "Up to 4 media IDs from media/upload, as a comma-separated string or a JSON array.",
+                    "example": "1899999999999999999"
+                  },
+                  "reply_to": {
+                    "type": "string",
+                    "description": "ID of the tweet this post replies to (send it as a string).",
+                    "example": "2080297101888733302"
+                  },
+                  "quote": {
+                    "type": "string",
+                    "description": "ID of the tweet this post quotes (send it as a string).",
+                    "example": "1900000000000000000"
+                  }
+                },
+                "required": [
+                  "text",
+                  "execute_at"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scheduled/delete": {
+      "post": {
+        "operationId": "scheduled-delete",
+        "summary": "Cancel Scheduled Tweet",
+        "description": "Cancel a scheduled tweet on the account behind your registered session, identified by its id, so it never posts. Do this before execute_at: once the post has gone out it is an ordinary tweet and tweet/delete is what removes it. Billed at $0.0008 per call, the same as a standard read. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/scheduled/delete\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"2086650228950683649\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/scheduled/delete\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"2086650228950683649\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/scheduled/delete\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"2086650228950683649\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancel a scheduled tweet before it posts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the cancel call reached X and X answered success (mirrors deleted)."
+                    },
+                    "deleted": {
+                      "type": "boolean",
+                      "description": "True when the cancel call reached X and X answered success. X answers this operation with a confirmation rather than an id, so the body is not parsed for a per-row field: this is transport-level success, not a re-read of your queue."
+                    },
+                    "scheduled_tweet_id": {
+                      "type": "string",
+                      "description": "The scheduled-tweet ID you asked to cancel, echoed back."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "deleted": true,
+                  "scheduled_tweet_id": "2086650228950683649"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "ID of the scheduled tweet to cancel, from scheduled/list. Also accepted as scheduled_tweet_id.",
+                    "example": "2086650228950683649"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scheduled/list": {
+      "get": {
+        "operationId": "scheduled-list",
+        "summary": "List Scheduled Tweets",
+        "description": "List every pending scheduled post on the account behind your registered session. Each row carries the id, its text, its execute_at in epoch SECONDS, X's own state label, and thread_truncated for a thread whose text is only its first tweet. Ordering is X's: pass ascending=true to ask for the oldest first. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0016,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/scheduled/list\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/scheduled/list\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/scheduled/list\");\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List the posts queued to publish on your own account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "scheduled": {
+                      "type": "array",
+                      "description": "The pending scheduled posts on this account. An empty array with no partial flag is an honest empty queue.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "scheduled_tweet_id": {
+                            "type": "string",
+                            "description": "Numeric ID of the scheduled post. This is the id to pass to scheduled/delete."
+                          },
+                          "text": {
+                            "type": "string",
+                            "description": "The post body. Null when that row's text could not be read.",
+                            "nullable": true
+                          },
+                          "thread_truncated": {
+                            "type": "boolean",
+                            "description": "True when the row is a THREAD and text is only its first tweet. False for an ordinary single-tweet post."
+                          },
+                          "execute_at": {
+                            "type": "integer",
+                            "description": "When the post publishes, in epoch SECONDS. X answers this operation in MILLISECONDS and the value is converted here, so one unit is spoken on both sides of the API and a value read here can be sent straight back to scheduled/create. Null when the instant could not be read.",
+                            "nullable": true
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "X's own scheduling state for the row, for example \"Scheduled\", passed through verbatim. Null when X sent none.",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of rows in scheduled."
+                    },
+                    "partial": {
+                      "type": "boolean",
+                      "description": "Present and true only when the answer was read but not fully understood. ANY ONE of these sets it: a row was dropped, a row's text could not be read, a row's instant could not be read, a row's thread shape could not be read, or the envelope itself could not be read. ABSENT on a clean read, including a clean empty queue, so an empty scheduled array with no partial flag means nothing is queued rather than that we could not tell."
+                    }
+                  }
+                },
+                "example": {
+                  "scheduled": [
+                    {
+                      "scheduled_tweet_id": "2086650228950683649",
+                      "text": "The Q1 changelog is live.",
+                      "thread_truncated": false,
+                      "execute_at": 1829752200,
+                      "state": "Scheduled"
+                    }
+                  ],
+                  "count": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ascending",
+            "in": "query",
+            "required": false,
+            "description": "Pass true to ask X for the oldest row first. Anything else, including omitting it, sends ascending=false, which is what X's own composer sends. The resulting order is X's and is not re-sorted here.",
+            "schema": {
+              "type": "boolean",
+              "description": "Pass true to ask X for the oldest row first. Anything else, including omitting it, sends ascending=false, which is what X's own composer sends. The resulting order is X's and is not re-sorted here.",
+              "example": "false"
+            },
+            "example": "false"
           }
         ]
       }

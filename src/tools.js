@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 99 tools (63 reads, 36 writes).
+// Catalog: 106 tools (65 reads, 41 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -1146,6 +1146,212 @@ export const TOOLS = [
       ),
       url: z.string().optional().describe(
         "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_draft_create",
+    path: "/twitter/draft/create",
+    method: "POST",
+    write: true,
+    description:
+      "Save a PRIVATE draft tweet on your authenticated account. Nothing is posted and nobody can see it: the draft lands in X's own composer under Drafts until a human publishes or deletes it. Use this when a person still has to approve the wording. Use twitter_create_tweet to post right now, and twitter_scheduled_create when it should go out on its own at a known time. Requires an authenticated session behind your key. Returns ok and draft_tweet_id. A null draft_tweet_id means X refused the create, answers 422, and is not billed.",
+    shape: {
+      text: z.string().min(1).describe(
+        "The draft body text. Required: a draft with no text is refused with 400, so a media-only draft cannot be created through this API.",
+      ),
+      reply_to: z.string().optional().describe(
+        "Optional. Numeric id of the tweet this draft replies to. Send it as a string; X ids are 19 digits and an unquoted number is refused rather than silently rounded to a different tweet.",
+      ),
+      quote: z.string().optional().describe(
+        "Optional. Numeric id of the tweet this draft quotes. Send it as a string, same reason as reply_to.",
+      ),
+      media_ids: z.string().optional().describe(
+        "Optional. Comma-separated media id(s) from a prior media upload to attach. Up to 4.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_draft_edit",
+    path: "/twitter/draft/edit",
+    method: "POST",
+    write: true,
+    description:
+      "Replace the contents of one existing PRIVATE draft on your authenticated account. The fields you send BECOME the draft rather than merging into it, so anything you leave out is dropped, including media. Get the id from twitter_draft_list or from the twitter_draft_create call that saved it. Still posts nothing. Requires an authenticated session behind your key. Returns ok and the draft_tweet_id you edited.",
+    shape: {
+      id: z.string().describe(
+        "Numeric id of the draft to edit, from twitter_draft_list. Also accepted by the API as draft_tweet_id.",
+      ),
+      text: z.string().min(1).describe(
+        "The replacement draft body text. Required: an edit with no text is refused with 400.",
+      ),
+      reply_to: z.string().optional().describe(
+        "Optional. Numeric id of the tweet this draft replies to. Send it as a string.",
+      ),
+      quote: z.string().optional().describe(
+        "Optional. Numeric id of the tweet this draft quotes. Send it as a string.",
+      ),
+      media_ids: z.string().optional().describe(
+        "Optional. Comma-separated media id(s) to attach. Omitting this drops whatever media the draft had; it is not merged.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_draft_delete",
+    path: "/twitter/draft/delete",
+    method: "POST",
+    write: true,
+    destructive: true,
+    description:
+      "Delete one PRIVATE draft from your authenticated account by id. Irreversible, but low-stakes in a way twitter_delete_tweet is not: a draft was never public, so this retracts nothing and notifies nobody. Use twitter_delete_tweet for a post that is already live. Requires an authenticated session behind your key. Returns ok, deleted, and the draft_tweet_id you targeted.",
+    shape: {
+      id: z.string().describe(
+        "Numeric id of the draft to delete, from twitter_draft_list. Also accepted by the API as draft_tweet_id.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_draft_list",
+    path: "/twitter/draft/list",
+    description:
+      "List the PRIVATE drafts saved on your authenticated account. This is where a draft id comes from for an edit or a delete. Reads only your own account: drafts are private to the account that holds them, so there is no way to read anyone else's. Requires an authenticated session behind your key. Returns drafts (each with draft_tweet_id, text, thread_truncated), count, and sometimes partial. thread_truncated true means the draft is a THREAD and text is only its first tweet, which is a parse that succeeded. partial true means X's answer was read but not fully understood, which is NOT 'you have no drafts': it is absent entirely on a clean read, so an empty drafts array with no partial flag means the account genuinely has none. One call returns the whole list; there is no cursor and no timestamp on a draft row.",
+    shape: {
+      ascending: z.string().optional().describe(
+        "Optional. Pass the STRING \"true\" to ask X for the oldest draft first. Anything else, including omitting it, sends ascending=false, which is what X's own composer sends. The resulting order is X's and is not re-sorted, so do not promise a user newest-first.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_scheduled_create",
+    path: "/twitter/scheduled/create",
+    method: "POST",
+    write: true,
+    description:
+      "Schedule a tweet to POST PUBLICLY at a future instant from your authenticated account. This is NOT a draft: it goes out on its own at execute_at whether or not anyone is watching, unless it is cancelled first with twitter_scheduled_delete. Use twitter_draft_create when a human still has to approve the wording. execute_at is epoch SECONDS, never milliseconds: Date.now() returns milliseconds, so divide by 1000, and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It must also be strictly in the future. Requires an authenticated session behind your key. Returns ok, scheduled_tweet_id, and the execute_at you sent.",
+    shape: {
+      text: z.string().min(1).describe(
+        "The tweet body text that will be published. Required: a scheduled post with no text is refused with 400.",
+      ),
+      execute_at: z.number().int().describe(
+        "When to post, as epoch SECONDS in the future (for example 1829752200). NOT milliseconds: a value of 1000000000000 or more is rejected as a millisecond timestamp. Also accepted by the API as schedule_at.",
+      ),
+      reply_to: z.string().optional().describe(
+        "Optional. Numeric id of the tweet this post replies to. Send it as a string.",
+      ),
+      quote: z.string().optional().describe(
+        "Optional. Numeric id of the tweet this post quotes. Send it as a string.",
+      ),
+      media_ids: z.string().optional().describe(
+        "Optional. Comma-separated media id(s) from a prior media upload to attach. Up to 4.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_scheduled_delete",
+    path: "/twitter/scheduled/delete",
+    method: "POST",
+    write: true,
+    destructive: true,
+    description:
+      "Cancel one PENDING scheduled post on your authenticated account so it never publishes. Only works before its execute_at: once the post has gone out there is no scheduled row left to cancel, and the thing to remove is the resulting tweet, with twitter_delete_tweet. Get the id from twitter_scheduled_list. Requires an authenticated session behind your key. Returns ok, deleted, and the scheduled_tweet_id you targeted.",
+    shape: {
+      id: z.string().describe(
+        "Numeric id of the scheduled post to cancel, from twitter_scheduled_list. Also accepted by the API as scheduled_tweet_id.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_scheduled_list",
+    path: "/twitter/scheduled/list",
+    description:
+      "List the posts QUEUED to publish on your authenticated account. This is where a scheduled id comes from for a cancel, and it is worth reading before scheduling anything so a retry in your own code does not quietly queue the same post twice. Rows carry X's own state label verbatim (for example Scheduled), and a row that has already published leaves the queue and becomes an ordinary tweet. Requires an authenticated session behind your key. Returns scheduled (each with scheduled_tweet_id, text, thread_truncated, execute_at, state), count, and sometimes partial. thread_truncated is INFERRED on this endpoint rather than captured: a scheduled row carries the same compose payload a draft row does, and the captured scheduled row elides that body, so the flag is sound and fail-safe (an absent key yields false) but has not been seen true. execute_at comes back in epoch SECONDS: X answers this operation in milliseconds and the value is normalised, so a timestamp read here can be passed straight back into twitter_scheduled_create. partial true means X's answer was read but not fully understood, which is not the same as an empty queue; on a clean read it is absent entirely.",
+    shape: {
+      ascending: z.string().optional().describe(
+        "Optional. Pass the STRING \"true\" for the oldest row first. Anything else, including omitting it, returns X's default order.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",

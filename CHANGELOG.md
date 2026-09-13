@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.10.0 (2026-09-13)
+
+### Added
+
+- **Seven compose tools: private drafts and scheduled posts.** `twitter_draft_create`, `twitter_draft_edit`, `twitter_draft_delete`, `twitter_draft_list`, `twitter_scheduled_create`, `twitter_scheduled_delete`, `twitter_scheduled_list`. Catalog is now **106 tools, 65 reads and 41 writes**, still exact parity with the API's endpoint count. A MINOR bump, not a patch: the catalog grew, so a consumer pinned to `0.9.x` opts in rather than receiving seven new tools silently, which is exactly what `scripts/prepublish-version-class.mjs` refuses.
+- **The one thing a model cannot read off a schema is said in every one of the seven descriptions: a DRAFT is private and never posts; a SCHEDULED post WILL publish publicly at its `execute_at` unless it is cancelled first.** A model choosing between `twitter_draft_create` and `twitter_scheduled_create` on the word "create" alone gets it wrong, and the failure is a real post going out. The descriptions also carry the routing to their siblings (`twitter_create_tweet` to post now) and the `execute_at` unit trap: epoch SECONDS, never the milliseconds `Date.now()` returns, with a value at or above 1e12 refused by the API rather than scheduled tens of thousands of years out.
+- **Both list tools document `partial`.** True means X's answer was read but not fully understood; it is ABSENT on a clean read, so an empty array with no flag means the account genuinely has nothing. That distinction is what stops a model reporting "you have no drafts" when the real answer is "we could not read the reply".
+
+### Notes
+
+- The routes these tools call were built, merged and deployed on 2026-09-13 behind two env flags (`DRAFT_TWEETS_ENABLED`, `SCHEDULED_TWEETS_ENABLED`, both answering 503 while off), verified end to end against a real customer session, then published and their flags removed. The snapshot in `test/openapi.snapshot.json` was refreshed from the LIVE published spec after the docs site deployed, which is the only order that works: the refresh fetches `docs.twitterapis.com/openapi.json`, never a local file.
+
 ## 0.9.9 (2026-09-11)
 
 ### Changed
