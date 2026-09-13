@@ -924,6 +924,38 @@ export const TOOL_OVERRIDES = [
       "@INLINE",
     ],
   },
+  {
+    name: "twitter_update_profile",
+    endpoint: "/user/update_profile",
+    write: true,
+    // jsonBody, and the gate is why. body-mode-parity read the backend's
+    // route-body-modes.json, saw updateProfileRoute classified "json-only" and
+    // refused the build until this was set. Worth knowing the classification is
+    // CONSERVATIVE rather than exact: that handler reads every field as
+    // `body.X ?? c.req.query("X")`, so a query string would in fact work, but it
+    // does that with a raw c.req.query() instead of the param-compat helpers the
+    // classifier looks for, so it lands in the stricter bucket. The error is in
+    // the safe direction (it forces the mode that always works) and jsonBody:true
+    // is correct regardless, since the docs document these as body params.
+    jsonBody: true,
+    description:
+      "Change the display name, bio, location or link on your authenticated account's own X profile. This is a PARTIAL update: send only the fields you want to change and everything you omit keeps its current value, so passing just a name will NOT wipe the bio. An empty string is different from an omitted field: \"\" CLEARS that field deliberately. At least one of name, description, location or url is required. It writes a real profile and takes effect immediately with no undo, so read the current values with twitter_user_info first if you may need to restore them. Requires an authenticated session behind your key. Returns ok and updated_fields, which echoes the field names you SENT rather than a diff against the previous profile.",
+    args: [
+      { name: "name",
+        describe:
+          "Optional. New display name, up to 50 characters. Omit to leave it unchanged." },
+      { name: "description",
+        describe:
+          "Optional. New bio. Send an empty string to clear it deliberately; OMIT the field to leave it alone. Those are different." },
+      { name: "location",
+        describe:
+          "Optional. New location text. Same rule: empty string clears, omitted leaves alone." },
+      { name: "url",
+        describe:
+          "Optional. New profile link." },
+      "@INLINE",
+    ],
+  },
   // ── Writes + reads: the compose surface (drafts and scheduled posts) ───────
   // The one thing a model cannot read off the schema is which of these two
   // families actually posts. A DRAFT is private and NEVER posts. A SCHEDULED

@@ -50,9 +50,15 @@ const writes = TOOLS.filter((t) => t.write);
 // scheduled/list). The API had shipped them dark behind two env flags, verified
 // them end to end against a real customer session, then published them and removed
 // the flags. 106 endpoints, 65 reads and 41 writes, still exact parity.
-const EXPECTED_TOOLS = 106;
+// Bumped 106 -> 107 on 2026-09-13 with twitter_update_profile (#105), the one of
+// the three profile writes that has been called end to end. Its two siblings,
+// update_avatar and update_banner, stay dark and unpublished because neither has
+// ever been called: they need a real image upload, so their host is an inference
+// rather than an observation. 107 endpoints, 65 reads and 42 writes, still exact
+// parity.
+const EXPECTED_TOOLS = 107;
 const EXPECTED_READS = 65;
-const EXPECTED_WRITES = 41;
+const EXPECTED_WRITES = 42;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -111,6 +117,14 @@ const JSON_BODY_WRITES = [
   // limit from the body only, so without jsonBody every call would go out as a
   // query string and 400, the same live failure the five tools above hit.
   "twitter_monitor_webhook_redrive",
+  // Added 2026-09-13 (#105). The backend's route-body-modes.json classifies
+  // updateProfileRoute "json-only", so body-mode-parity refuses the build unless
+  // the tool sets jsonBody. That classification is CONSERVATIVE rather than
+  // exact: the handler reads every field as `body.X ?? c.req.query("X")`, so a
+  // query string would work too, but it uses a raw c.req.query() instead of the
+  // param-compat helpers the classifier recognises. The error is in the safe
+  // direction, since it forces the mode that always works.
+  "twitter_update_profile",
 ];
 check("json-body writes present: POST + write + jsonBody", JSON_BODY_WRITES.every((n) => {
   const t = TOOLS.find((x) => x.name === n);

@@ -8,12 +8,12 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 106 tools (65 reads, 41 writes).
+// Catalog: 107 tools (65 reads, 42 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
 // write actions, reads its params from the query string), except the per-call
-// inline credentials, which travel as x-* request headers, the 11
+// inline credentials, which travel as x-* request headers, the 12
 // jsonBody tools, whose fields travel in a JSON request body, and any arg listed
 // in pathParams, which is substituted into the URL path (e.g. {id}) instead. A
 // tool with `method: "POST"` or `method: "DELETE"` is a write that acts on
@@ -1146,6 +1146,41 @@ export const TOOLS = [
       ),
       url: z.string().optional().describe(
         "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header.",
+      ),
+    },
+  },
+  {
+    name: "twitter_update_profile",
+    path: "/twitter/user/update_profile",
+    method: "POST",
+    write: true,
+    jsonBody: true,
+    description:
+      "Change the display name, bio, location or link on your authenticated account's own X profile. This is a PARTIAL update: send only the fields you want to change and everything you omit keeps its current value, so passing just a name will NOT wipe the bio. An empty string is different from an omitted field: \"\" CLEARS that field deliberately. At least one of name, description, location or url is required. It writes a real profile and takes effect immediately with no undo, so read the current values with twitter_user_info first if you may need to restore them. Requires an authenticated session behind your key. Returns ok and updated_fields, which echoes the field names you SENT rather than a diff against the previous profile.",
+    shape: {
+      name: z.string().optional().describe(
+        "Optional. New display name, up to 50 characters. Omit to leave it unchanged.",
+      ),
+      description: z.string().optional().describe(
+        "Optional. New bio. Send an empty string to clear it deliberately; OMIT the field to leave it alone. Those are different.",
+      ),
+      location: z.string().optional().describe(
+        "Optional. New location text. Same rule: empty string clears, omitted leaves alone.",
+      ),
+      url: z.string().optional().describe(
+        "Optional. New profile link.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL.",
