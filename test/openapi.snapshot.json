@@ -15320,12 +15320,12 @@
                   },
                   "description": {
                     "type": "string",
-                    "description": "New bio. An empty string is treated exactly like omitting the field, so it does NOT clear the bio; there is no way to blank a field through this endpoint today.",
+                    "description": "New bio. Send an EMPTY STRING to clear it; omitting the field entirely leaves it alone. Those are two different things.",
                     "example": "Building things people can check."
                   },
                   "location": {
                     "type": "string",
-                    "description": "New location text. Same rule: an empty string behaves as if the field were omitted and leaves the current value alone."
+                    "description": "New location text. Same rule: an empty string clears it, omitting the field leaves it alone."
                   },
                   "url": {
                     "type": "string",

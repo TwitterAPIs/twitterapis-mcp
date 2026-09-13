@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.11.1 (2026-09-13)
+
+### Fixed
+- `twitter_update_profile`: an empty string CLEARS a field. The tool description said
+  the opposite, and 0.11.0 shipped that to npm. It was true of the API when written
+  and stopped being true when the handler was fixed the same day.
+
+### Notes
+- A PATCH, not a minor: the catalog is unchanged at 107 tools, 65 reads and 42 writes.
+  Only description text moves, which `scripts/prepublish-version-class.mjs` confirms.
+- The claim is now verified the only way that works on this endpoint: by sending a
+  value that CHANGES and reading the profile back. The previous check used a
+  byte-for-byte no-op, which is the one test that cannot fail, since the profile looks
+  identical whether the write applied or was silently dropped.
+- Why it matters that this was wrong rather than merely vague: the old text told a
+  model that `description: ""` was a harmless no-op. After the handler fix, that exact
+  call blanks the field. A description that is confidently wrong about a destructive
+  operation is worse than one that says nothing.
+- Separately, writes to this endpoint are sometimes accepted upstream and sometimes
+  refused, and only some refusals are classified honestly. That is a defect under
+  repair on the API side, not part of this tool's contract, so it is deliberately not
+  written into the description.
+
 ## 0.11.0 (2026-09-13)
 
 ### Added

@@ -2446,7 +2446,7 @@
       "write": true,
       "destructive": false,
       "jsonBody": true,
-      "description": "Change the display name, bio, location or link on your authenticated account's own X profile. This is a PARTIAL update: send only the fields you want to change and everything you omit keeps its current value, so passing just a name will NOT wipe the bio. An empty string does NOT clear a field: the API trims it and treats it exactly like an omitted field, so there is currently no way to blank a bio or a location through this tool. At least one of name, description, location or url is required, and a request whose only values are empty strings is refused with that same 400. It writes a real profile and takes effect immediately with no undo, so read the current values with twitter_user_info first if you may need to restore them. Requires an authenticated session behind your key. Returns ok and updated_fields, which echoes the field names you SENT rather than a diff against the previous profile.",
+      "description": "Change the display name, bio, location or link on your authenticated account's own X profile. This is a PARTIAL update: send only the fields you want to change and everything you omit keeps its current value, so passing just a name will NOT wipe the bio. An empty string CLEARS that field, which is different from omitting it: \"\" blanks the value, an absent key leaves it alone. At least one of name, description, location or url is required, and a request whose only value is an empty string is a valid clear rather than an empty request. It writes a real profile and takes effect immediately with no undo, so read the current values with twitter_user_info first if you may need to restore them. Requires an authenticated session behind your key. Returns ok and updated_fields, which echoes the field names you SENT rather than a diff against the previous profile.",
       "args": [
         "name",
         "description",
@@ -2466,11 +2466,11 @@
             "type": "string"
           },
           "description": {
-            "description": "Optional. New bio. An empty string does NOT clear it: the API trims empty values and treats them as absent, so the current bio is left alone either way.",
+            "description": "Optional. New bio. Send an EMPTY STRING to clear it; OMIT the field to leave it alone. Those are different.",
             "type": "string"
           },
           "location": {
-            "description": "Optional. New location text. Same rule: an empty string is treated as absent and leaves the current value alone.",
+            "description": "Optional. New location text. Same rule: an empty string clears it, omitting the field leaves it alone.",
             "type": "string"
           },
           "url": {
