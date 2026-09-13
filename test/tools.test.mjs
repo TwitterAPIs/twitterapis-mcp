@@ -51,11 +51,20 @@ const writes = TOOLS.filter((t) => t.write);
 // them end to end against a real customer session, then published them and removed
 // the flags. 106 endpoints, 65 reads and 41 writes, still exact parity.
 // Bumped 106 -> 107 on 2026-09-13 with twitter_update_profile (#105), the one of
-// the three profile writes that has been called end to end. Its two siblings,
-// update_avatar and update_banner, stay dark and unpublished because neither has
-// ever been called: they need a real image upload, so their host is an inference
-// rather than an observation. 107 endpoints, 65 reads and 42 writes, still exact
-// parity.
+// the three profile writes that has been called end to end through the running
+// service. Its two siblings, update_avatar and update_banner, stay UNPUBLISHED:
+// they need a real image upload, so their host is an inference from
+// update_profile's capture rather than an observation, and that is the reasoning
+// that shipped a draft with no text in it earlier today.
+//
+// UNPUBLISHED IS NOT THE SAME AS UNREACHABLE, and an adversarial review of this
+// release caught the difference. Those two routes sit behind PROFILE_WRITES_ENABLED
+// on the API, and that flag is currently ON in production, so they answer rather
+// than 503. They are absent from every published surface, which is what lets this
+// package claim exact parity, but a caller who guesses the URL reaches them. The
+// API-side fix is to turn the flag off once update_profile no longer needs it,
+// which is exactly what the backend change accompanying this release makes possible.
+// 107 endpoints, 65 reads and 42 writes, still exact parity.
 const EXPECTED_TOOLS = 107;
 const EXPECTED_READS = 65;
 const EXPECTED_WRITES = 42;

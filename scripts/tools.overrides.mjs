@@ -87,22 +87,32 @@ export const ARG_GROUPS = {
   // Per-call inline credentials. Pass an account's own X session cookies to act
   // AS that account for this one call, without pre-registering a session, so a
   // single API key can act as many accounts (polling several inboxes, or posting
-  // from a pool). Omit them to use the key's linked session. Sent as x-* REQUEST
-  // HEADERS, never in the URL, so they appear in no spec and are marked
-  // header:true to exempt them from the param cross-check.
+  // from a pool). Omit them to use the key's linked session. Marked header:true
+  // so they appear in no spec and are exempt from the param cross-check.
+  //
+  // WHERE THEY ACTUALLY TRAVEL, corrected 2026-09-13 after an adversarial review
+  // read src/index.js rather than this comment. There are TWO transports and the
+  // text below used to name only one. On a query-string tool they are pulled out
+  // of the args and sent as x-auth-token / x-ct0 / x-proxy-url / x-user-agent
+  // request headers. On a jsonBody tool the whole arg object is serialised into
+  // the request body, credentials included, and the API reads them back with
+  // extractInlineCredentials(). Both work; the one thing that is true in both
+  // cases, and the property that matters, is that they never become a query
+  // parameter and so never reach a URL or an access log. Saying "sent as the
+  // x-auth-token header" full stop was false for three tools.
   INLINE: [
     { name: "auth_token", required: false, header: true,
       describe:
-        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Sent as the x-auth-token header; never placed in the URL." },
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log." },
     { name: "ct0", required: false, header: true,
       describe:
-        "Optional. The account's ct0 cookie, paired with auth_token. Sent as the x-ct0 header." },
+        "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter." },
     { name: "proxy_url", required: false, header: true,
       describe:
-        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url header." },
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool." },
     { name: "user_agent", required: false, header: true,
       describe:
-        "Optional. User-Agent string to send for this session. Sent as the x-user-agent header." },
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool." },
   ],
 };
 
@@ -939,17 +949,17 @@ export const TOOL_OVERRIDES = [
     // is correct regardless, since the docs document these as body params.
     jsonBody: true,
     description:
-      "Change the display name, bio, location or link on your authenticated account's own X profile. This is a PARTIAL update: send only the fields you want to change and everything you omit keeps its current value, so passing just a name will NOT wipe the bio. An empty string is different from an omitted field: \"\" CLEARS that field deliberately. At least one of name, description, location or url is required. It writes a real profile and takes effect immediately with no undo, so read the current values with twitter_user_info first if you may need to restore them. Requires an authenticated session behind your key. Returns ok and updated_fields, which echoes the field names you SENT rather than a diff against the previous profile.",
+      "Change the display name, bio, location or link on your authenticated account's own X profile. This is a PARTIAL update: send only the fields you want to change and everything you omit keeps its current value, so passing just a name will NOT wipe the bio. An empty string does NOT clear a field: the API trims it and treats it exactly like an omitted field, so there is currently no way to blank a bio or a location through this tool. At least one of name, description, location or url is required, and a request whose only values are empty strings is refused with that same 400. It writes a real profile and takes effect immediately with no undo, so read the current values with twitter_user_info first if you may need to restore them. Requires an authenticated session behind your key. Returns ok and updated_fields, which echoes the field names you SENT rather than a diff against the previous profile.",
     args: [
       { name: "name",
         describe:
           "Optional. New display name, up to 50 characters. Omit to leave it unchanged." },
       { name: "description",
         describe:
-          "Optional. New bio. Send an empty string to clear it deliberately; OMIT the field to leave it alone. Those are different." },
+          "Optional. New bio. An empty string does NOT clear it: the API trims empty values and treats them as absent, so the current bio is left alone either way." },
       { name: "location",
         describe:
-          "Optional. New location text. Same rule: empty string clears, omitted leaves alone." },
+          "Optional. New location text. Same rule: an empty string is treated as absent and leaves the current value alone." },
       { name: "url",
         describe:
           "Optional. New profile link." },

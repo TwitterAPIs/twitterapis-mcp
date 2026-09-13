@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.11.0 (2026-09-13)
+
+### Added
+- `twitter_update_profile` — change the display name, bio, location or link on the
+  account behind your session. The catalog goes 106 to 107 tools, 65 reads and 42
+  writes, still exact parity with the API's own endpoint count. A MINOR release
+  rather than a patch, so a consumer pinned to 0.10.x opts in rather than silently
+  receiving a new write tool.
+
+### Notes
+- It is a genuine PARTIAL update, tested rather than assumed: X's own client sends
+  the whole editable set on every save, so a form carrying only `name` is a shape
+  that client never produces. Measured against an account with a non-empty bio
+  before publishing: name only, HTTP 200, bio intact.
+- An empty string does NOT clear a field. The API trims empty values and treats
+  them as absent, so there is no way to blank a bio or a location through this tool
+  today. An earlier draft of this release documented the opposite; it was wrong and
+  was caught by an adversarial review running the shipped handler rather than
+  reading it.
+- `updated_fields` echoes the field names you SENT. It is not a diff, so a field you
+  set to the value it already held still appears in it.
+- The two sibling profile writes, avatar and banner, are deliberately not published:
+  neither has ever been called, and both need a real image upload.
+
 ## 0.10.0 (2026-09-13)
 
 ### Added
