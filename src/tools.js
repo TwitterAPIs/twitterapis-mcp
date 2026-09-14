@@ -8,12 +8,12 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 107 tools (65 reads, 42 writes).
+// Catalog: 109 tools (65 reads, 44 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
 // write actions, reads its params from the query string), except the per-call
-// inline credentials, which travel as x-* request headers, the 12
+// inline credentials, which travel as x-* request headers, the 14
 // jsonBody tools, whose fields travel in a JSON request body, and any arg listed
 // in pathParams, which is substituted into the URL path (e.g. {id}) instead. A
 // tool with `method: "POST"` or `method: "DELETE"` is a write that acts on
@@ -1181,6 +1181,58 @@ export const TOOLS = [
       ),
       url: z.string().optional().describe(
         "Optional. New profile link.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+      ),
+    },
+  },
+  {
+    name: "twitter_update_avatar",
+    path: "/twitter/user/update_avatar",
+    method: "POST",
+    write: true,
+    jsonBody: true,
+    description:
+      "Replace the profile picture on your authenticated account's own X profile. Takes ONE field, image, holding base64-encoded image bytes: not a URL, not multipart, and not a media_id from twitter_media_upload. It writes a real profile and takes effect immediately with NO UNDO, and X keeps no history of the previous picture, so if the old image might be wanted back, read profile_image_url with twitter_user_info and save that file BEFORE calling this. Returns ok. To confirm it applied, read the account back with twitter_user_info: X mints a new media id for every accepted upload, so profile_image_url changes even when the image is byte-identical to the one already in place. Requires an authenticated session behind your key.",
+    shape: {
+      image: z.string().describe(
+        "REQUIRED. Base64-encoded image bytes. Not a URL, not multipart, and not a media_id. banner and data are accepted as aliases for this same field.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking tool. Never a query parameter.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL to egress this call through. Recommended for writes: X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking tool.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+      ),
+    },
+  },
+  {
+    name: "twitter_update_banner",
+    path: "/twitter/user/update_banner",
+    method: "POST",
+    write: true,
+    jsonBody: true,
+    description:
+      "Replace the wide header image on your authenticated account's own X profile. Takes ONE field, banner, holding base64-encoded image bytes: not a URL, not multipart, and not a media_id from twitter_media_upload. X renders the header as a wide strip, so a 3:1 image fills it without cropping. It writes a real profile and takes effect immediately with NO UNDO, and X keeps no history of the previous banner, so if the old image might be wanted back, read cover_picture with twitter_user_info and save that file BEFORE calling this. Returns ok. To confirm it applied, read the account back with twitter_user_info and check cover_picture specifically: at least one of X's own endpoints reports that field as empty for accounts that plainly have a banner, so an empty answer from anywhere else is not evidence the account has none. Requires an authenticated session behind your key.",
+    shape: {
+      banner: z.string().describe(
+        "REQUIRED. Base64-encoded image bytes. Not a URL, not multipart, and not a media_id. image and data are accepted as aliases for this same field.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
