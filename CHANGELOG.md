@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.12.0 (2026-09-13)
+
+- **Two new tools, 107 -> 109 (65 reads, 44 writes): `twitter_update_avatar` and
+  `twitter_update_banner`.** Both endpoints had been serving behind a feature flag
+  on the API and documented on no surface, because their upstream host was an
+  INFERENCE from the sibling profile write rather than an observation. Both have
+  now been called end to end against a live account, both success envelopes were
+  captured, and each write was confirmed applied by reading the profile back
+  through the GraphQL user lookup. The flag is deleted from the API entirely.
+- Each takes ONE field of base64-encoded image bytes (`image` / `banner`): not a
+  URL, not multipart, and NOT a `media_id` from `twitter_media_upload`. Both tool
+  descriptions say so in the first two sentences, because a model choosing between
+  these and the media-upload tool on the word "upload" alone will get it wrong.
+- Both descriptions also carry the two things a schema cannot: there is NO UNDO
+  and the vendor keeps no history, so read and save the current image URL first;
+  and confirm a banner write by reading `cover_picture` back specifically, since
+  at least one vendor endpoint reports that field as empty for accounts that
+  plainly have one.
+- Both are declared `jsonBody`, and here the API's "json-only" classification is
+  EXACT rather than conservative: the shared handler reads the JSON body and has
+  no query fallback at all, so a query string genuinely cannot work.
+
 ## 0.11.1 (2026-09-13)
 
 ### Fixed

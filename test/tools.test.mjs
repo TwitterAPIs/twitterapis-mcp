@@ -51,23 +51,31 @@ const writes = TOOLS.filter((t) => t.write);
 // them end to end against a real customer session, then published them and removed
 // the flags. 106 endpoints, 65 reads and 41 writes, still exact parity.
 // Bumped 106 -> 107 on 2026-09-13 with twitter_update_profile (#105), the one of
-// the three profile writes that has been called end to end through the running
-// service. Its two siblings, update_avatar and update_banner, stay UNPUBLISHED:
-// they need a real image upload, so their host is an inference from
-// update_profile's capture rather than an observation, and that is the reasoning
-// that shipped a draft with no text in it earlier today.
+// the three profile writes that had been called end to end through the running
+// service. Its two siblings stayed UNPUBLISHED because they need a real image
+// upload, so their upstream host was an inference from update_profile's capture
+// rather than an observation.
 //
-// UNPUBLISHED IS NOT THE SAME AS UNREACHABLE, and an adversarial review of this
-// release caught the difference. Those two routes sit behind PROFILE_WRITES_ENABLED
-// on the API, and that flag is currently ON in production, so they answer rather
-// than 503. They are absent from every published surface, which is what lets this
-// package claim exact parity, but a caller who guesses the URL reaches them. The
-// API-side fix is to turn the flag off once update_profile no longer needs it,
-// which is exactly what the backend change accompanying this release makes possible.
-// 107 endpoints, 65 reads and 42 writes, still exact parity.
-const EXPECTED_TOOLS = 107;
+// Bumped 107 -> 109 later the same day (#142) with twitter_update_avatar and
+// twitter_update_banner. The inference is now an OBSERVATION: both were called
+// against a live account, both SUCCESS envelopes are captured in the API repo,
+// and each write was confirmed applied by reading the profile back through
+// GraphQL UserByScreenName. PROFILE_WRITES_ENABLED is deleted from the API
+// entirely, so the note below about an unadvertised-but-reachable route no
+// longer describes anything: there is no flag left to turn off, and all three
+// paths are published on every surface.
+//
+// The note is kept rather than deleted because the SHAPE it records is the
+// reusable part: UNPUBLISHED IS NOT THE SAME AS UNREACHABLE. A route absent
+// from every published surface is still served by the router, so a caller who
+// guesses the URL reaches it, and "we have not documented it" is not a control.
+// An adversarial review of the 0.11.1 release caught exactly that gap. Whenever
+// this package claims exact parity, the claim is about what is ADVERTISED; ask
+// separately what the router still answers.
+// 109 endpoints, 65 reads and 44 writes, still exact parity.
+const EXPECTED_TOOLS = 109;
 const EXPECTED_READS = 65;
-const EXPECTED_WRITES = 42;
+const EXPECTED_WRITES = 44;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -134,6 +142,14 @@ const JSON_BODY_WRITES = [
   // param-compat helpers the classifier recognises. The error is in the safe
   // direction, since it forces the mode that always works.
   "twitter_update_profile",
+  // Added 2026-09-13 (#142). Both are classified "json-only" in the backend's
+  // route-body-modes.json like their update_profile sibling, but for these two
+  // the classification is EXACT rather than conservative: the shared imageWrite
+  // handler reads c.req.json() and nothing else, with no query fallback at all.
+  // A query string genuinely cannot work here, so jsonBody is load-bearing
+  // rather than merely safe.
+  "twitter_update_avatar",
+  "twitter_update_banner",
 ];
 check("json-body writes present: POST + write + jsonBody", JSON_BODY_WRITES.every((n) => {
   const t = TOOLS.find((x) => x.name === n);

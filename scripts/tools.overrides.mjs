@@ -966,6 +966,37 @@ export const TOOL_OVERRIDES = [
       "@INLINE",
     ],
   },
+  {
+    name: "twitter_update_avatar",
+    endpoint: "/user/update_avatar",
+    write: true,
+    // json-only, and not the conservative classification update_profile gets.
+    // imageWrite reads c.req.json() and nothing else, with no query fallback at
+    // all, so the backend's route-body-modes.json classification is exact here.
+    jsonBody: true,
+    description:
+      "Replace the profile picture on your authenticated account's own X profile. Takes ONE field, image, holding base64-encoded image bytes: not a URL, not multipart, and not a media_id from twitter_media_upload. It writes a real profile and takes effect immediately with NO UNDO, and X keeps no history of the previous picture, so if the old image might be wanted back, read profile_image_url with twitter_user_info and save that file BEFORE calling this. Returns ok. To confirm it applied, read the account back with twitter_user_info: X mints a new media id for every accepted upload, so profile_image_url changes even when the image is byte-identical to the one already in place. Requires an authenticated session behind your key.",
+    args: [
+      { name: "image",
+        describe:
+          "REQUIRED. Base64-encoded image bytes. Not a URL, not multipart, and not a media_id. banner and data are accepted as aliases for this same field." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_update_banner",
+    endpoint: "/user/update_banner",
+    write: true,
+    jsonBody: true,
+    description:
+      "Replace the wide header image on your authenticated account's own X profile. Takes ONE field, banner, holding base64-encoded image bytes: not a URL, not multipart, and not a media_id from twitter_media_upload. X renders the header as a wide strip, so a 3:1 image fills it without cropping. It writes a real profile and takes effect immediately with NO UNDO, and X keeps no history of the previous banner, so if the old image might be wanted back, read cover_picture with twitter_user_info and save that file BEFORE calling this. Returns ok. To confirm it applied, read the account back with twitter_user_info and check cover_picture specifically: at least one of X's own endpoints reports that field as empty for accounts that plainly have a banner, so an empty answer from anywhere else is not evidence the account has none. Requires an authenticated session behind your key.",
+    args: [
+      { name: "banner",
+        describe:
+          "REQUIRED. Base64-encoded image bytes. Not a URL, not multipart, and not a media_id. image and data are accepted as aliases for this same field." },
+      "@INLINE",
+    ],
+  },
   // ── Writes + reads: the compose surface (drafts and scheduled posts) ───────
   // The one thing a model cannot read off the schema is which of these two
   // families actually posts. A DRAFT is private and NEVER posts. A SCHEDULED
