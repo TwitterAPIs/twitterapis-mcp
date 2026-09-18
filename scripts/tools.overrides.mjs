@@ -1502,14 +1502,14 @@ export const TOOL_OVERRIDES = [
     endpoint: "/article/update_content",
     write: true, jsonBody: true,
     description:
-      "Replace the body content of a DRAFT or PUBLISHED article AS your authenticated account. Provide the article's id and content_state: Draft.js JSON ({ blocks: [...], entityMap: [...] }) that YOU build and pass through verbatim, this tool does not construct or validate it. Requires an authenticated session with write capability behind your key. Returns the updated article object.",
+      "Replace the body content of a DRAFT or PUBLISHED article AS your authenticated account. Provide the article's id and content_state: Draft.js JSON ({ blocks: [...], entityMap: [...] }) that YOU build; blocks are forwarded with only data/text/key/type/entityRanges/inlineStyleRanges (X rejects any other block field, depth included). Block types X accepts: unstyled, header-two, unordered-list-item, ordered-list-item, blockquote, atomic (a one-space block carrying an entity via entityRanges [{key, offset: 0, length: 1}]); inline styles Bold and Italic. Entity data is snake_case on INPUT and X returns it camelCase: TWEET (an embedded post) {tweet_id}; MEDIA (an inline image) {caption, entity_key, media_items: [{local_media_id, media_category: 'DraftTweetImage', media_id}]} with media_id from twitter_media_upload; DIVIDER {}; LINK {url} (a Mutable entity over a text range, not atomic); MARKDOWN {markdown} (tables). A wrong field is refused by X's schema and this tool answers 422 with reason validation_failed and the offending path in detail. Requires an authenticated session with write capability behind your key. Returns the updated article object (content_state echoed camelCase, media_entities populated for MEDIA).",
     args: [
       { name: "id",
         describe:
           "The article's entity id, from twitter_article_create or twitter_article_list." },
       { name: "content_state", type: "json",
         describe:
-          "Draft.js content state object: { blocks: [...], entityMap: [...] }. You construct this JSON yourself (it is the same shape the X Article editor produces); it is passed through to X verbatim and not validated here." },
+          "Draft.js content state object: { blocks: [...], entityMap: [...] } in the shape the X Article editor produces. entityMap is an ARRAY of {key: '0', value: {type, mutability, data}}; entity data keys are snake_case on input (tweet_id, media_items, local_media_id, media_category, media_id, entity_key). Unknown fields are refused by X (422, reason validation_failed, detail names the path)." },
       "@INLINE",
     ],
   },
