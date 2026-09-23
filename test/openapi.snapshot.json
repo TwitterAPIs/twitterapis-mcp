@@ -1194,20 +1194,6 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -1370,20 +1356,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
                 }
               }
             }
@@ -2078,6 +2050,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -2295,6 +2281,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -2499,6 +2499,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -2695,6 +2709,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -2899,6 +2927,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -3177,6 +3219,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -3418,6 +3474,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -3601,6 +3671,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -3765,6 +3849,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -3940,6 +4038,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -4131,6 +4243,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -4336,6 +4462,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -4574,6 +4714,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -4787,6 +4941,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -5008,6 +5176,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -5207,6 +5389,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -5427,6 +5623,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -5643,6 +5853,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -5855,6 +6079,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -6044,6 +6282,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -6241,6 +6493,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -6453,6 +6719,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -6687,6 +6967,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -6894,6 +7188,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -7109,6 +7417,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -7309,6 +7631,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -7526,7 +7862,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -7735,6 +8071,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -7913,6 +8263,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -7973,10 +8337,10 @@
             "name": "max_id",
             "in": "query",
             "required": false,
-            "description": "Page backwards: return entries older than this entry id. Pass the previous page's min_entry_id to walk a thread back in time; omit for the newest page.",
+            "description": "Page backwards: return entries older than this entry id. Pass the previous page's min_entry_id to walk a thread back in time; omit for the newest page. Must be a numeric entry id; any other value returns 400.",
             "schema": {
               "type": "string",
-              "description": "Page backwards: return entries older than this entry id. Pass the previous page's min_entry_id to walk a thread back in time; omit for the newest page.",
+              "description": "Page backwards: return entries older than this entry id. Pass the previous page's min_entry_id to walk a thread back in time; omit for the newest page. Must be a numeric entry id; any other value returns 400.",
               "example": "1972455697997824000"
             },
             "example": "1972455697997824000"
@@ -8125,6 +8489,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -8346,6 +8724,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -8558,6 +8950,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -8779,6 +9185,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -8992,6 +9412,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -9212,6 +9646,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -9427,6 +9875,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -9626,6 +10088,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -9832,6 +10308,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -10090,6 +10580,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -10319,6 +10823,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -10540,6 +11058,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -10878,6 +11410,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -11114,6 +11660,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -11373,6 +11933,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -11620,6 +12194,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -11855,6 +12443,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -12127,6 +12729,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -12367,6 +12983,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -12580,6 +13210,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -12762,7 +13406,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -12940,6 +13584,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -13142,7 +13800,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -13351,7 +14009,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -13540,7 +14198,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -13722,7 +14380,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -13910,7 +14568,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -14098,7 +14756,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -14286,7 +14944,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -14474,7 +15132,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -14662,7 +15320,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -14850,7 +15508,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -15038,7 +15696,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -15238,7 +15896,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -15435,7 +16093,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -15621,7 +16279,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -15804,7 +16462,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -15976,7 +16634,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -16154,7 +16812,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -16346,7 +17004,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -16549,7 +17207,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -16746,6 +17404,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -16924,7 +17596,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -17127,7 +17799,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -17336,6 +18008,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -17532,7 +18218,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -17713,7 +18399,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -17928,7 +18614,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -18148,7 +18834,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -18363,7 +19049,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -18587,7 +19273,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -18784,6 +19470,20 @@
                 "example": {
                   "error": "insufficient_credits",
                   "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -19025,6 +19725,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -19224,7 +19938,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -19508,7 +20222,7 @@
                 },
                 "example": {
                   "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
                 }
               }
             }
@@ -19764,6 +20478,20 @@
               }
             }
           },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
           "404": {
             "description": "Not found",
             "content": {
@@ -19952,20 +20680,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
                 }
               }
             }
@@ -20312,20 +21026,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
                 }
               }
             }
@@ -21132,20 +21832,6 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -21296,20 +21982,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
                 }
               }
             }
@@ -21634,20 +22306,6 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -21943,20 +22601,6 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
-                }
-              }
-            }
-          },
           "404": {
             "description": "Not found",
             "content": {
@@ -22108,20 +22752,6 @@
                 "example": {
                   "error": "unauthorized",
                   "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "forbidden",
-                  "message": "The acting account is not authorized for this write action, or has no logged-in session."
                 }
               }
             }
