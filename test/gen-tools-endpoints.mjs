@@ -98,7 +98,27 @@ check("a $ref parameter resolves to its components.parameters entry by name", ((
   const p = withRef.endpoints.get(endpointKey("/w", "GET")).params.get("fields");
   return p && p.required === false && p.type === "string" && !p.path;
 })());
-check("a $ref parameter never lands as a param named \"undefined\"", !withRef.endpoints.get(endpointKey("/w", "GET")).params.has("undefined"));
+check("a $ref parameter never lands as a param named undefined (every key is a non-empty string)", (() => {
+  const keys = [...withRef.endpoints.get(endpointKey("/w", "GET")).params.keys()];
+  return keys.length === 2 && keys.every((k) => typeof k === "string" && k.length > 0) && !withRef.endpoints.get(endpointKey("/w", "GET")).params.has(undefined);
+})());
+check("a resolved target with no name throws instead of minting a nameless param", (() => {
+  try {
+    buildEndpoints({ "/w": { get: { parameters: [{ $ref: "#/components/parameters/__proto__" }] } } }, components);
+    return false;
+  } catch (e) {
+    return /cannot resolve|no string name/.test(String(e.message));
+  }
+})());
+check("a $ref cycle throws a named error, not a stack overflow", (() => {
+  const cyc = { parameters: { a: { $ref: "#/components/parameters/b" }, b: { $ref: "#/components/parameters/a" } } };
+  try {
+    buildEndpoints({ "/w": { get: { parameters: [{ $ref: "#/components/parameters/a" }] } } }, cyc);
+    return false;
+  } catch (e) {
+    return /cycle/.test(String(e.message));
+  }
+})());
 check("inline params beside a $ref still resolve", withRef.endpoints.get(endpointKey("/w", "GET")).params.get("count")?.type === "integer");
 check("an unresolvable $ref throws (fail-closed), naming the ref", (() => {
   try {

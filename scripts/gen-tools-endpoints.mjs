@@ -41,13 +41,20 @@ export const endpointKey = (p, method) => `${method} ${p}`;
  * param, because a param the spec has and the catalog ignores is the exact
  * drift gen-tools.mjs exists to refuse.
  */
-export function resolveParam(x, components, where) {
+export function resolveParam(x, components, where, depth = 0) {
   if (!x || typeof x !== "object") throw new Error(`${where}: parameter entry is not an object`);
-  if (!("$ref" in x)) return x;
+  if (!("$ref" in x)) {
+    // A resolved target with no string name would bring back the exact
+    // "param named undefined" defect this resolver exists to close
+    // (#/components/parameters/__proto__ resolves to {} on a plain object).
+    if (typeof x.name !== "string" || !x.name) throw new Error(`${where}: parameter entry has no string name (${JSON.stringify(x).slice(0, 80)})`);
+    return x;
+  }
+  if (depth > 8) throw new Error(`${where}: parameter $ref chain deeper than 8 (a cycle?) at ${JSON.stringify(x.$ref)}`);
   const m = /^#\/components\/parameters\/([^/]+)$/.exec(String(x.$ref));
-  const target = m && components?.parameters?.[m[1]];
+  const target = m && Object.hasOwn(components?.parameters ?? {}, m[1]) ? components.parameters[m[1]] : undefined;
   if (!target) throw new Error(`${where}: cannot resolve parameter $ref ${JSON.stringify(x.$ref)} (vendored components.parameters lacks it; re-run openapi:refresh)`);
-  return resolveParam(target, components, where);
+  return resolveParam(target, components, where, depth + 1);
 }
 
 export function buildEndpoints(paths, components = undefined) {

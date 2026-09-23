@@ -52,10 +52,10 @@ export const ARG_GROUPS = {
   PROJECTION: [
     { name: "fields",
       describe:
-        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read." },
-    { name: "compact",
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) always survive; any other top-level key you do not name is dropped. Use it to cut a page down to the fields you will actually read." },
+    { name: "compact", enum: ["1", "true"],
       describe:
-        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths." },
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive)." },
   ],
   // Opaque forward-only pagination cursor.
   CURSOR: [
