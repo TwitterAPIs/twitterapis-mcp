@@ -49,6 +49,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -66,6 +72,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -76,6 +88,12 @@ export const TOOLS = [
     shape: {
       username: z.string().describe(
         "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama').",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -88,6 +106,12 @@ export const TOOLS = [
       user_id: z.string().describe(
         "Numeric Twitter/X user id (e.g. '44196397' for @elonmusk). Found in responses from other tools as user_id or author_id.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -98,6 +122,12 @@ export const TOOLS = [
     shape: {
       userName: z.string().describe(
         "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama').",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -112,6 +142,12 @@ export const TOOLS = [
       ),
       user_id: z.string().optional().describe(
         "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -136,6 +172,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -149,6 +191,12 @@ export const TOOLS = [
       ),
       target_user_id: z.string().describe(
         "Numeric user id of the TARGET account (the '...the target?' object).",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -170,6 +218,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -190,6 +244,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -206,6 +266,12 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped, and keep repeating while next_cursor is non-null.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -227,6 +293,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -244,6 +316,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -260,6 +338,12 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -281,6 +365,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -300,6 +390,12 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -321,6 +417,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -341,6 +443,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -360,6 +468,12 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -390,6 +504,12 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -403,6 +523,12 @@ export const TOOLS = [
       ),
       url: z.string().optional().describe(
         "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -421,6 +547,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -434,6 +566,12 @@ export const TOOLS = [
       ),
       url: z.string().optional().describe(
         "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -454,6 +592,12 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -481,6 +625,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -498,6 +648,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -514,6 +670,12 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. next_cursor is null once X marks the follower list complete.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -544,6 +706,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -560,6 +728,12 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -578,6 +752,12 @@ export const TOOLS = [
       with_replays: z.string().optional().describe(
         "Optional. Include replay availability and related metadata. Defaults to true.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -592,6 +772,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -603,6 +789,12 @@ export const TOOLS = [
       community_id: z.string().describe(
         "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -613,6 +805,12 @@ export const TOOLS = [
     shape: {
       community_id: z.string().describe(
         "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -631,6 +829,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. Absence of next_cursor is the only end-of-list signal X gives on this operation.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -647,6 +851,12 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -668,6 +878,12 @@ export const TOOLS = [
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -684,6 +900,12 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -742,6 +964,12 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -759,14 +987,27 @@ export const TOOLS = [
       count: z.number().int().min(1).optional().describe(
         "Truncate the returned trends list to at most this many. Omit to return X's full list for the location.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
     name: "twitter_trends_locations",
     path: "/twitter/trends/locations",
     description:
-      "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place.",
-    shape: {},
+      "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no required parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place.",
+    shape: {
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
+    },
   },
   {
     name: "twitter_account_me",
@@ -872,6 +1113,12 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -897,6 +1144,12 @@ export const TOOLS = [
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -924,6 +1177,12 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -949,6 +1208,12 @@ export const TOOLS = [
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -979,6 +1244,12 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -998,6 +1269,12 @@ export const TOOLS = [
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -1025,6 +1302,12 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -1045,16 +1328,25 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
     name: "twitter_dm_conversation",
     path: "/twitter/dm/conversation",
     description:
-      "Get the messages in one Direct Message conversation by its conversation_id (from twitter_dm_list). Requires an authenticated session behind your key. Returns each message with sender id, time, and text. Read-only: this does not send DMs.",
+      "Get the messages in one Direct Message conversation by its conversation_id (from twitter_dm_list). Requires an authenticated session behind your key. Returns each message with sender id, time, and text, plus min_entry_id and max_entry_id for the page; to walk the thread back in time, call again with max_id set to the previous page's min_entry_id. Read-only: this does not send DMs.",
     shape: {
       conversation_id: z.string().describe(
         "The conversation_id from a twitter_dm_list entry identifying which DM thread to read.",
+      ),
+      max_id: z.string().optional().describe(
+        "Optional. Page backwards: return entries older than this numeric entry id. Pass the previous page's min_entry_id to walk a thread back in time; omit for the newest page. Must be a numeric entry id; any other value returns 400.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
@@ -1067,6 +1359,12 @@ export const TOOLS = [
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -1366,6 +1664,12 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -1451,6 +1755,12 @@ export const TOOLS = [
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -1631,10 +1941,13 @@ export const TOOLS = [
     method: "POST",
     write: true,
     description:
-      "Follow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key. Reverse with twitter_unfollow_user.",
+      "Follow a user AS your authenticated account, by numeric user_id or by @handle (provide exactly one). Requires write capability behind your key. Reverse with twitter_unfollow_user.",
     shape: {
-      user_id: z.string().describe(
-        "Numeric user id of the account to follow. Resolve a handle to a user_id first with twitter_user_info.",
+      user_id: z.string().optional().describe(
+        "Numeric user id of the account to follow. Provide exactly one of user_id or username; user_id skips the handle lookup.",
+      ),
+      username: z.string().optional().describe(
+        "The @handle WITHOUT the leading @ (e.g. \"elonmusk\") of the account to follow. Provide exactly one of user_id or username; the API resolves the handle to its id on every call, never from a cache, so a renamed account is followed by its current handle.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
@@ -1657,10 +1970,13 @@ export const TOOLS = [
     write: true,
     destructive: true,
     description:
-      "Unfollow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key.",
+      "Unfollow a user AS your authenticated account, by numeric user_id or by @handle (provide exactly one). Requires write capability behind your key.",
     shape: {
-      user_id: z.string().describe(
-        "Numeric user id of the account to unfollow.",
+      user_id: z.string().optional().describe(
+        "Numeric user id of the account to unfollow. Provide exactly one of user_id or username.",
+      ),
+      username: z.string().optional().describe(
+        "The @handle WITHOUT the leading @ of the account to unfollow. Provide exactly one of user_id or username; resolved to its id on every call, never from a cache.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
@@ -1876,6 +2192,12 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -2075,6 +2397,12 @@ export const TOOLS = [
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
       ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+      ),
     },
   },
   {
@@ -2103,6 +2431,12 @@ export const TOOLS = [
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },
@@ -2237,6 +2571,12 @@ export const TOOLS = [
     shape: {
       limit: z.number().int().min(1).max(200).optional().describe(
         "Max delivery events to return, 1 to 200. Defaults to 50 when omitted.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.string().optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
       ),
     },
   },

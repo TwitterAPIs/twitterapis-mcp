@@ -124,7 +124,9 @@
         "query",
         "product",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "query"
@@ -155,6 +157,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -173,7 +183,9 @@
       "args": [
         "query",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "query"
@@ -194,6 +206,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -210,7 +230,9 @@
       "jsonBody": false,
       "description": "Get a user's complete public profile by their @handle: display name, bio, follower count, following count, verification status, location, website, account creation date, and pinned tweet. Use this before fetching tweets or followers to confirm the account exists and resolve the numeric user_id.",
       "args": [
-        "username"
+        "username",
+        "fields",
+        "compact"
       ],
       "required": [
         "username"
@@ -221,6 +243,14 @@
           "username": {
             "type": "string",
             "description": "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama')."
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -237,7 +267,9 @@
       "jsonBody": false,
       "description": "Get a user's complete public profile by their numeric user id. Identical response to twitter_user_info. Use this when you already have a user_id from a previous API response and want to avoid a handle lookup.",
       "args": [
-        "user_id"
+        "user_id",
+        "fields",
+        "compact"
       ],
       "required": [
         "user_id"
@@ -248,6 +280,14 @@
           "user_id": {
             "type": "string",
             "description": "Numeric Twitter/X user id (e.g. '44196397' for @elonmusk). Found in responses from other tools as user_id or author_id."
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -264,7 +304,9 @@
       "jsonBody": false,
       "description": "Check whether a Twitter/X account is alive, suspended, or deleted. Returns a status field that is one of 'alive', 'suspended', 'not_found', or 'unavailable', plus the numeric id when the account is alive and X's own reason when it gives one. Use this instead of twitter_user_info when the QUESTION is whether the account still exists: user info answers a suspended account, a deleted account, and a handle that never existed all the same way, so it cannot tell a ban from a typo. Every outcome here is a successful response, so read the status field rather than treating a suspension as an error. A protected (private) account counts as alive, since protection is a visibility setting and not an account state.",
       "args": [
-        "userName"
+        "userName",
+        "fields",
+        "compact"
       ],
       "required": [
         "userName"
@@ -275,6 +317,14 @@
           "userName": {
             "type": "string",
             "description": "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama')."
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -292,7 +342,9 @@
       "description": "Get a user's full 'About' object: the structured profile facts X surfaces beyond the bio, including account category and professional/business labels, verification and identity-verification flags, joined date, location and linked website, follower/following counts, and X's 'About this account' transparency panel (the account's country, how the account was created, and its username-change history). Provide a username or a user_id. Use this to enrich a profile beyond what twitter_user_info returns.",
       "args": [
         "username",
-        "user_id"
+        "user_id",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -304,6 +356,14 @@
           },
           "user_id": {
             "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -322,7 +382,9 @@
         "user_id",
         "team",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -349,6 +411,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -363,7 +433,9 @@
       "description": "Check the follow relationship between two accounts by numeric user id: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Both ids are required. Use this to verify a follow before/after a follow action, or to detect mutuals.",
       "args": [
         "source_user_id",
-        "target_user_id"
+        "target_user_id",
+        "fields",
+        "compact"
       ],
       "required": [
         "source_user_id",
@@ -379,6 +451,14 @@
           "target_user_id": {
             "type": "string",
             "description": "Numeric user id of the TARGET account (the '...the target?' object)."
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -399,7 +479,9 @@
         "username",
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -421,6 +503,14 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -438,7 +528,9 @@
         "username",
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -461,6 +553,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -476,7 +576,9 @@
       "args": [
         "user_id",
         "max",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "user_id"
@@ -497,6 +599,14 @@
           "cursor": {
             "description": "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped, and keep repeating while next_cursor is non-null.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -516,7 +626,9 @@
         "username",
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -539,6 +651,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -554,7 +674,9 @@
       "args": [
         "username",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "username"
@@ -575,6 +697,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -593,7 +723,9 @@
       "args": [
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "user_id"
@@ -614,6 +746,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -633,7 +773,9 @@
         "username",
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -655,6 +797,14 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -672,7 +822,9 @@
         "username",
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -694,6 +846,14 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -711,7 +871,9 @@
         "username",
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -733,6 +895,14 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -750,7 +920,9 @@
         "username",
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -772,6 +944,14 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -789,7 +969,9 @@
         "username",
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -811,6 +993,14 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -831,7 +1021,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [
         "user_id"
@@ -868,6 +1060,14 @@
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -885,7 +1085,9 @@
       "description": "Get the full detail of a single tweet: text, author profile, post timestamp, like/retweet/reply/quote counts, attached media, referenced quoted tweet, and parent reply context. Use this to inspect a specific tweet before fetching its replies or thread. Accepts either the tweet id or its full URL.",
       "args": [
         "id",
-        "url"
+        "url",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -897,6 +1099,14 @@
           },
           "url": {
             "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -913,7 +1123,9 @@
       "args": [
         "id",
         "url",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -930,6 +1142,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -944,7 +1164,9 @@
       "description": "Get all tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread). Pass any tweet id/url from the thread and the API returns the full ordered sequence in a single call. Does NOT return replies from other users, use twitter_tweet_replies for that. Accepts either the tweet id or its full URL.",
       "args": [
         "id",
-        "url"
+        "url",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -956,6 +1178,14 @@
           },
           "url": {
             "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Provide exactly one of id or url.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -973,7 +1203,9 @@
         "id",
         "url",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -996,6 +1228,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -1014,7 +1254,9 @@
         "product",
         "strict",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -1049,6 +1291,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -1064,7 +1314,9 @@
       "args": [
         "list_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "list_id"
@@ -1085,6 +1337,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call; pass on subsequent calls to fetch the next page.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -1103,7 +1363,9 @@
       "args": [
         "list_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "list_id"
@@ -1123,6 +1385,14 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. next_cursor is null once X marks the follower list complete.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         },
@@ -1146,7 +1416,9 @@
         "include_replies",
         "product",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "list_id"
@@ -1187,6 +1459,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -1205,7 +1485,9 @@
       "args": [
         "list_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "list_id"
@@ -1226,6 +1508,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -1244,7 +1534,9 @@
       "args": [
         "id",
         "with_listeners",
-        "with_replays"
+        "with_replays",
+        "fields",
+        "compact"
       ],
       "required": [
         "id"
@@ -1263,6 +1555,14 @@
           "with_replays": {
             "description": "Optional. Include replay availability and related metadata. Defaults to true.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -1280,7 +1580,9 @@
       "description": "Find X Communities by keyword, cursor-paginated. This is the discovery step the rest of the community family assumes: every other community endpoint starts from a community id, and this is the one that produces one. Each hit is a compact record, id, name, member count, nsfw flag, topic name, banners and the facepile avatars, exactly what X's own search sends and nothing more. Once you have an id, use twitter_community_info or twitter_community_about for detail, twitter_community_members / twitter_community_moderators for the roster, and twitter_community_tweets for its posts.",
       "args": [
         "query",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "query"
@@ -1294,6 +1596,14 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         },
@@ -1311,7 +1621,9 @@
       "jsonBody": false,
       "description": "Get the metadata for one X Community by its numeric id: name, description, member_count, moderator_count, join_policy, invites_policy, the join question, primary topic, search tags, the posted rules, both the custom and the default banner plus a resolved banner_url, the permalink, the admin and creator profiles, and the facepile member ids. The community id is the digits in a x.com/i/communities/<id> URL. IMPORTANT: role, can_join, is_pinned and viewer_relationship_type are ALWAYS null here and that is deliberate, not an error, because they describe the account that made the call and this is a pooled read served by a rotating account. rules[].description is also always null: X sends only the rule id and name on this payload. Use twitter_community_members for the roster and twitter_community_tweets for the posts.",
       "args": [
-        "community_id"
+        "community_id",
+        "fields",
+        "compact"
       ],
       "required": [
         "community_id"
@@ -1322,6 +1634,14 @@
           "community_id": {
             "type": "string",
             "description": "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id."
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -1338,7 +1658,9 @@
       "jsonBody": false,
       "description": "The About tab for one X Community: its moderators, and a preview of its members, both returned as FULL user profiles with bio, follower and following counts, tweet counts, location, website, banner and join date. twitter_community_members and twitter_community_moderators return a reduced row instead, so this is the endpoint that answers who runs a community in one call rather than one call plus a profile lookup per person. Use twitter_community_info instead for the community's own metadata (name, description, rules, join policy); this endpoint is about the PEOPLE, not the community object.",
       "args": [
-        "community_id"
+        "community_id",
+        "fields",
+        "compact"
       ],
       "required": [
         "community_id"
@@ -1349,6 +1671,14 @@
           "community_id": {
             "type": "string",
             "description": "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'."
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -1367,7 +1697,9 @@
       "args": [
         "community_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "community_id"
@@ -1388,6 +1720,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. Absence of next_cursor is the only end-of-list signal X gives on this operation.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -1406,7 +1746,9 @@
       "args": [
         "community_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "community_id"
@@ -1427,6 +1769,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -1446,7 +1796,9 @@
         "community_id",
         "ranking_mode",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "community_id"
@@ -1475,6 +1827,14 @@
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -1493,7 +1853,9 @@
       "args": [
         "user_id",
         "count",
-        "cursor"
+        "cursor",
+        "fields",
+        "compact"
       ],
       "required": [
         "user_id"
@@ -1513,6 +1875,14 @@
           },
           "cursor": {
             "description": "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         },
@@ -1597,7 +1967,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -1618,6 +1990,14 @@
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -1633,7 +2013,9 @@
       "args": [
         "country",
         "woeid",
-        "count"
+        "count",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -1652,6 +2034,14 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 9007199254740991
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -1663,12 +2053,24 @@
       "write": false,
       "destructive": false,
       "jsonBody": false,
-      "description": "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place.",
-      "args": [],
+      "description": "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no required parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place.",
+      "args": [
+        "fields",
+        "compact"
+      ],
       "required": [],
       "inputSchema": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
+          }
+        }
       }
     },
     "twitter_account_me": {
@@ -1862,7 +2264,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -1892,6 +2296,14 @@
           },
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -1911,7 +2323,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -1941,6 +2355,14 @@
           },
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -1960,7 +2382,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -1990,6 +2414,14 @@
           },
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -2009,7 +2441,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -2039,6 +2473,14 @@
           },
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -2059,7 +2501,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [
         "query"
@@ -2096,6 +2540,14 @@
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -2115,7 +2567,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -2136,6 +2590,14 @@
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -2154,7 +2616,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [
         "folder_id"
@@ -2185,6 +2649,14 @@
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         },
         "required": [
@@ -2204,7 +2676,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -2225,6 +2699,14 @@
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -2236,13 +2718,16 @@
       "write": false,
       "destructive": false,
       "jsonBody": false,
-      "description": "Get the messages in one Direct Message conversation by its conversation_id (from twitter_dm_list). Requires an authenticated session behind your key. Returns each message with sender id, time, and text. Read-only: this does not send DMs.",
+      "description": "Get the messages in one Direct Message conversation by its conversation_id (from twitter_dm_list). Requires an authenticated session behind your key. Returns each message with sender id, time, and text, plus min_entry_id and max_entry_id for the page; to walk the thread back in time, call again with max_id set to the previous page's min_entry_id. Read-only: this does not send DMs.",
       "args": [
         "conversation_id",
+        "max_id",
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [
         "conversation_id"
@@ -2253,6 +2738,10 @@
           "conversation_id": {
             "type": "string",
             "description": "The conversation_id from a twitter_dm_list entry identifying which DM thread to read."
+          },
+          "max_id": {
+            "description": "Optional. Page backwards: return entries older than this numeric entry id. Pass the previous page's min_entry_id to walk a thread back in time; omit for the newest page. Must be a numeric entry id; any other value returns 400.",
+            "type": "string"
           },
           "auth_token": {
             "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
@@ -2268,6 +2757,14 @@
           },
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         },
@@ -2785,7 +3282,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -2809,6 +3308,14 @@
           },
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -2946,7 +3453,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -2970,6 +3479,14 @@
           },
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -3264,23 +3781,26 @@
       "write": true,
       "destructive": false,
       "jsonBody": false,
-      "description": "Follow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key. Reverse with twitter_unfollow_user.",
+      "description": "Follow a user AS your authenticated account, by numeric user_id or by @handle (provide exactly one). Requires write capability behind your key. Reverse with twitter_unfollow_user.",
       "args": [
         "user_id",
+        "username",
         "auth_token",
         "ct0",
         "proxy_url",
         "user_agent"
       ],
-      "required": [
-        "user_id"
-      ],
+      "required": [],
       "inputSchema": {
         "type": "object",
         "properties": {
           "user_id": {
-            "type": "string",
-            "description": "Numeric user id of the account to follow. Resolve a handle to a user_id first with twitter_user_info."
+            "description": "Numeric user id of the account to follow. Provide exactly one of user_id or username; user_id skips the handle lookup.",
+            "type": "string"
+          },
+          "username": {
+            "description": "The @handle WITHOUT the leading @ (e.g. \"elonmusk\") of the account to follow. Provide exactly one of user_id or username; the API resolves the handle to its id on every call, never from a cache, so a renamed account is followed by its current handle.",
+            "type": "string"
           },
           "auth_token": {
             "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
@@ -3298,10 +3818,7 @@
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
-        },
-        "required": [
-          "user_id"
-        ]
+        }
       }
     },
     "twitter_unfollow_user": {
@@ -3311,23 +3828,26 @@
       "write": true,
       "destructive": true,
       "jsonBody": false,
-      "description": "Unfollow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key.",
+      "description": "Unfollow a user AS your authenticated account, by numeric user_id or by @handle (provide exactly one). Requires write capability behind your key.",
       "args": [
         "user_id",
+        "username",
         "auth_token",
         "ct0",
         "proxy_url",
         "user_agent"
       ],
-      "required": [
-        "user_id"
-      ],
+      "required": [],
       "inputSchema": {
         "type": "object",
         "properties": {
           "user_id": {
-            "type": "string",
-            "description": "Numeric user id of the account to unfollow."
+            "description": "Numeric user id of the account to unfollow. Provide exactly one of user_id or username.",
+            "type": "string"
+          },
+          "username": {
+            "description": "The @handle WITHOUT the leading @ of the account to unfollow. Provide exactly one of user_id or username; resolved to its id on every call, never from a cache.",
+            "type": "string"
           },
           "auth_token": {
             "description": "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
@@ -3345,10 +3865,7 @@
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
           }
-        },
-        "required": [
-          "user_id"
-        ]
+        }
       }
     },
     "twitter_list_add_member": {
@@ -3700,7 +4217,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [
         "media_id"
@@ -3726,6 +4245,14 @@
           },
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         },
@@ -4067,7 +4594,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -4100,6 +4629,14 @@
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
             "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }
@@ -4119,7 +4656,9 @@
         "auth_token",
         "ct0",
         "proxy_url",
-        "user_agent"
+        "user_agent",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -4157,6 +4696,14 @@
           },
           "user_agent": {
             "description": "Optional. User-Agent string to send for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking tool.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
             "type": "string"
           }
         }
@@ -4417,7 +4964,9 @@
       "jsonBody": false,
       "description": "List your most recent monitor delivery events across every monitor, most recent first: id, monitor_id, tweet_id, status, tweet_created_at, and the real measured latency (detected_lag_ms, from X's own post timestamp to enqueue; delivery_lag_ms, the separate queue-to-webhook-POST time; total_lag_ms). Free per call.",
       "args": [
-        "limit"
+        "limit",
+        "fields",
+        "compact"
       ],
       "required": [],
       "inputSchema": {
@@ -4428,6 +4977,14 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 200
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths.",
+            "type": "string"
           }
         }
       }

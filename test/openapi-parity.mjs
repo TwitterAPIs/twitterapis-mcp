@@ -18,6 +18,7 @@
 // reading either copy alone cannot see.
 
 import { TOOLS } from "../src/tools.js";
+import { resolveParam } from "../scripts/gen-tools-endpoints.mjs";
 import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -73,7 +74,10 @@ function openapiIndex(oa) {
     const tParams = templateParams(p);
     for (const [method, op] of Object.entries(ops)) {
       if (method !== "get" && method !== "post" && method !== "delete") continue;
-      const params = new Set((op.parameters || []).map((x) => x.name));
+      // Shared params arrive as $ref (docs components.parameters, 2026-09-23);
+      // the same resolver the generator uses, so the two gates cannot disagree
+      // about what a param is called. Fail-closed on a ref the spec lacks.
+      const params = new Set((op.parameters || []).map((x) => resolveParam(x, oa.components, `${method.toUpperCase()} ${p}`).name));
       for (const name of tParams) params.add(name);
       const rb = op.requestBody?.content?.["application/json"]?.schema?.properties || {};
       for (const k of Object.keys(rb)) params.add(k);

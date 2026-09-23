@@ -44,6 +44,19 @@
 
 /** Reusable arg runs. A tool references one as the string "@NAME". */
 export const ARG_GROUPS = {
+  // Response projection on every read (API 2026-09-23, docs components.parameters
+  // fields/compact). Both are optional, GET-only, and never empty a body: the
+  // envelope keys (ok, count, next_cursor, has_more) always survive. Exposed on
+  // every read tool because a model paying per token for a 40-tweet page is the
+  // caller these were built for.
+  PROJECTION: [
+    { name: "fields",
+      describe:
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Envelope keys (ok, count, next_cursor, has_more) always survive. Use it to cut a page down to the fields you will actually read." },
+    { name: "compact",
+      describe:
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and never turns a body into {}. Combine with fields to keep extra paths." },
+  ],
   // Opaque forward-only pagination cursor.
   CURSOR: [
     { name: "cursor",
@@ -132,6 +145,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Result ranking mode. 'Latest' = reverse-chronological (best for monitoring). 'Top' = engagement-ranked (best for finding popular tweets, default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts." },
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -144,6 +158,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Name, keyword, or topic to search accounts for. Examples: 'OpenAI', 'AI researcher', 'tech founder'." },
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -155,6 +170,7 @@ export const TOOL_OVERRIDES = [
       { name: "username",
         describe:
           "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama')." },
+      "@PROJECTION",
     ],
   },
   {
@@ -166,6 +182,7 @@ export const TOOL_OVERRIDES = [
       { name: "user_id",
         describe:
           "Numeric Twitter/X user id (e.g. '44196397' for @elonmusk). Found in responses from other tools as user_id or author_id." },
+      "@PROJECTION",
     ],
   },
   {
@@ -177,6 +194,7 @@ export const TOOL_OVERRIDES = [
       { name: "userName",
         describe:
           "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama')." },
+      "@PROJECTION",
     ],
   },
   {
@@ -186,6 +204,7 @@ export const TOOL_OVERRIDES = [
       "Get a user's full 'About' object: the structured profile facts X surfaces beyond the bio, including account category and professional/business labels, verification and identity-verification flags, joined date, location and linked website, follower/following counts, and X's 'About this account' transparency panel (the account's country, how the account was created, and its username-change history). Provide a username or a user_id. Use this to enrich a profile beyond what twitter_user_info returns.",
     args: [
       "@USER_REF",
+      "@PROJECTION",
     ],
   },
   {
@@ -199,6 +218,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Optional team/sub-group name to filter affiliates by, when the org exposes named teams." },
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -213,6 +233,7 @@ export const TOOL_OVERRIDES = [
       { name: "target_user_id",
         describe:
           "Numeric user id of the TARGET account (the '...the target?' object)." },
+      "@PROJECTION",
     ],
   },
   // ── Reads: a user's tweets / timeline ──────────────────────────────────────
@@ -224,6 +245,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@USER_REF",
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -234,6 +256,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@USER_REF",
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -251,6 +274,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped, and keep repeating while next_cursor is non-null." },
+      "@PROJECTION",
     ],
   },
   {
@@ -261,6 +285,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@USER_REF",
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -273,6 +298,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Twitter/X handle WITHOUT the leading @ of the user to find mentions for (e.g. 'openai' to find tweets mentioning @openai)." },
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -285,6 +311,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Numeric Twitter/X user id (e.g. '44196397'). Required: this endpoint does not accept a username. Resolve a handle to a user_id first with twitter_user_info." },
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   // ── Reads: followers / following graph ─────────────────────────────────────
@@ -296,6 +323,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@USER_REF",
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -306,6 +334,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@USER_REF",
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -316,6 +345,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@USER_REF",
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -326,6 +356,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@USER_REF",
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -336,6 +367,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@USER_REF",
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -349,6 +381,7 @@ export const TOOL_OVERRIDES = [
           "Numeric user id of the target account to compute shared followers against." },
       "@PAGINATION",
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   // ── Reads: a single tweet + its conversation ───────────────────────────────
@@ -359,6 +392,7 @@ export const TOOL_OVERRIDES = [
       "Get the full detail of a single tweet: text, author profile, post timestamp, like/retweet/reply/quote counts, attached media, referenced quoted tweet, and parent reply context. Use this to inspect a specific tweet before fetching its replies or thread. Accepts either the tweet id or its full URL.",
     args: [
       "@TWEET_REF",
+      "@PROJECTION",
     ],
   },
   {
@@ -369,6 +403,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@TWEET_REF",
       "@CURSOR",
+      "@PROJECTION",
     ],
   },
   {
@@ -384,6 +419,7 @@ export const TOOL_OVERRIDES = [
       "Get all tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread). Pass any tweet id/url from the thread and the API returns the full ordered sequence in a single call. Does NOT return replies from other users, use twitter_tweet_replies for that. Accepts either the tweet id or its full URL.",
     args: [
       "@TWEET_REF",
+      "@PROJECTION",
     ],
   },
   {
@@ -394,6 +430,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@TWEET_REF",
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -415,6 +452,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+      "@PROJECTION",
     ],
   },
   {
@@ -427,6 +465,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Numeric Twitter/X List id. Found in the list URL: x.com/i/lists/<list_id>." },
       "@PAGINATION",
+      "@PROJECTION",
     ],
   },
   {
@@ -444,6 +483,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. next_cursor is null once X marks the follower list complete." },
+      "@PROJECTION",
     ],
   },
   // TWO LIST FEEDS, TWO CAPABILITIES, NOT TWO SPELLINGS OF ONE. The names read
@@ -481,6 +521,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+      "@PROJECTION",
     ],
   },
   {
@@ -498,6 +539,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+      "@PROJECTION",
     ],
   },
   // ── Reads: trends ──────────────────────────────────────────────────────────
@@ -516,6 +558,7 @@ export const TOOL_OVERRIDES = [
       { name: "with_replays", required: false,
         describe:
           "Optional. Include replay availability and related metadata. Defaults to true." },
+      "@PROJECTION",
     ],
   },
   // ── Reads: communities ─────────────────────────────────────────────────────
@@ -537,6 +580,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+      "@PROJECTION",
     ],
   },
   {
@@ -548,6 +592,7 @@ export const TOOL_OVERRIDES = [
       { name: "community_id",
         describe:
           "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id." },
+      "@PROJECTION",
     ],
   },
   {
@@ -559,6 +604,7 @@ export const TOOL_OVERRIDES = [
       { name: "community_id",
         describe:
           "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'." },
+      "@PROJECTION",
     ],
   },
   {
@@ -576,6 +622,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call. Absence of next_cursor is the only end-of-list signal X gives on this operation." },
+      "@PROJECTION",
     ],
   },
   {
@@ -593,6 +640,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+      "@PROJECTION",
     ],
   },
   {
@@ -613,6 +661,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+      "@PROJECTION",
     ],
   },
   {
@@ -630,6 +679,7 @@ export const TOOL_OVERRIDES = [
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
+      "@PROJECTION",
     ],
   },
   {
@@ -664,6 +714,7 @@ export const TOOL_OVERRIDES = [
       "Check whether the authenticated account can use Grok, and which models it may pick. Returns eligibility, X's own reasons when it is NOT eligible (passed through verbatim, since we cannot know X's policy), whether free access is enabled, and the available model options. Eligibility is a property of the X ACCOUNT rather than of the API key, so ask this about the same account you intend to run twitter_grok_chat as. Free.",
     args: [
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -681,14 +732,15 @@ export const TOOL_OVERRIDES = [
       { name: "count", type: "int", min: 1,
         describe:
           "Truncate the returned trends list to at most this many. Omit to return X's full list for the location." },
+      "@PROJECTION",
     ],
   },
   {
     name: "twitter_trends_locations",
     endpoint: "/trends/locations",
     description:
-      "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place.",
-    args: [],
+      "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no required parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place.",
+    args: ["@PROJECTION"],
   },
   // ── Reads: your twitterapis.com account (billing; not Twitter data) ─────────
   {
@@ -796,6 +848,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@PAGINATION",
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -806,6 +859,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@PAGINATION",
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -816,6 +870,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@PAGINATION",
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -826,6 +881,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@PAGINATION",
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -839,6 +895,7 @@ export const TOOL_OVERRIDES = [
           "Search terms to match against your bookmarked tweets' text." },
       "@PAGINATION",
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -848,6 +905,7 @@ export const TOOL_OVERRIDES = [
       "List YOUR authenticated account's bookmark FOLDERS (X's internal name: collections), the named groups you can organize saved tweets into, separate from your flat bookmarks list (twitter_bookmarks). Requires an authenticated session behind your key. Returns each folder's id, name, and a cover image. Takes no arguments; your folders resolve from your session alone. Use twitter_bookmark_folder_timeline with a folder's id to read the tweets inside it.",
     args: [
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -861,6 +919,7 @@ export const TOOL_OVERRIDES = [
           "The bookmark folder's id, from twitter_bookmark_folders (e.g. '2073826456430592429')." },
       "@CURSOR",
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -870,18 +929,23 @@ export const TOOL_OVERRIDES = [
       "List YOUR authenticated account's Direct Message conversations (inbox), each with the participant and a conversation_id you can pass to twitter_dm_conversation. Requires an authenticated session behind your key. Read-only: this does not send DMs.",
     args: [
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
     name: "twitter_dm_conversation",
     endpoint: "/dm/conversation",
     description:
-      "Get the messages in one Direct Message conversation by its conversation_id (from twitter_dm_list). Requires an authenticated session behind your key. Returns each message with sender id, time, and text. Read-only: this does not send DMs.",
+      "Get the messages in one Direct Message conversation by its conversation_id (from twitter_dm_list). Requires an authenticated session behind your key. Returns each message with sender id, time, and text, plus min_entry_id and max_entry_id for the page; to walk the thread back in time, call again with max_id set to the previous page's min_entry_id. Read-only: this does not send DMs.",
     args: [
       { name: "conversation_id",
         describe:
           "The conversation_id from a twitter_dm_list entry identifying which DM thread to read." },
+      { name: "max_id",
+        describe:
+          "Optional. Page backwards: return entries older than this numeric entry id. Pass the previous page's min_entry_id to walk a thread back in time; omit for the newest page. Must be a numeric entry id; any other value returns 400." },
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -1073,6 +1137,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Optional. Pass the STRING \"true\" to ask X for the oldest draft first. Anything else, including omitting it, sends ascending=false, which is what X's own composer sends. The resulting order is X's and is not re-sorted, so do not promise a user newest-first." },
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -1123,6 +1188,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Optional. Pass the STRING \"true\" for the oldest row first. Anything else, including omitting it, returns X's default order." },
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   // ── Writes: engagement (favorite / retweet / bookmark) + inverses ──────────
@@ -1222,11 +1288,14 @@ export const TOOL_OVERRIDES = [
     endpoint: "/user/follow",
     write: true,
     description:
-      "Follow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key. Reverse with twitter_unfollow_user.",
+      "Follow a user AS your authenticated account, by numeric user_id or by @handle (provide exactly one). Requires write capability behind your key. Reverse with twitter_unfollow_user.",
     args: [
       { name: "user_id",
         describe:
-          "Numeric user id of the account to follow. Resolve a handle to a user_id first with twitter_user_info." },
+          "Numeric user id of the account to follow. Provide exactly one of user_id or username; user_id skips the handle lookup." },
+      { name: "username",
+        describe:
+          "The @handle WITHOUT the leading @ (e.g. \"elonmusk\") of the account to follow. Provide exactly one of user_id or username; the API resolves the handle to its id on every call, never from a cache, so a renamed account is followed by its current handle." },
       "@INLINE",
     ],
     omit: {
@@ -1239,11 +1308,14 @@ export const TOOL_OVERRIDES = [
     endpoint: "/user/unfollow",
     write: true, destructive: true,
     description:
-      "Unfollow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key.",
+      "Unfollow a user AS your authenticated account, by numeric user_id or by @handle (provide exactly one). Requires write capability behind your key.",
     args: [
       { name: "user_id",
         describe:
-          "Numeric user id of the account to unfollow." },
+          "Numeric user id of the account to unfollow. Provide exactly one of user_id or username." },
+      { name: "username",
+        describe:
+          "The @handle WITHOUT the leading @ of the account to unfollow. Provide exactly one of user_id or username; resolved to its id on every call, never from a cache." },
       "@INLINE",
     ],
     omit: {
@@ -1442,6 +1514,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Numeric media id returned by twitter_media_upload, e.g. '1234567890123456789'." },
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   // ── Writes: Articles (X's long-form "Notes" feature, #1096) ────────────────
@@ -1559,6 +1632,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "OWNER-ONLY form. The article's own entity id, from twitter_article_create or twitter_article_list (e.g. 'ArticleEntity:1234567890123456789', or the bare numeric rest_id). Requires an authenticated session. Provide exactly one of id, url, or article_id." },
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -1575,6 +1649,7 @@ export const TOOL_OVERRIDES = [
           "Max articles to return for this page, 1 to 100. Defaults to 20 when omitted." },
       "@CURSOR",
       "@INLINE",
+      "@PROJECTION",
     ],
   },
   {
@@ -1709,6 +1784,7 @@ export const TOOL_OVERRIDES = [
       { name: "limit", type: "int", min: 1, max: 200,
         describe:
           "Max delivery events to return, 1 to 200. Defaults to 50 when omitted." },
+      "@PROJECTION",
     ],
   },
   {
