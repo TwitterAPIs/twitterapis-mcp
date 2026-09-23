@@ -31,7 +31,33 @@ export const endpointKey = (p, method) => `${method} ${p}`;
  * DELETE (or POST and DELETE, etc) on the SAME path both get their own entry:
  * this is the fix for "the catalog assumed one verb per path".
  */
-export function buildEndpoints(paths) {
+/**
+ * Resolve one entry of an operation's `parameters` array. The docs SoT declares
+ * its shared read parameters (`fields`, `compact`, 2026-09-23) once under
+ * components.parameters and references them as `{ $ref: "#/components/
+ * parameters/<name>" }` on every GET; before this, such an entry read as a
+ * param named "undefined" and the build refused every read tool. Fail-closed:
+ * a ref this builder cannot resolve is an error, never a silently dropped
+ * param, because a param the spec has and the catalog ignores is the exact
+ * drift gen-tools.mjs exists to refuse.
+ */
+export function resolveParam(x, components, where, depth = 0) {
+  if (!x || typeof x !== "object") throw new Error(`${where}: parameter entry is not an object`);
+  if (!("$ref" in x)) {
+    // A resolved target with no string name would bring back the exact
+    // "param named undefined" defect this resolver exists to close
+    // (#/components/parameters/__proto__ resolves to {} on a plain object).
+    if (typeof x.name !== "string" || !x.name) throw new Error(`${where}: parameter entry has no string name (${JSON.stringify(x).slice(0, 80)})`);
+    return x;
+  }
+  if (depth > 8) throw new Error(`${where}: parameter $ref chain deeper than 8 (a cycle?) at ${JSON.stringify(x.$ref)}`);
+  const m = /^#\/components\/parameters\/([^/]+)$/.exec(String(x.$ref));
+  const target = m && Object.hasOwn(components?.parameters ?? {}, m[1]) ? components.parameters[m[1]] : undefined;
+  if (!target) throw new Error(`${where}: cannot resolve parameter $ref ${JSON.stringify(x.$ref)} (vendored components.parameters lacks it; re-run openapi:refresh)`);
+  return resolveParam(target, components, where, depth + 1);
+}
+
+export function buildEndpoints(paths, components = undefined) {
   const endpoints = new Map();
   const methodsByPath = new Map();
 
@@ -41,7 +67,8 @@ export function buildEndpoints(paths) {
       if (!METHODS.has(m)) continue;
       const params = new Map();
       for (const name of pParams) params.set(name, { required: true, type: "string", path: true });
-      for (const x of op.parameters || []) {
+      for (const raw of op.parameters || []) {
+        const x = resolveParam(raw, components, `${m.toUpperCase()} ${p}`);
         params.set(x.name, {
           required: Boolean(x.required) || x.in === "path",
           type: x.schema?.type || "string",

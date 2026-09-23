@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.13.0 (2026-09-23)
+
+- **Every data read takes `fields` and `compact`.** The API added response
+  projection on GET routes: `fields` keeps only the dotted paths you name
+  (applied to every object in the returned lists and to nested objects; the
+  pagination and envelope keys `next_cursor`, `cursor`, `has_more`, `count`,
+  `partial`, `error`, `message`, `reason` always survive, anything else at the
+  top level that you do not name is dropped), `compact` applies a built-in
+  preset (ids, url, text, created_at, lang, engagement counts, the
+  retweet/reply/quote flags, conversation ids, the author's id/username/name/
+  followers_count/verification, the quoted or retweeted tweet's id/url/author)
+  that, on its own, never turns a body into `{}`. 55 data-read tools gained the
+  pair (account, feedback, session-status, monitor and webhook reads return
+  their bodies unchanged); a model paying per token for a 40-tweet page is the
+  caller these were built for. Still 109 tools (65 reads, 44 writes), so a
+  MINOR for the new args rather than a new tool.
+- **`twitter_dm_conversation` pages backwards.** New optional `max_id`: pass the
+  previous page's `min_entry_id` (now returned at the root beside
+  `max_entry_id`) to walk a thread back in time. It must be a numeric entry id;
+  the API answers 400 for anything else instead of quietly returning page one.
+- **`twitter_follow_user` and `twitter_unfollow_user` take a `username`** as an
+  alternative to `user_id` (exactly one of the two). The API resolves the handle
+  on every call, never from a cache, so a renamed account is acted on by its
+  current handle.
+- The catalog generator resolves `$ref` parameters. The published spec now
+  declares its shared read parameters once under `components.parameters` and
+  references them from every GET; the generator and the openapi-parity gate read
+  those as a param named `undefined` and refused every read tool. Both now share
+  one resolver that fails closed on a ref the vendored spec lacks. The frozen
+  catalog baseline was regenerated in the same commit for review.
+
 ## 0.12.0 (2026-09-13)
 
 - **Two new tools, 107 -> 109 (65 reads, 44 writes): `twitter_update_avatar` and

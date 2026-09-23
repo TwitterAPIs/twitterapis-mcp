@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "twitterapis-mcp",
   "display_name": "TwitterAPIs",
-  "version": "0.12.1",
+  "version": "0.13.0",
   "icon": "icon.png",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
   "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
@@ -205,7 +205,7 @@
     },
     {
       "name": "twitter_trends_locations",
-      "description": "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place."
+      "description": "List every location X publishes trends for, each with the numeric WOEID to pass back to twitter_trends as woeid. Takes no required parameters. Use this to resolve a country or city to its WOEID before requesting trends for that place."
     },
     {
       "name": "twitter_account_me",
@@ -261,7 +261,7 @@
     },
     {
       "name": "twitter_dm_conversation",
-      "description": "Get the messages in one Direct Message conversation by its conversation_id (from twitter_dm_list). Requires an authenticated session behind your key. Returns each message with sender id, time, and text. Read-only: this does not send DMs."
+      "description": "Get the messages in one Direct Message conversation by its conversation_id (from twitter_dm_list). Requires an authenticated session behind your key. Returns each message with sender id, time, and text, plus min_entry_id and max_entry_id for the page; to walk the thread back in time, call again with max_id set to the previous page's min_entry_id. Read-only: this does not send DMs."
     },
     {
       "name": "twitter_dm_send",
@@ -341,11 +341,11 @@
     },
     {
       "name": "twitter_follow_user",
-      "description": "Follow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key. Reverse with twitter_unfollow_user."
+      "description": "Follow a user AS your authenticated account, by numeric user_id or by @handle (provide exactly one). Requires write capability behind your key. Reverse with twitter_unfollow_user."
     },
     {
       "name": "twitter_unfollow_user",
-      "description": "Unfollow a user AS your authenticated account, by numeric user_id. Requires write capability behind your key."
+      "description": "Unfollow a user AS your authenticated account, by numeric user_id or by @handle (provide exactly one). Requires write capability behind your key."
     },
     {
       "name": "twitter_list_add_member",

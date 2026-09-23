@@ -182,9 +182,9 @@ check("list/tweets is the filterable (search-backed) feed", (() => {
   const t = TOOLS.find((x) => x.name === "twitter_list_tweets");
   return t && ["list_id", "since", "until", "include_replies", "count", "cursor"].every((a) => a in t.shape);
 })());
-check("list/timeline takes NO filters, only list_id + paging", (() => {
+check("list/timeline takes NO filters, only list_id + paging (+ the shared projection args every read carries)", (() => {
   const t = TOOLS.find((x) => x.name === "twitter_list_timeline");
-  return t && JSON.stringify(Object.keys(t.shape)) === JSON.stringify(["list_id", "count", "cursor"]);
+  return t && JSON.stringify(Object.keys(t.shape)) === JSON.stringify(["list_id", "count", "cursor", "fields", "compact"]);
 })());
 check("list writes are POST writes on the customer's own session (inline creds exposed)", ["twitter_list_add_member", "twitter_list_remove_member", "twitter_list_create"].every((n) => {
   const t = TOOLS.find((x) => x.name === n);

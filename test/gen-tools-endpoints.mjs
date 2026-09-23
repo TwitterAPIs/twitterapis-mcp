@@ -89,5 +89,53 @@ check("buildEndpoints(undefined) returns empty maps rather than throwing", (() =
   return r.endpoints.size === 0 && r.methodsByPath.size === 0;
 })());
 
+// ── shared parameters arrive as $ref and MUST resolve (docs SoT 2026-09-23) ──
+// Before resolveParam, a `{ $ref }` entry read as a param named "undefined" and
+// the build refused every read tool; a ref the components lack is fail-closed.
+const components = { parameters: { fields: { name: "fields", in: "query", required: false, schema: { type: "string" } } } };
+const withRef = buildEndpoints({ "/w": { get: { parameters: [{ $ref: "#/components/parameters/fields" }, { name: "count", in: "query", schema: { type: "integer" } }] } } }, components);
+check("a $ref parameter resolves to its components.parameters entry by name", (() => {
+  const p = withRef.endpoints.get(endpointKey("/w", "GET")).params.get("fields");
+  return p && p.required === false && p.type === "string" && !p.path;
+})());
+check("a $ref parameter never lands as a param named undefined (every key is a non-empty string)", (() => {
+  const keys = [...withRef.endpoints.get(endpointKey("/w", "GET")).params.keys()];
+  return keys.length === 2 && keys.every((k) => typeof k === "string" && k.length > 0) && !withRef.endpoints.get(endpointKey("/w", "GET")).params.has(undefined);
+})());
+check("a resolved target with no name throws instead of minting a nameless param", (() => {
+  try {
+    buildEndpoints({ "/w": { get: { parameters: [{ $ref: "#/components/parameters/__proto__" }] } } }, components);
+    return false;
+  } catch (e) {
+    return /cannot resolve|no string name/.test(String(e.message));
+  }
+})());
+check("a $ref cycle throws a named error, not a stack overflow", (() => {
+  const cyc = { parameters: { a: { $ref: "#/components/parameters/b" }, b: { $ref: "#/components/parameters/a" } } };
+  try {
+    buildEndpoints({ "/w": { get: { parameters: [{ $ref: "#/components/parameters/a" }] } } }, cyc);
+    return false;
+  } catch (e) {
+    return /cycle/.test(String(e.message));
+  }
+})());
+check("inline params beside a $ref still resolve", withRef.endpoints.get(endpointKey("/w", "GET")).params.get("count")?.type === "integer");
+check("an unresolvable $ref throws (fail-closed), naming the ref", (() => {
+  try {
+    buildEndpoints({ "/w": { get: { parameters: [{ $ref: "#/components/parameters/nope" }] } } }, components);
+    return false;
+  } catch (e) {
+    return /cannot resolve parameter \$ref/.test(String(e.message)) && /nope/.test(String(e.message));
+  }
+})());
+check("a $ref with no components at all throws rather than dropping the param", (() => {
+  try {
+    buildEndpoints({ "/w": { get: { parameters: [{ $ref: "#/components/parameters/fields" }] } } });
+    return false;
+  } catch (e) {
+    return /cannot resolve/.test(String(e.message));
+  }
+})());
+
 console.log(`gen-tools-endpoints.test: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

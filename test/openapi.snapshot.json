@@ -2167,6 +2167,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -2366,6 +2372,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -2554,6 +2566,12 @@
               "example": "https://x.com/naval/status/1759123456789012345"
             },
             "example": "https://x.com/naval/status/1759123456789012345"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -2758,6 +2776,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -2968,6 +2992,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -3260,6 +3290,12 @@
               "example": "false"
             },
             "example": "false"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -3449,6 +3485,12 @@
               "example": "https://x.com/naval/status/1759123456789012345"
             },
             "example": "https://x.com/naval/status/1759123456789012345"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -3614,6 +3656,12 @@
               "example": "naval"
             },
             "example": "naval"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -3776,6 +3824,12 @@
               "example": "745273"
             },
             "example": "745273"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -3945,6 +3999,12 @@
               "example": "openai"
             },
             "example": "openai"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -4142,6 +4202,12 @@
               "example": "44196397"
             },
             "example": "44196397"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -4363,6 +4429,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -4591,6 +4663,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -4802,6 +4880,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -5001,6 +5085,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -5220,6 +5310,12 @@
               "type": "string",
               "description": "Affiliate team filter, when the organization exposes teams."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -5398,6 +5494,12 @@
               "example": "2178758961"
             },
             "example": "2178758961"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -5606,6 +5708,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -5822,6 +5930,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -5976,7 +6090,15 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          }
+        ]
       }
     },
     "/user/bookmark_folder_timeline": {
@@ -6188,6 +6310,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -6404,6 +6532,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -6618,6 +6752,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -6823,6 +6963,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -7028,6 +7174,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -7240,6 +7392,12 @@
               "example": "DAAHCgABHNqVL6L__zs"
             },
             "example": "DAAHCgABHNqVL6L__zs"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -7493,6 +7651,11 @@
                       "items": {
                         "$ref": "#/components/schemas/DMConversation"
                       }
+                    },
+                    "inbox_timelines": {
+                      "type": "object",
+                      "description": "Per-timeline pagination metadata keyed by timeline name (for example trusted and untrusted), each an object with status (X's timeline status string, may be null) and cursor (the pagination cursor for that timeline, may be null). May be an empty object.",
+                      "additionalProperties": true
                     }
                   }
                 },
@@ -7515,7 +7678,17 @@
                         "1972455697997824000"
                       ]
                     }
-                  ]
+                  ],
+                  "inbox_timelines": {
+                    "trusted": {
+                      "status": "HAS_MORE",
+                      "cursor": "GRwmkMDXkuGjpbUXFoCAwMDX"
+                    },
+                    "untrusted": {
+                      "status": "AT_END",
+                      "cursor": null
+                    }
+                  }
                 }
               }
             }
@@ -7604,7 +7777,15 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          }
+        ]
       }
     },
     "/dm/conversation": {
@@ -7650,6 +7831,16 @@
                       "type": "string",
                       "description": "Echo of the conversation_id you requested."
                     },
+                    "min_entry_id": {
+                      "type": "string",
+                      "description": "Oldest entry id on this page. Pass it as max_id to fetch the next older page; null when X sent no entries.",
+                      "nullable": true
+                    },
+                    "max_entry_id": {
+                      "type": "string",
+                      "description": "Newest entry id on this page; null when X sent no entries.",
+                      "nullable": true
+                    },
                     "count": {
                       "type": "integer",
                       "description": "Number of messages returned."
@@ -7665,6 +7856,8 @@
                 },
                 "example": {
                   "conversation_id": "1749154312754794496-1972455697997824000",
+                  "min_entry_id": "1972455697997824000",
+                  "max_entry_id": "1972455842140631040",
                   "count": 1,
                   "messages": [
                     {
@@ -7775,6 +7968,24 @@
               "example": "1749154312754794496-1972455697997824000"
             },
             "example": "1749154312754794496-1972455697997824000"
+          },
+          {
+            "name": "max_id",
+            "in": "query",
+            "required": false,
+            "description": "Page backwards: return entries older than this entry id. Pass the previous page's min_entry_id to walk a thread back in time; omit for the newest page.",
+            "schema": {
+              "type": "string",
+              "description": "Page backwards: return entries older than this entry id. Pass the previous page's min_entry_id to walk a thread back in time; omit for the newest page.",
+              "example": "1972455697997824000"
+            },
+            "example": "1972455697997824000"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -7993,6 +8204,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -8218,6 +8435,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -8428,6 +8651,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -8639,6 +8868,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -8850,6 +9085,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -9060,6 +9301,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -9257,6 +9504,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -9454,6 +9707,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -9702,6 +9961,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -9902,6 +10167,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -10127,6 +10398,12 @@
               "example": "10"
             },
             "example": "10"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -10309,7 +10586,15 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          }
+        ]
       }
     },
     "/spaces/info": {
@@ -10672,6 +10957,12 @@
               "example": "true"
             },
             "example": "true"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -10882,6 +11173,12 @@
               "example": "1493446837214187523"
             },
             "example": "1493446837214187523"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -11153,6 +11450,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -11394,6 +11697,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -11639,6 +11948,12 @@
               "example": "Recency"
             },
             "example": "Recency"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -11889,6 +12204,12 @@
               "example": "20"
             },
             "example": "20"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -12101,6 +12422,12 @@
               "example": "1493446837214187523"
             },
             "example": "1493446837214187523"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -12318,6 +12645,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor. Omit on the first call."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -12666,6 +12999,12 @@
               "example": "1899999999999999999"
             },
             "example": "1899999999999999999"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -14563,14 +14902,26 @@
           {
             "name": "user_id",
             "in": "query",
-            "required": true,
-            "description": "Numeric ID of the user to follow.",
+            "required": false,
+            "description": "Numeric ID of the user to follow. Send this or username; user_id wins when both are present.",
             "schema": {
               "type": "string",
-              "description": "Numeric ID of the user to follow.",
+              "description": "Numeric ID of the user to follow. Send this or username; user_id wins when both are present.",
               "example": "44196397"
             },
             "example": "44196397"
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "description": "Handle of the user to follow, with or without the leading @. Resolved to its numeric ID for you through the same cached lookup as Check Follow Relationship; an unknown handle returns 404 and no follow is issued.",
+            "schema": {
+              "type": "string",
+              "description": "Handle of the user to follow, with or without the leading @. Resolved to its numeric ID for you through the same cached lookup as Check Follow Relationship; an unknown handle returns 404 and no follow is issued.",
+              "example": "elonmusk"
+            },
+            "example": "elonmusk"
           },
           {
             "name": "proxy",
@@ -14739,14 +15090,26 @@
           {
             "name": "user_id",
             "in": "query",
-            "required": true,
-            "description": "Numeric ID of the user to unfollow.",
+            "required": false,
+            "description": "Numeric ID of the user to unfollow. Send this or username; user_id wins when both are present.",
             "schema": {
               "type": "string",
-              "description": "Numeric ID of the user to unfollow.",
+              "description": "Numeric ID of the user to unfollow. Send this or username; user_id wins when both are present.",
               "example": "44196397"
             },
             "example": "44196397"
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "description": "Handle of the user to unfollow, with or without the leading @. Resolved to its numeric ID for you through the same cached lookup as Check Follow Relationship; an unknown handle returns 404 and no unfollow is issued.",
+            "schema": {
+              "type": "string",
+              "description": "Handle of the user to unfollow, with or without the leading @. Resolved to its numeric ID for you through the same cached lookup as Check Follow Relationship; an unknown handle returns 404 and no unfollow is issued.",
+              "example": "elonmusk"
+            },
+            "example": "elonmusk"
           },
           {
             "name": "proxy",
@@ -16438,6 +16801,12 @@
               "example": "false"
             },
             "example": "false"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -17022,6 +17391,12 @@
               "example": "false"
             },
             "example": "false"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -17638,7 +18013,7 @@
       "post": {
         "operationId": "article-update-content",
         "summary": "Update Article Content",
-        "description": "Replace the body of an article you own with a new content_state, identified by its entity id. content_state is Draft.js editor-state JSON ({ blocks: [...], entityMap: [...] }) that you build client-side; it is passed through to X verbatim and not validated on our side. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "description": "Replace the body of an article you own with a new content_state, identified by its entity id. content_state is Draft.js editor-state JSON ({ blocks: [...], entityMap: [...] }) that you build client-side; in the shape the X Article editor produces. Blocks are forwarded with only key, text, type, data, entityRanges and inlineStyleRanges; X's schema rejects any other block field (depth included). Block types: unstyled, header-two, unordered-list-item, ordered-list-item, blockquote and atomic (a one-space block that carries an entity through entityRanges). entityMap is an ARRAY of { key, value: { type, mutability, data } }; entity data is snake_case on input and comes back camelCase: TWEET (an embedded post) { tweet_id }, MEDIA (an inline image) { caption, entity_key, media_items: [{ local_media_id, media_category: \"DraftTweetImage\", media_id }] } with media_id from media/upload, DIVIDER {}, LINK { url } over a text range, MARKDOWN { markdown } for tables. A field X does not know is refused with 422, reason validation_failed and the offending path in detail. Measured live 2026-09-18. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
         "tags": [
           "Articles"
         ],
@@ -17652,17 +18027,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "curl -X POST \"https://api.twitterapis.com/twitter/article/update_content\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"content_state\": {\"blocks\":[{\"key\":\"a1b2c\",\"text\":\"Opening paragraph.\",\"type\":\"unstyled\",\"depth\":0,\"inlineStyleRanges\":[],\"entityRanges\":[]}],\"entityMap\":{}}}'"
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/article/update_content\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"content_state\": {\"blocks\":[{\"key\":\"a1b2c\",\"text\":\"Opening paragraph.\",\"type\":\"unstyled\",\"inlineStyleRanges\":[],\"entityRanges\":[]}],\"entityMap\":[]}}'"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/article/update_content\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"content_state\": {\"blocks\": [{\"key\": \"a1b2c\", \"text\": \"Opening paragraph.\", \"type\": \"unstyled\", \"depth\": 0, \"inlineStyleRanges\": [], \"entityRanges\": []}], \"entityMap\": {}}},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/article/update_content\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"id\": \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", \"content_state\": {\"blocks\": [{\"key\": \"a1b2c\", \"text\": \"Opening paragraph.\", \"type\": \"unstyled\", \"inlineStyleRanges\": [], \"entityRanges\": []}], \"entityMap\": []}},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
           },
           {
             "lang": "js",
             "label": "JavaScript",
-            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/article/update_content\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", content_state: { blocks: [{ key: \"a1b2c\", text: \"Opening paragraph.\", type: \"unstyled\", depth: 0, inlineStyleRanges: [], entityRanges: [] }], entityMap: {} } }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/article/update_content\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ id: \"QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4\", content_state: { blocks: [{ key: \"a1b2c\", text: \"Opening paragraph.\", type: \"unstyled\", inlineStyleRanges: [], entityRanges: [] }], entityMap: [] } }),\n});\nconst data = await resp.json();\nconsole.log(data);"
           }
         ],
         "responses": {
@@ -17698,7 +18073,6 @@
                           "key": "a1b2c",
                           "text": "Opening paragraph.",
                           "type": "unstyled",
-                          "depth": 0,
                           "inlineStyleRanges": [],
                           "entityRanges": []
                         }
@@ -17836,8 +18210,8 @@
                   },
                   "content_state": {
                     "type": "string",
-                    "description": "The article body as a Draft.js content-state JSON object: { blocks: [...], entityMap: [...] }. You build and edit this client-side (see the Draft.js editor-state model); it is sent as-is in the JSON request body, not as a string field.",
-                    "example": "{\"blocks\":[{\"key\":\"a1b2c\",\"text\":\"Opening paragraph.\",\"type\":\"unstyled\",\"depth\":0,\"inlineStyleRanges\":[],\"entityRanges\":[]}],\"entityMap\":{}}"
+                    "description": "The article body as a Draft.js content-state JSON object: { blocks: [...], entityMap: [...] }, sent as-is in the JSON request body, not as a string field. Blocks carry key, text, type, data, entityRanges, inlineStyleRanges only. entityMap is an array of { key, value: { type, mutability, data } } with snake_case data keys on input (tweet_id, media_items, local_media_id, media_category, media_id, entity_key, url, markdown).",
+                    "example": "{\"blocks\":[{\"key\":\"a1b2c\",\"text\":\"Opening paragraph.\",\"type\":\"unstyled\",\"inlineStyleRanges\":[],\"entityRanges\":[]},{\"key\":\"em1\",\"text\":\" \",\"type\":\"atomic\",\"inlineStyleRanges\":[],\"entityRanges\":[{\"key\":0,\"offset\":0,\"length\":1}]},{\"key\":\"im1\",\"text\":\" \",\"type\":\"atomic\",\"inlineStyleRanges\":[],\"entityRanges\":[{\"key\":1,\"offset\":0,\"length\":1}]}],\"entityMap\":[{\"key\":\"0\",\"value\":{\"type\":\"TWEET\",\"mutability\":\"Immutable\",\"data\":{\"tweet_id\":\"2077572855194157402\"}}},{\"key\":\"1\",\"value\":{\"type\":\"MEDIA\",\"mutability\":\"Immutable\",\"data\":{\"caption\":\"\",\"entity_key\":\"img-1\",\"media_items\":[{\"local_media_id\":\"1\",\"media_category\":\"DraftTweetImage\",\"media_id\":\"2101008406014312448\"}]}}}]}"
                   }
                 },
                 "required": [
@@ -17914,7 +18288,6 @@
                           "key": "a1b2c",
                           "text": "Opening paragraph.",
                           "type": "unstyled",
-                          "depth": 0,
                           "inlineStyleRanges": [],
                           "entityRanges": []
                         }
@@ -18139,7 +18512,6 @@
                           "key": "a1b2c",
                           "text": "Opening paragraph.",
                           "type": "unstyled",
-                          "depth": 0,
                           "inlineStyleRanges": [],
                           "entityRanges": []
                         }
@@ -18350,7 +18722,6 @@
                           "key": "a1b2c",
                           "text": "Opening paragraph.",
                           "type": "unstyled",
-                          "depth": 0,
                           "inlineStyleRanges": [],
                           "entityRanges": []
                         }
@@ -18496,6 +18867,12 @@
               "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
             },
             "example": "QXJ0aWNsZUVudGl0eToyMDg2NjUwMjI4OTUwNjgzNjQ4"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -18725,6 +19102,12 @@
               "type": "string",
               "description": "Pagination cursor from a previous response's next_cursor."
             }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -19423,7 +19806,15 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          }
+        ]
       }
     },
     "/monitor": {
@@ -20647,6 +21038,12 @@
               "example": "50"
             },
             "example": "50"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
           }
         ]
       }
@@ -22019,6 +22416,10 @@
             "type": "boolean",
             "description": "True when the tweet is a reply to another tweet."
           },
+          "has_video": {
+            "type": "boolean",
+            "description": "True when the tweet carries at least one native video or animated-GIF media item (a one-field filter for video content, including video quote-retweets)."
+          },
           "source": {
             "type": "string",
             "nullable": true,
@@ -22342,6 +22743,16 @@
             "type": "boolean",
             "nullable": true,
             "description": "Whether the account can receive a direct message from the caller's session."
+          },
+          "parody_commentary_fan_label": {
+            "type": "string",
+            "nullable": true,
+            "description": "X's parody / commentary / fan account label, when the account is marked as one; null when it carries no such label."
+          },
+          "can_media_tag": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether other accounts are permitted to tag this account in media; null when X does not report the media-tag permission."
           },
           "has_custom_timelines": {
             "type": "boolean",
@@ -23187,6 +23598,31 @@
             "description": "Human-readable explanation of the failure."
           }
         }
+      }
+    },
+    "parameters": {
+      "fields": {
+        "name": "fields",
+        "in": "query",
+        "required": false,
+        "description": "Comma-separated list of dotted field paths to keep in the response (one parameter, never repeated), applied to every object in the returned lists and to nested objects (for example fields=id,text,author.username; the list's own name may prefix a path, fields=tweets.id). A path prefix that lands on an array applies to each element (media.media_url_https). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are always kept. Unknown paths are ignored; up to 50 paths of up to 6 segments. Projection never changes status codes or billing, and applies to data reads only: account, feedback, session status, monitor (other than deliveries), webhook and stream-compat reads return their bodies unchanged.",
+        "schema": {
+          "type": "string"
+        },
+        "example": "id,text,created_at,author.username"
+      },
+      "compact": {
+        "name": "compact",
+        "in": "query",
+        "required": false,
+        "description": "Set to 1 (or true) to apply the built-in compact preset: ids, url, text, created_at, lang, the engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. The preset trims what it recognises and leaves alone what it would empty, so it never turns a body into {}. Combine with fields to add paths on top of the preset. Typically cuts a tweet page by 70 to 90 percent for LLM tool callers.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "1"
+          ]
+        },
+        "example": "1"
       }
     },
     "securitySchemes": {

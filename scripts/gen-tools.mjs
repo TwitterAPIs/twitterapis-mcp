@@ -80,7 +80,7 @@ const spec = JSON.parse(readFileSync(SNAPSHOT, "utf8"));
 // gen-tools-endpoints.mjs, kept as its own module so this exact logic (a DELETE
 // method, and two methods on one path) is unit-testable against a synthetic
 // route table, see test/gen-tools-endpoints.mjs.
-const { endpoints: ENDPOINTS, methodsByPath: METHODS_BY_PATH } = buildEndpoints(spec.paths);
+const { endpoints: ENDPOINTS, methodsByPath: METHODS_BY_PATH } = buildEndpoints(spec.paths, spec.components);
 
 // ── 2. Resolve overrides against the spec ────────────────────────────────────
 // The MCP tool path carries the /twitter prefix the spec omits, except for the

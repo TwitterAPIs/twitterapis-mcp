@@ -91,7 +91,7 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-109 tools: 65 reads and 44 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Four of the reads are free account lookups (`twitter_account_me`, `twitter_account_payments`, `twitter_feedback_get`, `twitter_feedback_list`); the 14 monitoring tools and `twitter_feedback_send` are also free (account administration, not metered reads).
+109 tools: 65 reads and 44 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Every data read also takes `fields` (comma-separated dotted paths to keep, e.g. `id,text,author.username`; pagination and envelope keys always survive) and `compact` (`"1"` for a built-in preset of ids, text, counts and author basics), so a model paying per token can trim a page to what it will read. Four of the reads are free account lookups (`twitter_account_me`, `twitter_account_payments`, `twitter_feedback_get`, `twitter_feedback_list`); the 14 monitoring tools and `twitter_feedback_send` are also free (account administration, not metered reads).
 
 Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **most write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark, monitor/webhook delete) are annotated `destructiveHint: true` so MCP clients can prompt before running them. The **monitoring** and **feedback** tools (see below) are the exception: they administer your twitterapis.com account, not an X session, so they need only your API key, no linked session and no inline credentials.
 
@@ -136,7 +136,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_bookmark_folders` | Your authenticated account's bookmark folders _(session)_ |
 | `twitter_bookmark_folder_timeline` | Tweets inside one of your bookmark folders, by `folder_id` _(session)_ |
 | `twitter_dm_list` | Your DM conversations (inbox), read-only _(session)_ |
-| `twitter_dm_conversation` | Messages in one DM conversation, read-only _(session)_ |
+| `twitter_dm_conversation` | Messages in one DM conversation, read-only; pass the previous page's `min_entry_id` as `max_id` to page back _(session)_ |
 | `twitter_spaces_info` | Metadata and participant roster for one X Space, live or ended (by Space `id`) |
 | `twitter_community_search` | Find X Communities by keyword; the discovery step that produces the numeric id the rest of the community family needs |
 | `twitter_community_info` | One X Community by numeric id: name, counts, join policy, rules, topic, banners, admin |
@@ -164,7 +164,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_favorite_tweet` / `twitter_unfavorite_tweet` | Like / unlike a tweet |
 | `twitter_retweet` / `twitter_unretweet` | Retweet / undo retweet |
 | `twitter_bookmark_tweet` / `twitter_unbookmark_tweet` | Bookmark / remove bookmark |
-| `twitter_follow_user` / `twitter_unfollow_user` | Follow / unfollow a user by id |
+| `twitter_follow_user` / `twitter_unfollow_user` | Follow / unfollow a user by `user_id` or `username` (exactly one) |
 | `twitter_dm_send` | Send a Direct Message to a user by their numeric `recipient_id` |
 | `twitter_list_create` | Create a Twitter/X List owned by your session (`name`, optional `description` / `is_private`) |
 | `twitter_list_add_member` / `twitter_list_remove_member` | Add / remove one account on a List you own; `member_count` comes back as proof the write landed |
