@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.13.1 (2026-09-28)
 
 - **`twitter_user_search` no longer claims bio matching.** X's People search
   matches display name and handle only; a term that appears only in a bio
