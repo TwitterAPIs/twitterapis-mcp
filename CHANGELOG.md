@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **`twitter_user_search` no longer claims bio matching.** X's People search
+  matches display name and handle only; a term that appears only in a bio
+  returns no match (measured live 2026-09-28). The description and the `query`
+  arg now say so, and point to `twitter_user_followers` or
+  `twitter_advanced_search` plus a `description` filter for bio lookups. No
+  schema change; `test/openapi.snapshot.json` and the catalog baseline are
+  refreshed to the corrected docs SoT.
+
 ## 0.13.0 (2026-09-23)
 
 - **Every data read takes `fields` and `compact`.** The API added response

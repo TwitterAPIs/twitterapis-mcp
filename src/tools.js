@@ -61,10 +61,10 @@ export const TOOLS = [
     name: "twitter_user_search",
     path: "/twitter/user/search",
     description:
-      "Search for Twitter/X user accounts by name, keyword, or topic. Returns matching profiles (username, display name, bio, follower count, verification status) with a pagination cursor. Use this to discover accounts in a niche, find brand handles, or locate a person when you only know their name.",
+      "Search for Twitter/X user accounts by display name or handle (X's People search; bio text is NOT searched, so a word that appears only in a bio returns no match). Returns matching profiles (username, display name, bio, follower count, verification status) with a pagination cursor. Use this to find brand handles, resolve a partial handle, or locate a person when you only know their name. To find accounts by what their bio says, use twitter_user_followers on a relevant account or twitter_advanced_search for tweets mentioning it, then filter the description field.",
     shape: {
       query: z.string().describe(
-        "Name, keyword, or topic to search accounts for. Examples: 'OpenAI', 'AI researcher', 'tech founder'.",
+        "Name, brand, or partial handle to search accounts for, matched against display name and handle. Examples: 'OpenAI', 'Sam Altman', 'stablecoin'.",
       ),
       count: z.number().int().min(1).max(200).optional().describe(
         "Requested page size, capped at 200. Advisory only for this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested here, an upstream limit, not something this API controls. To retrieve more results, page with the cursor from the previous response rather than raising this value.",
