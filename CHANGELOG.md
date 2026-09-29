@@ -5,8 +5,8 @@
 ### Added
 
 - **Agent-actionable paywall.** A missing key, a rejected credential (401
-  unauthorized), an empty balance (402 insufficient_credits) and a missing X
-  session (409 session_required or session_dead) now return a structured payload
+  unauthorized), an empty balance (402 insufficient_credits) and a missing or
+  expired X session (409 session_required, 401 session_dead) now return a structured payload
   instead of a prose hint: `needs` (`account`, `valid_key`, `credits` or
   `x_session`), the page to send the user to (`action_url`: signup, dashboard,
   buy credits) or the tool to call next (`next_tool`: twitter_user_login), and

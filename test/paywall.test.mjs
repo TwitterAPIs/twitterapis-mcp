@@ -44,12 +44,19 @@ const payloadOf = (r) => JSON.parse(r.content[0].text.split("\n\n").pop());
   assert.match(r.content[0].text, /out of credits/);
   ok("402 insufficient_credits: needs=credits, buy-credits page");
 }
-for (const err of ["session_required", "session_dead"]) {
-  const r = await call(409, JSON.stringify({ error: err, message: "Log in first" }));
-  assert.equal(r.structuredContent.needs, "x_session", err);
+{
+  const r = await call(409, '{"error":"session_required","message":"Log in first: POST /twitter/user/user_login"}');
+  assert.equal(r.structuredContent.needs, "x_session");
   assert.equal(r.structuredContent.next_tool, "twitter_user_login");
+  ok("409 session_required (no linked session): needs=x_session, next_tool=twitter_user_login");
 }
-ok("409 session_required / session_dead: needs=x_session, next_tool=twitter_user_login");
+{
+  // The live dead-session shape is a 401, and must NOT read as a bad API key.
+  const r = await call(401, '{"error":"session_dead","message":"Your session is no longer valid. Re-login.","action":"like","target_id":"1"}');
+  assert.equal(r.structuredContent.needs, "x_session");
+  assert.match(r.content[0].text, /re-link/);
+  ok("401 session_dead (expired X session, the real shape): needs=x_session, not valid_key");
+}
 
 // NEGATIVES: same statuses, different meaning, keep the ordinary text.
 {
@@ -60,8 +67,8 @@ ok("409 session_required / session_dead: needs=x_session, next_tool=twitter_user
 }
 {
   const r = await call(401, '{"error":"unauthorized","message":"Missing x-internal-user-id."}');
-  assert.equal(r.structuredContent.needs, "valid_key");
-  ok("401 unauthorized from the internal path still reads as a credential problem");
+  assert.equal(r.structuredContent, undefined);
+  ok("401 about the internal headers (a server wiring fault) is not blamed on the user's key");
 }
 {
   const r = await call(402, '{"error":"payment_required"}');

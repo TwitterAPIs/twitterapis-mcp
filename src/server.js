@@ -92,9 +92,9 @@ export function paywallFor(kind) {
     return {
       needs: "x_session",
       message:
-        "This action needs a linked X account: writes and account-only reads act as the user's own X " +
-        "session. Link one with the twitter_user_login tool (or twitter_customer_session with auth_token " +
-        "and ct0), then retry this call.",
+        "This action needs a working linked X account: writes and account-only reads act as the user's " +
+        "own X session, and none is linked or the linked one has expired. Link or re-link it with the " +
+        "twitter_user_login tool (or twitter_customer_session with auth_token and ct0), then retry this call.",
       next_tool: "twitter_user_login",
       retry: "same call, after an X session is linked",
     };
@@ -110,9 +110,14 @@ export function classifyPaywall(status, bodyText) {
     body = null;
   }
   const err = body && typeof body.error === "string" ? body.error : "";
-  if (status === 401 && err === "unauthorized") return "bad_key";
+  // A dead X session is a 401 {"error":"session_dead"} (routes/actions.ts,
+  // routes/customer.ts), NOT a bad API key: telling the user to rotate a working
+  // key when their X cookies expired is the wrong fix. A 401 whose message is
+  // about the internal headers is a server wiring fault, not the user's key.
+  if (status === 401 && err === "session_dead") return "x_session";
+  if (status === 401 && err === "unauthorized" && !/x-internal/i.test(String(body?.message || ""))) return "bad_key";
   if (status === 402 && err === "insufficient_credits") return "credits";
-  if (status === 409 && (err === "session_required" || err === "session_dead")) return "x_session";
+  if (status === 409 && err === "session_required") return "x_session";
   return null;
 }
 
