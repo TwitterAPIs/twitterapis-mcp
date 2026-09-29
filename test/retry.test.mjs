@@ -129,4 +129,62 @@ const server = (fetchImpl, extra = {}) =>
   ok("a socket closed after the request arrived is never re-sent: exactly 1 hit");
 }
 
+{
+  // The gateway's own JSON 503 during a restart (nginx error_page, 2026-09-29).
+  sleeps.length = 0;
+  const RESTART = '{"error":"gateway_restarting","message":"The API is restarting. Retry in a few seconds.","retry_after":10}';
+  const { fetchImpl, calls } = seq([{ status: 503, body: RESTART }, { status: 200, body: '{"user":{"id":"1"}}' }]);
+  const r = await server(fetchImpl).callEndpoint("/twitter/user/info", { username: "x" });
+  assert.equal(r.isError, undefined);
+  assert.equal(calls.length, 2);
+  ok("the gateway's JSON 503 gateway_restarting is retried like its HTML page");
+}
+{
+  sleeps.length = 0;
+  const { fetchImpl, calls } = seq([{ status: 503, body: '{"error":"upstream_unavailable","message":"billing is down"}' }]);
+  await server(fetchImpl).callEndpoint("/twitter/user/info", { username: "x" });
+  assert.equal(calls.length, 1);
+  const w = seq([{ status: 502, body: '{"error":"gateway_restarting"}' }]);
+  await server(w.fetchImpl).callEndpoint("/twitter/user/info", { username: "x" });
+  assert.equal(w.calls.length, 1);
+  ok("any other JSON 503 from the API, and the restart code on a non-503, are never retried (controls)");
+}
+{
+  // A caller that cancels during the wait between retries stops at once.
+  sleeps.length = 0;
+  const ac = new AbortController();
+  const { fetchImpl, calls } = seq([{ status: 502, body: NGINX_502 }, { status: 200, body: "{}" }]);
+  const s = createServer({ apiKey: "k", baseUrl: "https://api.test", fetchImpl, retryDelaysMs: [60_000], sleepImpl: (ms) => new Promise((res) => setTimeout(res, ms)) });
+  const t0 = Date.now();
+  const p = s.callEndpoint("/twitter/user/info", { username: "x" }, "GET", false, [], { signal: ac.signal });
+  setTimeout(() => ac.abort(), 30);
+  const r = await p;
+  assert.ok(Date.now() - t0 < 5000, "cancel did not interrupt the retry wait");
+  assert.equal(calls.length, 1);
+  assert.match(r.content[0].text, /cancelled by the caller/);
+  ok("a cancel during the retry wait stops the call: no second request, no 60s wait");
+}
+{
+  // A cancel mid-request aborts the fetch and is reported as a cancel, not a timeout.
+  let hits = 0;
+  const srv = createHttp(() => { hits++; });
+  await new Promise((r) => srv.listen(0, "127.0.0.1", r));
+  const ac = new AbortController();
+  const p = server(fetch, { baseUrl: `http://127.0.0.1:${srv.address().port}` }).callEndpoint("/twitter/user/info", { username: "x" }, "GET", false, [], { signal: ac.signal });
+  setTimeout(() => ac.abort(), 50);
+  const r = await p;
+  srv.closeAllConnections?.(); srv.close();
+  assert.equal(hits, 1);
+  assert.match(r.content[0].text, /cancelled by the caller/);
+  ok("a cancel while the request is in flight aborts it and says cancelled, not timed out");
+}
+{
+  const ac = new AbortController(); ac.abort();
+  const { fetchImpl, calls } = seq([{ status: 200, body: "{}" }]);
+  const r = await server(fetchImpl).callEndpoint("/twitter/user/info", { username: "x" }, "GET", false, [], { signal: ac.signal });
+  assert.equal(calls.length, 0);
+  assert.match(r.content[0].text, /cancelled/);
+  ok("an already-cancelled call sends nothing");
+}
+
 console.log(`\nretry: ${n} passed, 0 failed`);

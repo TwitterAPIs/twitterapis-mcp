@@ -204,7 +204,7 @@ export function createServer({
   // substitute into the URL template) and callEndpoint splices them into path
   // before building the query string or body, so a pathParams arg never leaks
   // into either.
-  async function callEndpoint(path, args, method = "GET", jsonBody = false, pathParams = []) {
+  async function callEndpoint(path, args, method = "GET", jsonBody = false, pathParams = [], { signal: callerSignal } = {}) {
     if (!apiKey && !authHeaders) return paywallResult("no_key");
     // Fill {name} URL segments from args and strip those keys, so a pathParams arg
     // (e.g. a monitor/webhook id) never also leaks into the query string or JSON
@@ -272,16 +272,34 @@ export function createServer({
     // socket dropped mid-answer can all happen after the API did the work, and
     // "fetch failed" alone also covers DNS and TLS errors that retrying cannot fix.
     const RETRYABLE_NET = new Set(["ECONNREFUSED"]);
-    const gatewayFailure = (status, text) =>
-      (status === 502 || status === 503) && /^\s*<(!doctype|html)/i.test(text);
+    // The gateway answers a restart two ways: nginx's stock HTML 502/503 page,
+    // or (since 2026-09-29) its own JSON 503 whose error is "gateway_restarting".
+    // Nginx sends that JSON only when it could not reach the API at all, so the
+    // API's own JSON errors (which never use that code) are still never retried.
+    const gatewayFailure = (status, text) => {
+      if ((status === 502 || status === 503) && /^\s*<(!doctype|html)/i.test(text)) return true;
+      if (status !== 503) return false;
+      try { return JSON.parse(text)?.error === "gateway_restarting"; } catch { return false; }
+    };
+    // The MCP caller's cancel (notifications/cancelled) aborts the request in
+    // flight and any wait between retries, so a cancelled call stops at once.
+    const cancelled = () => Boolean(callerSignal?.aborted);
+    const pause = (ms) => cancelled() ? Promise.resolve() : new Promise((resolve) => {
+      const done = () => { callerSignal?.removeEventListener?.("abort", done); resolve(); };
+      Promise.resolve(sleepImpl(ms)).then(done, done);
+      callerSignal?.addEventListener?.("abort", done, { once: true });
+    });
     const transientNetwork = (err) =>
       !gotResponse && err?.name !== "AbortError" && RETRYABLE_NET.has(err?.cause?.code ?? err?.code);
     let attempt = 0;
     let gotResponse = false;
     for (;;) {
     gotResponse = false;
+    if (cancelled()) return { isError: true, content: [{ type: "text", text: "Request cancelled by the caller." }] };
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+    const onCancel = () => ctrl.abort();
+    callerSignal?.addEventListener?.("abort", onCancel, { once: true });
     try {
       const res = await fetchImpl(url, {
         method,
@@ -291,9 +309,10 @@ export function createServer({
       });
       gotResponse = true;
       const body = await res.text();
-      if (canRetry && attempt < retryDelaysMs.length && gatewayFailure(res.status, body)) {
+      if (canRetry && !cancelled() && attempt < retryDelaysMs.length && gatewayFailure(res.status, body)) {
         clearTimeout(timer);
-        await sleepImpl(retryDelaysMs[attempt++]);
+        callerSignal?.removeEventListener?.("abort", onCancel);
+        await pause(retryDelaysMs[attempt++]);
         continue;
       }
       if (!res.ok) {
@@ -323,11 +342,13 @@ export function createServer({
       lastError = null;
       return { content: [{ type: "text", text: body }] };
     } catch (err) {
-      if (canRetry && attempt < retryDelaysMs.length && transientNetwork(err)) {
+      if (canRetry && !cancelled() && attempt < retryDelaysMs.length && transientNetwork(err)) {
         clearTimeout(timer);
-        await sleepImpl(retryDelaysMs[attempt++]);
+        callerSignal?.removeEventListener?.("abort", onCancel);
+        await pause(retryDelaysMs[attempt++]);
         continue;
       }
+      if (cancelled()) return { isError: true, content: [{ type: "text", text: "Request cancelled by the caller." }] };
       const code = err?.cause?.code ?? err?.code;
       const msg = err?.name === "AbortError"
         ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
@@ -336,6 +357,7 @@ export function createServer({
       return { isError: true, content: [{ type: "text", text: `Request failed: ${msg}` }] };
     } finally {
       clearTimeout(timer);
+      callerSignal?.removeEventListener?.("abort", onCancel);
     }
     }
   }
@@ -370,8 +392,8 @@ export function createServer({
       handler = LOCAL_HANDLERS[tool.local];
       if (!handler) throw new Error(`[twitterapis-mcp] tool ${tool.name} declares local handler "${tool.local}" but src/server.js has none`);
     } else {
-      handler = async (args) => {
-        const result = await callEndpoint(tool.path, args, method, Boolean(tool.jsonBody), tool.pathParams || []);
+      handler = async (args, extra) => {
+        const result = await callEndpoint(tool.path, args, method, Boolean(tool.jsonBody), tool.pathParams || [], { signal: extra?.signal });
         if (result?.isError && lastError) {
           let resolved = null;
           try { resolved = resolvePathParams(tool.path, tool.pathParams || [], args).path; } catch { resolved = null; }
