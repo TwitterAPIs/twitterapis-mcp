@@ -5,7 +5,7 @@
 ### Changed
 
 - **A read rides out an API restart.** A read (GET) that gets the gateway's
-  HTML 502/503, or a refused or reset connection, is retried after 3 and
+  HTML 502/503, or a refused connection, is retried after 3 and
   then 8 seconds, so a deploy restart no longer surfaces as a Bad Gateway error.
   The API's own JSON errors, gateway timeouts, DNS or TLS failures
   and every write are never retried, so a request the API may already have
