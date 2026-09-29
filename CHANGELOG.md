@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.14.0 (2026-09-29)
+
+- **`@twitterapis/mcp/server` export and `authHeaders`.** The package now
+  exports `createServer` at `@twitterapis/mcp/server`, so a host can serve the
+  same tools remotely. `createServer({ authHeaders })` authenticates each call
+  with headers the host supplies instead of an API key, for a host that has
+  already authenticated the caller another way (an OAuth token resolved to an
+  account). Without it, behavior is unchanged: the API key is sent as before.
+  The `exports` map keeps `.` (the stdio entry) and `./package.json`.
 
 - **Per-caller server state.** The server is now built by `createServer()` in
   `src/server.js`, which holds the API key and the last-failed-call record in

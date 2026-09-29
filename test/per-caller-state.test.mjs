@@ -55,6 +55,24 @@ const r = await none.callEndpoint("/twitter/user/info", { username: "four" });
 check(r.isError && /Missing TWITTERAPIS_KEY/.test(r.content[0].text), "keyless server fails the call clearly");
 check(seen.length === before, "keyless server made no request");
 
+// authHeaders: a host that authenticated the caller another way (an OAuth
+// token resolved to an account) forwards its own headers and no key at all.
+const seenBefore = seen.length;
+const hosted = createServer({
+  apiKey: undefined,
+  baseUrl: "http://127.0.0.1:1",
+  authHeaders: { "x-internal-secret": "s", "x-internal-key-id": "kid-1" },
+  fetchImpl: async (url, init) => {
+    seen.push({ url, headers: init.headers });
+    return { ok: true, status: 200, text: async () => "{}", headers: { get: () => null } };
+  },
+});
+const hr = await hosted.callEndpoint("/twitter/user/info", { username: "five" });
+const sent = seen[seenBefore]?.headers || {};
+check(!hr.isError, "authHeaders server makes the call without an API key");
+check(sent["x-internal-key-id"] === "kid-1" && sent["x-internal-secret"] === "s", "authHeaders are sent");
+check(!("Authorization" in sent) && !("x-api-key" in sent), "no API-key headers when authHeaders is set");
+
 if (failed) {
   console.error(`\x1b[31m✗ per-caller-state: ${failed} check(s) failed\x1b[0m`);
   process.exit(1);

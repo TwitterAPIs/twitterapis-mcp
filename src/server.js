@@ -76,6 +76,11 @@ export const INSTRUCTIONS =
  *                                         (TWITTERAPIS_FEEDBACK_DIR); a remote host gives each
  *                                         caller its own directory
  * @param {typeof fetch} [opts.fetchImpl]  injectable for tests
+ * @param {Record<string,string>} [opts.authHeaders]
+ *        headers that authenticate each call INSTEAD of the API key. For a host
+ *        that has already authenticated the caller some other way (an OAuth
+ *        token resolved to an account) and forwards calls over its own trusted
+ *        channel. When set, no API key is required or sent.
  */
 export function createServer({
   apiKey,
@@ -83,6 +88,7 @@ export function createServer({
   timeoutMs = DEFAULT_TIMEOUT_MS,
   feedbackEnv = process.env,
   fetchImpl = fetch,
+  authHeaders = null,
 } = {}) {
   const BASE_URL = String(baseUrl).replace(/\/+$/, "");
   const REQUEST_TIMEOUT_MS = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : DEFAULT_TIMEOUT_MS;
@@ -105,7 +111,7 @@ export function createServer({
   // before building the query string or body, so a pathParams arg never leaks
   // into either.
   async function callEndpoint(path, args, method = "GET", jsonBody = false, pathParams = []) {
-    if (!apiKey) {
+    if (!apiKey && !authHeaders) {
       return {
         isError: true,
         content: [{
@@ -129,9 +135,13 @@ export function createServer({
     }
 
     const headers = {
-      // The API accepts either header; send both for maximum compatibility.
-      Authorization: `Bearer ${apiKey}`,
-      "x-api-key": apiKey,
+      ...(authHeaders
+        ? { ...authHeaders }
+        : {
+            // The API accepts either header; send both for maximum compatibility.
+            Authorization: `Bearer ${apiKey}`,
+            "x-api-key": apiKey,
+          }),
       accept: "application/json",
       "user-agent": `twitterapis-mcp/${VERSION}`,
     };
