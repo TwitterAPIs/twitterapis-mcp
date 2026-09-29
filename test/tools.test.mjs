@@ -303,7 +303,9 @@ check("no tool promises a full history in one call", !TOOLS.some((t) => /full ba
 // The server instructions ask for a rare-term control before an "ignored
 // parameter" report: a generic query on a score-ordered sort returns the global
 // listing, which reads exactly like a dropped parameter and is not one.
-const INDEX_SRC = readFileSync(new URL("../src/index.js", import.meta.url), "utf8");
+// Checked on the exported value the server actually sends, not on a source
+// file, so moving the text between files cannot fool it.
+const { INSTRUCTIONS: INDEX_SRC } = await import("../src/server.js");
 check("instructions ask for a distinctive-value control before an ignored-parameter report", /re-run the call with a distinctive value that could only match if the parameter was honoured/.test(INDEX_SRC));
 check("instructions say to retitle the report by what the control showed", /title it that way and say what the control showed/.test(INDEX_SRC));
 

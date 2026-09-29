@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- **Per-caller server state.** The server is now built by `createServer()` in
+  `src/server.js`, which holds the API key and the last-failed-call record in
+  its own closure instead of module globals. Under stdio nothing changes (one
+  process, one caller); it is the prerequisite for serving the same tools
+  remotely, where one process serves many callers and a global would send one
+  caller's requests with another's key. `src/index.js` is now only the stdio
+  entry and the one place config is read from the environment.
+  `test/per-caller-state.test.mjs` proves two servers in one process never
+  share a key or a failure record (red when `lastError` is hoisted back to
+  module scope).
+
 ## 0.13.1 (2026-09-28)
 
 - **`twitter_user_search` no longer claims bio matching.** X's People search
