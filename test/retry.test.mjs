@@ -21,8 +21,8 @@ function seq(responses) {
   return { fetchImpl, calls };
 }
 const sleeps = [];
-const server = (fetchImpl) =>
-  createServer({ apiKey: "k", baseUrl: "https://api.test", fetchImpl, sleepImpl: async (ms) => { sleeps.push(ms); }, retryDelaysMs: [3, 8] });
+const server = (fetchImpl, extra = {}) =>
+  createServer({ apiKey: "k", baseUrl: "https://api.test", fetchImpl, sleepImpl: async (ms) => { sleeps.push(ms); }, retryDelaysMs: [3, 8], ...extra });
 
 {
   sleeps.length = 0;
@@ -74,6 +74,32 @@ const server = (fetchImpl) =>
   assert.equal(calls.length, 1);
   assert.match(r.content[0].text, /timed out/);
   ok("a timeout is not retried (it would double the wait the user already sat through)");
+}
+
+{
+  sleeps.length = 0;
+  const dns = Object.assign(new TypeError("fetch failed"), { cause: { code: "ENOTFOUND" } });
+  const { fetchImpl, calls } = seq([dns, { status: 200, body: "{}" }]);
+  const r = await server(fetchImpl).callEndpoint("/twitter/user/info", { username: "x" });
+  assert.equal(calls.length, 1);
+  assert.deepEqual(sleeps, []);
+  assert.match(r.content[0].text, /ENOTFOUND/);
+  ok("a DNS failure is not retried (it cannot fix itself) and its code is reported");
+}
+{
+  sleeps.length = 0;
+  const r = await server(fetch, { baseUrl: "http://127.0.0.1:59981" }).callEndpoint("/twitter/user/info", { username: "x" });
+  assert.equal(r.isError, true);
+  assert.deepEqual(sleeps, [3, 8]);
+  assert.match(r.content[0].text, /ECONNREFUSED/);
+  ok("a REAL refused connection (closed local port) is retried twice, then reported with its code");
+}
+{
+  sleeps.length = 0;
+  const { fetchImpl, calls } = seq([{ status: 504, body: "<html>504 Gateway Time-out</html>" }]);
+  await server(fetchImpl).callEndpoint("/twitter/user/info", { username: "x" });
+  assert.equal(calls.length, 1);
+  ok("a gateway 504 is not retried (the app may already have done, and billed, the work)");
 }
 
 console.log(`\nretry: ${n} passed, 0 failed`);

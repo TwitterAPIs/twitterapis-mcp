@@ -262,14 +262,18 @@ export function createServer({
 
     // A DEPLOY RESTART IS NOT AN ERROR THE USER SHOULD SEE. While the API
     // restarts (about 30 to 60 seconds, measured 2026-09-29) the gateway answers
-    // an HTML 502/503/504 or refuses the connection. A READ is retried through
+    // an HTML 502/503 or refuses the connection. A READ is retried through
     // that window; the API's own JSON errors, timeouts and writes never are, so
-    // nothing is double-charged or double-posted.
+    // a request the API may already have handled is never sent twice (a gateway
+    // 504 is not retried for that reason).
     const canRetry = method === "GET";
+    // Connection-level codes a restart produces. "fetch failed" alone is NOT one:
+    // undici uses it for DNS and TLS errors too, which retrying cannot fix.
+    const RETRYABLE_NET = new Set(["ECONNREFUSED", "ECONNRESET", "EPIPE", "UND_ERR_SOCKET"]);
     const gatewayFailure = (status, text) =>
-      (status === 502 || status === 503 || status === 504) && /^\s*<(!doctype|html)/i.test(text);
+      (status === 502 || status === 503) && /^\s*<(!doctype|html)/i.test(text);
     const transientNetwork = (err) =>
-      err?.name !== "AbortError" && /ECONNREFUSED|ECONNRESET|EPIPE|socket hang up|fetch failed/i.test(`${err?.message} ${err?.cause?.code ?? ""}`);
+      err?.name !== "AbortError" && RETRYABLE_NET.has(err?.cause?.code ?? err?.code);
     let attempt = 0;
     for (;;) {
     const ctrl = new AbortController();
@@ -319,7 +323,10 @@ export function createServer({
         await sleepImpl(retryDelaysMs[attempt++]);
         continue;
       }
-      const msg = err?.name === "AbortError" ? `timed out after ${REQUEST_TIMEOUT_MS}ms` : err?.message || String(err);
+      const code = err?.cause?.code ?? err?.code;
+      const msg = err?.name === "AbortError"
+        ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
+        : `${err?.message || String(err)}${code ? ` (${code})` : ""}`;
       lastError = { path: resolvedPath, method, status: null, error: msg.slice(0, 200), ts: Date.now() };
       return { isError: true, content: [{ type: "text", text: `Request failed: ${msg}` }] };
     } finally {
