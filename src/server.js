@@ -41,6 +41,90 @@ const NOT_FOUND_HINTS = [
 const DEFAULT_NOT_FOUND_HINT =
   " (not found. The user, tweet, or list may have been deleted or the id is wrong)";
 
+// AGENT-ACTIONABLE PAYWALL. A missing key, a rejected key, an empty balance and
+// a missing X session are the moments a user decides whether to keep going, and
+// they happen inside an agent's turn. The payload names the exact page (or tool)
+// so the agent can say "top up here, then I will retry". It is appended to the
+// text (every client reads that) and returned as structuredContent. Which
+// failures ARE a paywall is decided from the API's own response BODY, not the
+// status alone (the API's bodies, read 2026-09-29 from scraper/src/server/auth.ts
+// and routes/actions.ts): 401 {"error":"unauthorized"}, 402
+// {"error":"insufficient_credits"}, 409 {"error":"session_required"|"session_dead"}.
+export const SIGNUP_URL = "https://www.twitterapis.com/signup?utm_source=mcp&utm_medium=tool_error";
+export const API_KEYS_URL = "https://www.twitterapis.com/dashboard?utm_source=mcp&utm_medium=tool_error";
+export const TOP_UP_URL = "https://www.twitterapis.com/dashboard/buy-credits?utm_source=mcp&utm_medium=tool_error";
+
+export function paywallFor(kind) {
+  if (kind === "no_key") {
+    return {
+      needs: "account",
+      message:
+        "Missing TWITTERAPIS_KEY: no API key is set. Sign up free at twitterapis.com (new accounts start " +
+        "with free credit, no card), copy the key from the dashboard, set TWITTERAPIS_KEY in the MCP " +
+        "client config, then retry this call.",
+      action_url: SIGNUP_URL,
+      api_keys_url: API_KEYS_URL,
+      retry: "same call, after the key is set",
+    };
+  }
+  if (kind === "bad_key") {
+    return {
+      needs: "valid_key",
+      message:
+        "The twitterapis.com credential was rejected (the API key is invalid, revoked or rotated, or the " +
+        "connected app was disconnected). Copy a current key from the dashboard and set TWITTERAPIS_KEY, " +
+        "or reconnect the app, then retry this call.",
+      action_url: API_KEYS_URL,
+      retry: "same call, after the key is replaced or the app reconnected",
+    };
+  }
+  if (kind === "credits") {
+    return {
+      needs: "credits",
+      message:
+        "The twitterapis.com account is out of credits. Top up (pay as you go, no subscription), then " +
+        "retry this call; nothing was charged for the failed request. twitter_account_me shows the balance.",
+      action_url: TOP_UP_URL,
+      retry: "same call, after topping up",
+    };
+  }
+  if (kind === "x_session") {
+    return {
+      needs: "x_session",
+      message:
+        "This action needs a linked X account: writes and account-only reads act as the user's own X " +
+        "session. Link one with the twitter_user_login tool (or twitter_customer_session with auth_token " +
+        "and ct0), then retry this call.",
+      next_tool: "twitter_user_login",
+      retry: "same call, after an X session is linked",
+    };
+  }
+  return null;
+}
+
+export function classifyPaywall(status, bodyText) {
+  let body = null;
+  try {
+    body = JSON.parse(bodyText);
+  } catch {
+    body = null;
+  }
+  const err = body && typeof body.error === "string" ? body.error : "";
+  if (status === 401 && err === "unauthorized") return "bad_key";
+  if (status === 402 && err === "insufficient_credits") return "credits";
+  if (status === 409 && (err === "session_required" || err === "session_dead")) return "x_session";
+  return null;
+}
+
+function paywallResult(kind, detail = "") {
+  const p = paywallFor(kind);
+  return {
+    isError: true,
+    content: [{ type: "text", text: `${p.message}${detail ? ` (${detail})` : ""}\n\n${JSON.stringify(p)}` }],
+    structuredContent: p,
+  };
+}
+
 export function hintFor(status, path) {
   if (status === 401) return " (invalid or missing API key, verify TWITTERAPIS_KEY at https://www.twitterapis.com/dashboard)";
   if (status === 402) return " (insufficient credits, top up at https://www.twitterapis.com/dashboard)";
@@ -111,15 +195,7 @@ export function createServer({
   // before building the query string or body, so a pathParams arg never leaks
   // into either.
   async function callEndpoint(path, args, method = "GET", jsonBody = false, pathParams = []) {
-    if (!apiKey && !authHeaders) {
-      return {
-        isError: true,
-        content: [{
-          type: "text",
-          text: "Missing TWITTERAPIS_KEY (invalid or missing API key, get one at https://www.twitterapis.com/signup and set it in your MCP client config).",
-        }],
-      };
-    }
+    if (!apiKey && !authHeaders) return paywallResult("no_key");
     // Fill {name} URL segments from args and strip those keys, so a pathParams arg
     // (e.g. a monitor/webhook id) never also leaks into the query string or JSON
     // body. A missing value fails loudly rather than shipping a request that still
@@ -201,6 +277,8 @@ export function createServer({
           res.status === 401 || res.status === 402 || res.status === 404 || res.status === 409 || res.status === 429
             ? ""
             : " If this blocked the user's task and looks like a defect or a missing capability, draft a report with twitter_feedback_send (queued locally until the user reviews it).";
+        const pw = classifyPaywall(res.status, body);
+        if (pw) return paywallResult(pw, `HTTP ${res.status}: ${body.slice(0, 1200)}`);
         return { isError: true, content: [{ type: "text", text: `HTTP ${res.status}${hint}: ${body.slice(0, 1200)}${feedbackHint}` }] };
       }
       // A success clears the record so a later draft never inherits an old
