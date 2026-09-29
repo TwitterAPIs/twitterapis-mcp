@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.16.1 (2026-09-29)
+
+### Changed
+
+- **A restart answered in JSON is ridden out too.** The gateway now answers a
+  restart with a JSON 503 (`"error": "gateway_restarting"`, `Retry-After`)
+  instead of its HTML page; a read retries on either. Any other JSON 503 from
+  the API, and that code on any other status, is still never retried.
+- **A cancelled call stops.** When the MCP client cancels a tool call, the
+  request in flight is aborted and the wait before a retry ends at once; the
+  result says "Request cancelled by the caller." instead of reporting a timeout.
+
 ## 0.16.0 (2026-09-29)
 
 ### Changed
