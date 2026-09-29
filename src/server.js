@@ -165,6 +165,9 @@ export const INSTRUCTIONS =
  *                                         (TWITTERAPIS_FEEDBACK_DIR); a remote host gives each
  *                                         caller its own directory
  * @param {typeof fetch} [opts.fetchImpl]  injectable for tests
+ * @param {(ms:number)=>Promise<void>} [opts.sleepImpl] injectable for tests
+ * @param {number[]} [opts.retryDelaysMs] waits before each retry of a read that
+ *        hit a gateway failure (deploy restart); default [3000, 8000]
  * @param {Record<string,string>} [opts.authHeaders]
  *        headers that authenticate each call INSTEAD of the API key. For a host
  *        that has already authenticated the caller some other way (an OAuth
@@ -178,6 +181,8 @@ export function createServer({
   feedbackEnv = process.env,
   fetchImpl = fetch,
   authHeaders = null,
+  sleepImpl = (ms) => new Promise((r) => setTimeout(r, ms)),
+  retryDelaysMs = [3000, 8000],
 } = {}) {
   const BASE_URL = String(baseUrl).replace(/\/+$/, "");
   const REQUEST_TIMEOUT_MS = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : DEFAULT_TIMEOUT_MS;
@@ -255,6 +260,26 @@ export function createServer({
       }
     }
 
+    // A DEPLOY RESTART IS NOT AN ERROR THE USER SHOULD SEE. While the API
+    // restarts (about 30 to 60 seconds, measured 2026-09-29) the gateway answers
+    // an HTML 502/503 or refuses the connection. A READ is retried through
+    // that window; the API's own JSON errors, timeouts and writes never are, so
+    // a request the API may already have handled is never sent twice (a gateway
+    // 504 is not retried for that reason).
+    const canRetry = method === "GET";
+    // Only a REFUSED connection is retried: the request never reached the API,
+    // so it cannot have been handled or billed. A reset, a broken pipe or a
+    // socket dropped mid-answer can all happen after the API did the work, and
+    // "fetch failed" alone also covers DNS and TLS errors that retrying cannot fix.
+    const RETRYABLE_NET = new Set(["ECONNREFUSED"]);
+    const gatewayFailure = (status, text) =>
+      (status === 502 || status === 503) && /^\s*<(!doctype|html)/i.test(text);
+    const transientNetwork = (err) =>
+      !gotResponse && err?.name !== "AbortError" && RETRYABLE_NET.has(err?.cause?.code ?? err?.code);
+    let attempt = 0;
+    let gotResponse = false;
+    for (;;) {
+    gotResponse = false;
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
     try {
@@ -264,7 +289,13 @@ export function createServer({
         body: reqBody,
         signal: ctrl.signal,
       });
+      gotResponse = true;
       const body = await res.text();
+      if (canRetry && attempt < retryDelaysMs.length && gatewayFailure(res.status, body)) {
+        clearTimeout(timer);
+        await sleepImpl(retryDelaysMs[attempt++]);
+        continue;
+      }
       if (!res.ok) {
         const hint = hintFor(res.status, resolvedPath);
         lastError = {
@@ -292,11 +323,20 @@ export function createServer({
       lastError = null;
       return { content: [{ type: "text", text: body }] };
     } catch (err) {
-      const msg = err?.name === "AbortError" ? `timed out after ${REQUEST_TIMEOUT_MS}ms` : err?.message || String(err);
+      if (canRetry && attempt < retryDelaysMs.length && transientNetwork(err)) {
+        clearTimeout(timer);
+        await sleepImpl(retryDelaysMs[attempt++]);
+        continue;
+      }
+      const code = err?.cause?.code ?? err?.code;
+      const msg = err?.name === "AbortError"
+        ? `timed out after ${REQUEST_TIMEOUT_MS}ms`
+        : `${err?.message || String(err)}${code ? ` (${code})` : ""}`;
       lastError = { path: resolvedPath, method, status: null, error: msg.slice(0, 200), ts: Date.now() };
       return { isError: true, content: [{ type: "text", text: `Request failed: ${msg}` }] };
     } finally {
       clearTimeout(timer);
+    }
     }
   }
 
