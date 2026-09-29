@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.16.0 (2026-09-29)
+
+### Changed
+
+- **A read rides out an API restart.** A read (GET) that gets the gateway's
+  HTML 502/503/504, or a refused or reset connection, is retried after 3 and
+  then 8 seconds, so a deploy restart no longer surfaces as a Bad Gateway error.
+  The API's own JSON errors, timeouts and every write are never retried, so
+  nothing is double-charged or double-posted.
+- `twitter_tweet_quotes` explains the Top fallback: an empty first Top page is
+  served from Latest (`product_used`, `top_fallback`) and its `next_cursor`
+  keeps paging that list.
+
 ## 0.15.0 (2026-09-29)
 
 ### Added
