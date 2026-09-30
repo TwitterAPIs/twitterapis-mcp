@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.17.0 (2026-09-30)
+
+### Added
+
+- **`paid_promotion` on the 17 tweet-list tools.** `"only"` keeps tweets X labels
+  Paid partnership (`is_paid_promotion` true), `"exclude"` keeps the rest. It filters
+  the page the API returned, so `next_cursor` still pages on, and the response carries
+  `paid_promotion_filter { mode, kept, removed }`. Same cost as without it.
+
 ## 0.16.1 (2026-09-29)
 
 ### Changed

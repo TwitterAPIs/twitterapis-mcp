@@ -57,6 +57,14 @@ export const ARG_GROUPS = {
       describe:
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive)." },
   ],
+  // Paid partnership filter (API 2026-09-30, docs components.parameters
+  // paid_promotion). Only on tools whose endpoint returns a top-level tweets
+  // list: the spec attaches it to exactly those operations.
+  PAID_PROMOTION: [
+    { name: "paid_promotion", enum: ["only", "exclude"],
+      describe:
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it." },
+  ],
   // Opaque forward-only pagination cursor.
   CURSOR: [
     { name: "cursor",
@@ -146,6 +154,7 @@ export const TOOL_OVERRIDES = [
           "Result ranking mode. 'Latest' = reverse-chronological (best for monitoring). 'Top' = engagement-ranked (best for finding popular tweets, default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts." },
       "@PAGINATION",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -246,6 +255,7 @@ export const TOOL_OVERRIDES = [
       "@USER_REF",
       "@PAGINATION",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -257,6 +267,7 @@ export const TOOL_OVERRIDES = [
       "@USER_REF",
       "@PAGINATION",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -275,6 +286,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Resume point from a previous response's next_cursor. Omit on the first call. Pass it back to continue collecting where the last call stopped, and keep repeating while next_cursor is non-null." },
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -286,6 +298,7 @@ export const TOOL_OVERRIDES = [
       "@USER_REF",
       "@PAGINATION",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -299,6 +312,7 @@ export const TOOL_OVERRIDES = [
           "Twitter/X handle WITHOUT the leading @ of the user to find mentions for (e.g. 'openai' to find tweets mentioning @openai)." },
       "@PAGINATION",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -312,6 +326,7 @@ export const TOOL_OVERRIDES = [
           "Numeric Twitter/X user id (e.g. '44196397'). Required: this endpoint does not accept a username. Resolve a handle to a user_id first with twitter_user_info." },
       "@PAGINATION",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   // ── Reads: followers / following graph ─────────────────────────────────────
@@ -404,6 +419,7 @@ export const TOOL_OVERRIDES = [
       "@TWEET_REF",
       "@CURSOR",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -420,6 +436,7 @@ export const TOOL_OVERRIDES = [
     args: [
       "@TWEET_REF",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -453,6 +470,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -522,6 +540,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -540,6 +559,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   // ── Reads: trends ──────────────────────────────────────────────────────────
@@ -662,6 +682,7 @@ export const TOOL_OVERRIDES = [
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Omit on the first call." },
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -849,6 +870,7 @@ export const TOOL_OVERRIDES = [
       "@PAGINATION",
       "@INLINE",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -860,6 +882,7 @@ export const TOOL_OVERRIDES = [
       "@PAGINATION",
       "@INLINE",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -896,6 +919,7 @@ export const TOOL_OVERRIDES = [
       "@PAGINATION",
       "@INLINE",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {
@@ -920,6 +944,7 @@ export const TOOL_OVERRIDES = [
       "@CURSOR",
       "@INLINE",
       "@PROJECTION",
+      "@PAID_PROMOTION",
     ],
   },
   {

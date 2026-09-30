@@ -55,6 +55,9 @@ export const TOOLS = [
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
       ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
     },
   },
   {
@@ -224,6 +227,9 @@ export const TOOLS = [
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
       ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
     },
   },
   {
@@ -250,6 +256,9 @@ export const TOOLS = [
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
       ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
     },
   },
   {
@@ -272,6 +281,9 @@ export const TOOLS = [
       ),
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
       ),
     },
   },
@@ -299,6 +311,9 @@ export const TOOLS = [
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
       ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
     },
   },
   {
@@ -322,6 +337,9 @@ export const TOOLS = [
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
       ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
     },
   },
   {
@@ -344,6 +362,9 @@ export const TOOLS = [
       ),
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
       ),
     },
   },
@@ -553,6 +574,9 @@ export const TOOLS = [
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
       ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
     },
   },
   {
@@ -572,6 +596,9 @@ export const TOOLS = [
       ),
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
       ),
     },
   },
@@ -630,6 +657,9 @@ export const TOOLS = [
       ),
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
       ),
     },
   },
@@ -712,6 +742,9 @@ export const TOOLS = [
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
       ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
     },
   },
   {
@@ -734,6 +767,9 @@ export const TOOLS = [
       ),
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
       ),
     },
   },
@@ -883,6 +919,9 @@ export const TOOLS = [
       ),
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
       ),
     },
   },
@@ -1119,6 +1158,9 @@ export const TOOLS = [
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
       ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
     },
   },
   {
@@ -1150,6 +1192,9 @@ export const TOOLS = [
       ),
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
       ),
     },
   },
@@ -1250,6 +1295,9 @@ export const TOOLS = [
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
       ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
     },
   },
   {
@@ -1307,6 +1355,9 @@ export const TOOLS = [
       ),
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filter this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and does not fetch more, so a page can hold fewer tweets than asked for, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
       ),
     },
   },
