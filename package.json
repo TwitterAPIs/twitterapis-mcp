@@ -43,7 +43,9 @@
     "check:manifest-tools": "node scripts/gen-manifest-tools.mjs --check",
     "bundle": "node scripts/gen-manifest-tools.mjs --write && npx -y @anthropic-ai/mcpb@2.1.2 pack .",
     "check:mcpb": "npx -y @anthropic-ai/mcpb@2.1.2 validate manifest.json",
-    "check:publish-provenance": "node test/publish-provenance.mjs"
+    "check:publish-provenance": "node test/publish-provenance.mjs",
+    "postpublish": "node scripts/registry-drift.mjs --publish",
+    "check:registry-drift": "node scripts/registry-drift.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
