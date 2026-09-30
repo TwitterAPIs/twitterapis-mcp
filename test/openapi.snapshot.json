@@ -1978,6 +1978,19 @@
                     "has_more": {
                       "type": "boolean",
                       "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    },
+                    "incomplete": {
+                      "type": "boolean",
+                      "description": "Present and true only when X soft-limited the search that served this page, so the page may be missing rows. Absent on every healthy page."
+                    },
+                    "incomplete_reason": {
+                      "type": "string",
+                      "description": "Why the page is incomplete: upstream_soft_limit. Present only with incomplete."
+                    },
+                    "upstream_limit": {
+                      "type": "object",
+                      "description": "X's own limit signal for this page (its error codes and message). Present only with incomplete.",
+                      "additionalProperties": true
                     }
                   }
                 },
@@ -2159,6 +2172,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -2810,6 +2826,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -3129,6 +3148,27 @@
                     "quote_matched": {
                       "type": "integer",
                       "description": "How many of the returned tweets demonstrably quote the requested id, read off each tweet's embedded quoted_tweet. Equal to count means every row is a genuine quote. Zero on a non-empty page means X stopped honouring the search operator and the rows are junk that merely contain the number."
+                    },
+                    "product_used": {
+                      "type": "string",
+                      "description": "Which ordering actually served this page: Top or Latest. Differs from the product you asked for only when top_fallback is true."
+                    },
+                    "top_fallback": {
+                      "type": "boolean",
+                      "description": "Present and true only when you asked for product=Top, the first Top page came back empty, and the page was served from Latest instead. X's ranked search returns an empty first page for some tweets that do have quotes, so an empty Top page is never passed off as zero quotes. Page on with the next_cursor as usual: after a fallback it is tagged so it keeps serving Latest even if you send product=Top again."
+                    },
+                    "incomplete": {
+                      "type": "boolean",
+                      "description": "Present and true only when X soft-limited the search that served this page, so the page may be missing rows. Absent on every healthy page."
+                    },
+                    "incomplete_reason": {
+                      "type": "string",
+                      "description": "Why the page is incomplete: upstream_soft_limit. Present only with incomplete."
+                    },
+                    "upstream_limit": {
+                      "type": "object",
+                      "description": "X's own limit signal for this page (its error codes and message). Present only with incomplete.",
+                      "additionalProperties": true
                     }
                   }
                 },
@@ -3352,6 +3392,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -3561,6 +3604,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -4575,6 +4621,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -4823,6 +4872,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -5054,6 +5106,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -5115,6 +5170,19 @@
                     "has_more": {
                       "type": "boolean",
                       "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    },
+                    "incomplete": {
+                      "type": "boolean",
+                      "description": "Present and true only when X soft-limited the search that served this page, so the page may be missing rows. Absent on every healthy page."
+                    },
+                    "incomplete_reason": {
+                      "type": "string",
+                      "description": "Why the page is incomplete: upstream_soft_limit. Present only with incomplete."
+                    },
+                    "upstream_limit": {
+                      "type": "object",
+                      "description": "X's own limit signal for this page (its error codes and message). Present only with incomplete.",
+                      "additionalProperties": true
                     }
                   }
                 },
@@ -5273,6 +5341,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -5938,6 +6009,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -6174,6 +6248,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -6582,6 +6659,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -6818,6 +6898,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -7052,6 +7135,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -7734,6 +7820,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -10250,6 +10339,19 @@
                     "has_more": {
                       "type": "boolean",
                       "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    },
+                    "incomplete": {
+                      "type": "boolean",
+                      "description": "Present and true only when X soft-limited the search that served this page, so the page may be missing rows. Absent on every healthy page."
+                    },
+                    "incomplete_reason": {
+                      "type": "string",
+                      "description": "Why the page is incomplete: upstream_soft_limit. Present only with incomplete."
+                    },
+                    "upstream_limit": {
+                      "type": "object",
+                      "description": "X's own limit signal for this page (its error codes and message). Present only with incomplete.",
+                      "additionalProperties": true
                     }
                   }
                 },
@@ -10457,6 +10559,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -10677,6 +10782,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -12556,6 +12664,9 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
@@ -23050,6 +23161,33 @@
             "type": "boolean",
             "description": "True when the tweet carries at least one native video or animated-GIF media item (a one-field filter for video content, including video quote-retweets)."
           },
+          "is_paid_promotion": {
+            "type": "boolean",
+            "description": "True when X shows its own \"Paid partnership\" label on the post (X's branded-content disclosure). False when X shows no label."
+          },
+          "has_community_note": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "True when the post carries a Community Note; null when X does not say."
+          },
+          "is_edited": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "True when the post has been edited since it was first posted; null when X sends no edit information."
+          },
+          "edit_history_ids": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "description": "The ids of every version of the post, oldest first and including the original; null when X sends no edit information."
+          },
+          "quoted_status_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "The id of the post this one quotes, present even when the quoted post is not expanded; null when it quotes nothing."
+          },
           "source": {
             "type": "string",
             "nullable": true,
@@ -23372,12 +23510,17 @@
           "can_dm": {
             "type": "boolean",
             "nullable": true,
-            "description": "Whether the account can receive a direct message from the caller's session."
+            "description": "Whether the account accepts direct messages. Currently null on profile lookups (user/info, user/search) and on tweet authors: X no longer includes DM permission in those payloads. The key stays so it fills again if X restores it. For a real answer between two accounts, use can_dm on /twitter/user/check_follow_relationship."
           },
           "parody_commentary_fan_label": {
             "type": "string",
             "nullable": true,
             "description": "X's parody / commentary / fan account label, when the account is marked as one; null when it carries no such label."
+          },
+          "creator_subscriptions_enabled": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "True when the account sells X Subscriptions to its followers; null when X does not say."
           },
           "can_media_tag": {
             "type": "boolean",
@@ -24231,6 +24374,20 @@
       }
     },
     "parameters": {
+      "paid_promotion": {
+        "name": "paid_promotion",
+        "in": "query",
+        "required": false,
+        "description": "Filter this page's tweets by X's Paid partnership label: only keeps tweets whose is_paid_promotion is true, exclude keeps the rest. Omit it for every tweet. It filters the page X returned and does not fetch more, so a filtered page can hold fewer tweets than asked for, or none, while next_cursor still pages on. The response carries paid_promotion_filter { mode, kept, removed }, and count reflects what is returned. Any other value is a 400. Billing is the same as without it.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "only",
+            "exclude"
+          ]
+        },
+        "example": "only"
+      },
       "fields": {
         "name": "fields",
         "in": "query",
