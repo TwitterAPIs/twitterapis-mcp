@@ -2440,7 +2440,7 @@
       "write": false,
       "destructive": false,
       "jsonBody": false,
-      "description": "Get the current top trends for a location, or for one of X's Explore topic tabs. With no parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Or pass category (trending, news, sports or entertainment) to read that Explore tab instead; category cannot be combined with country or woeid (400). Returns the as_of timestamp and the ranked trends; a location call also returns the resolved location and created_at. A category response echoes category, has location and created_at null, and lists X's ranked trends first, then the tab's story items: AI-written headlines X marks, each with the headline as query, an x.com/i/trending/<id> url and the post count as tweet_volume. Story items carry is_ai_story true, but so can a ranked trend X flags as AI-written, so tell them apart by the x.com/i/trending url. A tab may hold only story items. Use count to truncate the list. A location X will not serve returns a 400.",
+      "description": "Get the current top trends for a location, or for one of X's Explore topic tabs. With no parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Or pass category to read an X Explore tab instead (trending, news, sports, entertainment or for_you), or category=business_and_finance for only the ranked trends X labels Business and finance, read from the Trending and News tabs. category cannot be combined with country or woeid (400). Category results reflect the Explore view of the account the API reads with, not yours. Returns the as_of timestamp and the ranked trends; a location call also returns the resolved location and created_at. A category response echoes category, has location and created_at null, and lists X's ranked trends first, then the tab's story items: AI-written headlines X marks, each with the headline as query, an x.com/i/trending/<id> url and the post count as tweet_volume. Story items carry is_ai_story true, but so can a ranked trend X flags as AI-written, so tell them apart by the x.com/i/trending url. A tab may hold only story items. Use count to truncate the list. A location X will not serve returns a 400.",
       "args": [
         "category",
         "country",
@@ -2454,13 +2454,15 @@
         "type": "object",
         "properties": {
           "category": {
-            "description": "Optional Explore topic tab: trending, news, sports or entertainment. Reads that tab instead of a location's trends. Cannot be combined with country or woeid.",
+            "description": "Optional. An X Explore tab (trending, news, sports, entertainment or for_you), or business_and_finance: a filter that reads the Trending and News tabs and keeps only the ranked trends X itself labels Business and finance (never story items). Reads instead of a location's trends. Cannot be combined with country or woeid.",
             "type": "string",
             "enum": [
               "trending",
               "news",
               "sports",
-              "entertainment"
+              "entertainment",
+              "for_you",
+              "business_and_finance"
             ]
           },
           "country": {

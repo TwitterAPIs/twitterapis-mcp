@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.21.0 (2026-10-01)
+
+### Added
+
+- **`twitter_trends` category gains `for_you` and `business_and_finance`.** `for_you` reads
+  X's For you Explore tab. `business_and_finance` is not a tab (X serves none): it reads the
+  Trending and News tabs and returns only the ranked trends X itself labels "Business and
+  finance", re-ranked, never story items. Category results reflect the Explore view of the
+  account the API reads with.
+
 ## 0.20.0 (2026-10-01)
 
 ### Added
