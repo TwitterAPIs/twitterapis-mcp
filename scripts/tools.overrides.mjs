@@ -1002,7 +1002,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_dm_list",
     endpoint: "/dm/list",
     description:
-      "List YOUR authenticated account's Direct Message conversations (inbox), each with the participant and a conversation_id you can pass to twitter_dm_conversation. Requires an authenticated session behind your key. Read-only: this does not send DMs.",
+      "List YOUR authenticated account's Direct Message conversations (inbox), each with the participant and a conversation_id you can pass to twitter_dm_conversation. Requires an authenticated session behind your key. Read-only: this does not send DMs. It reads X's standard DM inbox, so conversations X has moved to end-to-end encrypted chat may not appear, and conversations still in the message-requests folder may be missing.",
     args: [
       "@INLINE",
       "@PROJECTION",
