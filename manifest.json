@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "twitterapis-mcp",
   "display_name": "TwitterAPIs",
-  "version": "0.19.1",
+  "version": "0.20.0",
   "icon": "icon.png",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
   "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
@@ -213,7 +213,7 @@
     },
     {
       "name": "twitter_trends",
-      "description": "Get the current top trends for a location. With no location parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Returns the resolved location, the as_of / created_at timestamps, and the ranked trends list. Use count to truncate the list. A location X will not serve returns a 400."
+      "description": "Get the current top trends for a location, or for one of X's Explore topic tabs. With no parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Or pass category (trending, news, sports or entertainment) to read that Explore tab instead; category cannot be combined with country or woeid (400). Returns the as_of timestamp and the ranked trends; a location call also returns the resolved location and created_at. A category response echoes category, has location and created_at null, and lists X's ranked trends first, then the tab's story items: AI-written headlines X marks, each with the headline as query, an x.com/i/trending/<id> url and the post count as tweet_volume. Story items carry is_ai_story true, but so can a ranked trend X flags as AI-written, so tell them apart by the x.com/i/trending url. A tab may hold only story items. Use count to truncate the list. A location X will not serve returns a 400."
     },
     {
       "name": "twitter_trends_locations",

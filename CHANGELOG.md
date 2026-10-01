@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.20.0 (2026-10-01)
+
+### Added
+
+- **`twitter_trends` reads X's Explore topic tabs.** New `category` input: trending, news,
+  sports or entertainment. A category response echoes `category`, has `location` null, and
+  lists X's ranked trends first, then the tab's story items (AI-written headlines X marks)
+  with `is_ai_story: true`, the headline as `query`, an x.com/i/trending link and the post
+  count as `tweet_volume`. It cannot be combined with `country` or `woeid`.
+
 ## 0.19.1 (2026-10-01)
 
 ### Changed
