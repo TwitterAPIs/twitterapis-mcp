@@ -4425,7 +4425,7 @@
                   "properties": {
                     "requested": {
                       "type": "integer",
-                      "description": "Number of distinct accounts looked up, after duplicates were removed."
+                      "description": "Number of distinct accounts in the request, after duplicates were removed."
                     },
                     "served": {
                       "type": "integer",
@@ -4460,7 +4460,7 @@
                           },
                           "error": {
                             "type": "string",
-                            "description": "Present only on an item without an about object. One of not_found (X confirmed no such account; billed), rate_limited, forbidden, or unavailable (failed on our side; not billed, safe to retry)."
+                            "description": "Present only on an item without an about object. One of not_found (X confirmed no such account; billed), forbidden (X refuses this account to every caller; not billed, retrying will not help), rate_limited or unavailable (failed on our side; not billed, safe to retry)."
                           }
                         }
                       }
@@ -4588,9 +4588,7 @@
                   "type": "object",
                   "required": [
                     "error",
-                    "message",
-                    "retry_after_seconds",
-                    "limit_per_minute"
+                    "message"
                   ],
                   "properties": {
                     "error": {
@@ -4598,20 +4596,12 @@
                     },
                     "message": {
                       "type": "string"
-                    },
-                    "retry_after_seconds": {
-                      "type": "integer"
-                    },
-                    "limit_per_minute": {
-                      "type": "integer"
                     }
                   }
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Rate limit exceeded (600 requests/min per API key). Retry after 12s.",
-                  "retry_after_seconds": 12,
-                  "limit_per_minute": 600
+                  "error": "batch_in_progress",
+                  "message": "One batch per API key at a time. Retry when the running batch returns. Not billed."
                 }
               }
             }
@@ -4624,8 +4614,7 @@
                   "type": "object",
                   "required": [
                     "error",
-                    "message",
-                    "retry_after_seconds"
+                    "message"
                   ],
                   "properties": {
                     "error": {
@@ -4633,16 +4622,12 @@
                     },
                     "message": {
                       "type": "string"
-                    },
-                    "retry_after_seconds": {
-                      "type": "integer"
                     }
                   }
                 },
                 "example": {
                   "error": "upstream_unavailable",
-                  "message": "No item could be fetched right now. This is temporary; retry shortly.",
-                  "retry_after_seconds": 5
+                  "message": "No item could be fetched right now. This is temporary; retry shortly."
                 }
               }
             }
@@ -4665,10 +4650,10 @@
             "name": "user_ids",
             "in": "query",
             "required": false,
-            "description": "Comma-separated numeric user IDs, as an alternative to usernames. Send this or usernames, never both. Same 1 to 100 limit. Each ID is resolved to its current handle, then looked up; results echo each ID as you sent it.",
+            "description": "Comma-separated numeric user IDs, as an alternative to usernames. Send this or usernames, never both. Same 1 to 100 limit. Each ID is resolved to its current handle, then looked up; results echo each ID as you sent it. Leading zeros are ignored for duplicates (012 and 12 are one account).",
             "schema": {
               "type": "string",
-              "description": "Comma-separated numeric user IDs, as an alternative to usernames. Send this or usernames, never both. Same 1 to 100 limit. Each ID is resolved to its current handle, then looked up; results echo each ID as you sent it.",
+              "description": "Comma-separated numeric user IDs, as an alternative to usernames. Send this or usernames, never both. Same 1 to 100 limit. Each ID is resolved to its current handle, then looked up; results echo each ID as you sent it. Leading zeros are ignored for duplicates (012 and 12 are one account).",
               "example": "44196397,11348282"
             },
             "example": "44196397,11348282"
