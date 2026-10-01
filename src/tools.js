@@ -1102,8 +1102,11 @@ export const TOOLS = [
     name: "twitter_trends",
     path: "/twitter/trends",
     description:
-      "Get the current top trends for a location. With no location parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Returns the resolved location, the as_of / created_at timestamps, and the ranked trends list. Use count to truncate the list. A location X will not serve returns a 400.",
+      "Get the current top trends for a location, or for one of X's Explore topic tabs. With no parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Or pass category (trending, news, sports or entertainment) to read that Explore tab instead; category cannot be combined with country or woeid (400). A category response echoes category, has location null, and lists X's ranked trends first, then the tab's story items: AI-written headlines X marks, each with is_ai_story true, the headline as query, an x.com/i/trending link and the post count as tweet_volume. Sports and Entertainment are often only story items. Use count to truncate the list. A location X will not serve returns a 400.",
     shape: {
+      category: z.enum(["trending","news","sports","entertainment"]).optional().describe(
+        "Optional Explore topic tab: trending, news, sports or entertainment. Reads that tab instead of a location's trends. Cannot be combined with country or woeid.",
+      ),
       country: z.string().optional().describe(
         "Country name or ISO code to get trends for, e.g. 'US' or 'Japan'. Resolved against the trends locations list. Omit for Worldwide.",
       ),

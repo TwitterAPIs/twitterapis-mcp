@@ -50,7 +50,7 @@
     },
     {
       "name": "Trends",
-      "description": "Read what is trending on Twitter/X right now, worldwide or for a single country, plus the full set of locations trends are available for."
+      "description": "Read what is trending on Twitter/X right now, worldwide, for a single country or for one X Explore topic tab, plus the full set of locations trends are available for."
     },
     {
       "name": "Spaces",
@@ -9172,7 +9172,7 @@
       "get": {
         "operationId": "dm-list",
         "summary": "DM Inbox",
-        "description": "List the DM conversations (inbox) for the account behind your session. Returns each conversation's ID, type, and participant user IDs. Pass a conversation_id to GET /dm/conversation to read its messages. Authenticate with a registered session (POST /customer/session) or per-call x-auth-token and x-ct0 headers, so one API key can poll the inboxes of many accounts. Read-only: this does not send DMs. Cost: $0.0016 per call.",
+        "description": "List the DM conversations (inbox) for the account behind your session. Returns each conversation's ID, type, and participant user IDs. Pass a conversation_id to GET /dm/conversation to read its messages. Authenticate with a registered session (POST /customer/session) or per-call x-auth-token and x-ct0 headers, so one API key can poll the inboxes of many accounts. Read-only: this does not send DMs. It reads X's standard DM inbox, so conversations X has moved to end-to-end encrypted chat may not appear, and conversations still in the message-requests folder may be missing. Cost: $0.0016 per call.",
         "tags": [
           "Direct Messages"
         ],
@@ -11934,7 +11934,7 @@
       "get": {
         "operationId": "trends",
         "summary": "Trends",
-        "description": "Fetch the current top trends for one location. Ask for it by country name, ISO code, or numeric WOEID; with no location parameter you get Worldwide. X returns roughly 50 trends per location, ranked. Cost: $0.0008 per call.",
+        "description": "Fetch the current top trends for one location. Ask for it by country name, ISO code, or numeric WOEID; with no location parameter you get Worldwide. X returns roughly 50 trends per location, ranked. Pass category instead to read one X Explore topic tab: trending, news, sports or entertainment. Cost: $0.0008 per call.",
         "tags": [
           "Trends"
         ],
@@ -11959,23 +11959,43 @@
             "lang": "js",
             "label": "JavaScript",
             "source": "const url = new URL(\"https://api.twitterapis.com/twitter/trends\");\nurl.search = new URLSearchParams({ country: \"US\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          },
+          {
+            "lang": "bash",
+            "label": "cURL: Read an Explore topic tab",
+            "source": "curl \"https://api.twitterapis.com/twitter/trends?category=news\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python: Read an Explore topic tab",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/trends\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"category\": \"news\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript: Read an Explore topic tab",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/trends\");\nurl.search = new URLSearchParams({ category: \"news\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
           }
         ],
         "responses": {
           "200": {
-            "description": "Read the current trending topics for a location.",
+            "description": "Read the current trending topics for a location or an Explore topic tab.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "category": {
+                      "type": "string",
+                      "description": "The Explore topic tab you asked for, lowercased: trending, news, sports or entertainment. Present only when the call sent category; a location call has no category key."
+                    },
                     "location": {
                       "allOf": [
                         {
                           "$ref": "#/components/schemas/TrendServedLocation"
                         }
                       ],
-                      "description": "The location X actually served, as { name, woeid }, echoed back so you know what you got."
+                      "description": "The location X actually served, as { name, woeid }, echoed back so you know what you got. Null on a category call.",
+                      "nullable": true
                     },
                     "as_of": {
                       "type": "string",
@@ -11983,7 +12003,8 @@
                     },
                     "created_at": {
                       "type": "string",
-                      "description": "ISO 8601 timestamp X reports for the trend window."
+                      "description": "ISO 8601 timestamp X reports for the trend window. Null on a category call, where X reports no trend window.",
+                      "nullable": true
                     },
                     "count": {
                       "type": "integer",
@@ -11991,7 +12012,7 @@
                     },
                     "trends": {
                       "type": "array",
-                      "description": "Ranked trend objects: name, url, query, promoted_content, tweet_volume, is_hashtag, rank.",
+                      "description": "Ranked trend objects: name, url, query, promoted_content, tweet_volume, is_hashtag, rank, meta_description. On a category call each also carries is_ai_story, and story items follow the ranked trends.",
                       "items": {
                         "$ref": "#/components/schemas/Trend"
                       }
@@ -12155,13 +12176,25 @@
             "example": "23424977"
           },
           {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Read one X Explore topic tab instead of a location: trending, news, sports or entertainment. Case-insensitive. Cannot be combined with country or woeid (400 bad_request). An unknown value returns 400 bad_request, and the message lists the four values.",
+            "schema": {
+              "type": "string",
+              "description": "Read one X Explore topic tab instead of a location: trending, news, sports or entertainment. Case-insensitive. Cannot be combined with country or woeid (400 bad_request). An unknown value returns 400 bad_request, and the message lists the four values.",
+              "example": "news"
+            },
+            "example": "news"
+          },
+          {
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Truncate the returned list to this many trends. X has no count of its own; it always returns its full set (about 50).",
+            "description": "Truncate the returned list to this many trends. X has no count of its own; it always returns its full set (about 50 for a location).",
             "schema": {
               "type": "integer",
-              "description": "Truncate the returned list to this many trends. X has no count of its own; it always returns its full set (about 50).",
+              "description": "Truncate the returned list to this many trends. X has no count of its own; it always returns its full set (about 50 for a location).",
               "example": "10"
             },
             "example": "10"
@@ -24792,15 +24825,15 @@
         "properties": {
           "name": {
             "type": "string",
-            "description": "The trend text, for example a hashtag or phrase."
+            "description": "The trend text, for example a hashtag or phrase. On a story item from a category call, the headline."
           },
           "url": {
             "type": "string",
-            "description": "x.com search URL for the trend."
+            "description": "x.com search URL for the trend. On a story item from a category call, the story page under https://x.com/i/trending/ followed by the story id."
           },
           "query": {
             "type": "string",
-            "description": "URL-encoded search query for the trend."
+            "description": "Search query for the trend. URL-encoded on location trends; on a story item from a category call, the headline."
           },
           "promoted_content": {
             "nullable": true,
@@ -24809,7 +24842,7 @@
           "tweet_volume": {
             "type": "integer",
             "nullable": true,
-            "description": "Approximate number of tweets in the trend over the trailing window; null when X does not report a volume."
+            "description": "Approximate number of tweets in the trend over the trailing window; null when X does not report a volume. On a story item from a category call, the post count read from X's line, for example 116000 from \"116K posts\"."
           },
           "is_hashtag": {
             "type": "boolean",
@@ -24817,12 +24850,16 @@
           },
           "rank": {
             "type": "integer",
-            "description": "1-based position of the trend in X's trending-rank order, assigned before any count truncation."
+            "description": "1-based position of the trend in X's trending-rank order, assigned before any count truncation. On a category call, story items are ranked after the ranked trends."
           },
           "meta_description": {
             "type": "string",
             "nullable": true,
-            "description": "The context line X shows under a trend, for example \"Trending in United States\" or \"12.4K posts\". Null on every trend today. Trends are read from X's REST trends/place.json, whose trend object carries no context string, so there is nothing to return; the field fills in on its own the day that changes. It is deliberately not synthesised from tweet_volume, because a line written here and presented as X's would be a fabrication."
+            "description": "The context line X shows under a trend. On a category call it is X's own line, for example \"Music · Trending\" on a ranked trend or \"8 hours ago · News · 116K posts\" on a story item. Null on every location trend today: those are read from X's REST trends/place.json, whose trend object carries no context string, so there is nothing to return; the field fills in on its own the day that changes. It is deliberately not synthesised from tweet_volume, because a line written here and presented as X's would be a fabrication."
+          },
+          "is_ai_story": {
+            "type": "boolean",
+            "description": "Present only on a category call. True on an item X itself marks as AI-written: every story item from the tab's stories module, and any ranked trend X flags as AI-written (which keeps its rank). False on the other ranked trends. Location trends do not carry this key."
           }
         }
       },
