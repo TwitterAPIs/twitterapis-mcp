@@ -249,15 +249,51 @@ export const TOOL_OVERRIDES = [
     name: "twitter_check_follow_relationship",
     endpoint: "/user/check_follow_relationship",
     description:
-      "Check the follow relationship between two accounts by numeric user id: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Both ids are required. Use this to verify a follow before/after a follow action, or to detect mutuals.",
+      "Check the follow relationship between two accounts: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Give each side as a numeric user id or a username (an unknown username or id returns a not-found error, not billed). Use this to verify a follow before/after a follow action, or to detect mutuals. For one account against many, use twitter_check_follow_relationship_batch.",
     args: [
       { name: "source_user_id",
         describe:
-          "Numeric user id of the SOURCE account (the 'is this account following...' subject)." },
+          "Numeric user id of the SOURCE account (the 'is this account following...' subject). Or send source_username." },
+      { name: "source_username",
+        describe:
+          "Handle of the SOURCE account, as an alternative to source_user_id." },
       { name: "target_user_id",
         describe:
-          "Numeric user id of the TARGET account (the '...the target?' object)." },
+          "Numeric user id of the TARGET account (the '...the target?' object). Or send target_username." },
+      { name: "target_username",
+        describe:
+          "Handle of the TARGET account, as an alternative to target_user_id." },
       "@PROJECTION",
+    ],
+  },
+  {
+    name: "twitter_check_follow_relationship_batch",
+    endpoint: "/user/check_follow_relationship/batch",
+    description:
+      "Check one account against up to 100 others in ONE call. Fix one source (source_user_id or source_username) and list up to 100 targets (target_usernames or target_user_ids), OR fix one target and list up to 100 sources (source_usernames or source_user_ids): a list on one side only. Each result carries the relationship from the SOURCE's side (following = source follows target, followed_by = target follows source), in request order. Use it to find which of a shortlist of accounts already follow a brand: fix the brand as target_username and list the accounts as source_usernames. Billed per pair answered with a relationship; not_found, forbidden, rate_limited and unavailable pairs are free. One batch per API key runs at a time (a concurrent call gets 429 batch_in_progress, not billed). fields/compact apply inside each item's relationship object.",
+    args: [
+      { name: "source_user_id", describe: "Numeric id of the single SOURCE account, when the list is targets." },
+      { name: "source_username", describe: "Handle of the single SOURCE account, when the list is targets." },
+      { name: "target_user_id", describe: "Numeric id of the single TARGET account, when the list is sources." },
+      { name: "target_username", describe: "Handle of the single TARGET account, when the list is sources." },
+      { name: "target_usernames", describe: "Comma-separated target handles (with or without @), 1 to 100, when the source is fixed." },
+      { name: "target_user_ids", describe: "Comma-separated numeric target ids, 1 to 100, when the source is fixed." },
+      { name: "source_usernames", describe: "Comma-separated source handles (with or without @), 1 to 100, when the target is fixed." },
+      { name: "source_user_ids", describe: "Comma-separated numeric source ids, 1 to 100, when the target is fixed." },
+      "@PROJECTION",
+    ],
+  },
+  {
+    name: "twitter_audience_summary",
+    endpoint: "/user/audience_summary",
+    description:
+      "Summarise who an audience is in ONE call: samples up to 100 followers of an account (username or user_id) or retweeters of a tweet (tweet_id), reads each sampled account's About country, and returns a country histogram (shares over accounts with a known country) plus a likely-bot share from documented profile signals (default avatar, no bio, under 5 followers, extreme follow ratio, never posted, created in the last 30 days, digit-suffix handle; 3 or more signals = likely automated, a heuristic, not a verdict). Billed per item: each sample page that added accounts plus each sampled account X answered About for, so sample=100 costs at most $0.08 plus up to 3 pages. Shares the one-batch-per-key slot with the batch tools.",
+    args: [
+      { name: "username", describe: "Handle whose FOLLOWERS to sample (or send user_id)." },
+      { name: "user_id", describe: "Numeric id whose FOLLOWERS to sample (or send username)." },
+      { name: "tweet_id", describe: "Tweet whose RETWEETERS to sample, instead of a user's followers." },
+      { name: "source", describe: "Optional: 'followers' (with username/user_id) or 'retweeters' (with tweet_id); must agree with what you send." },
+      { name: "sample", describe: "How many accounts to sample, 10 to 100 (default 50)." },
     ],
   },
   // ── Reads: a user's tweets / timeline ──────────────────────────────────────

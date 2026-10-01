@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "twitterapis-mcp",
   "display_name": "TwitterAPIs",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "icon": "icon.png",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
   "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
@@ -77,7 +77,15 @@
     },
     {
       "name": "twitter_check_follow_relationship",
-      "description": "Check the follow relationship between two accounts by numeric user id: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Both ids are required. Use this to verify a follow before/after a follow action, or to detect mutuals."
+      "description": "Check the follow relationship between two accounts: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Give each side as a numeric user id or a username (an unknown username or id returns a not-found error, not billed). Use this to verify a follow before/after a follow action, or to detect mutuals. For one account against many, use twitter_check_follow_relationship_batch."
+    },
+    {
+      "name": "twitter_check_follow_relationship_batch",
+      "description": "Check one account against up to 100 others in ONE call. Fix one source (source_user_id or source_username) and list up to 100 targets (target_usernames or target_user_ids), OR fix one target and list up to 100 sources (source_usernames or source_user_ids): a list on one side only. Each result carries the relationship from the SOURCE's side (following = source follows target, followed_by = target follows source), in request order. Use it to find which of a shortlist of accounts already follow a brand: fix the brand as target_username and list the accounts as source_usernames. Billed per pair answered with a relationship; not_found, forbidden, rate_limited and unavailable pairs are free. One batch per API key runs at a time (a concurrent call gets 429 batch_in_progress, not billed). fields/compact apply inside each item's relationship object."
+    },
+    {
+      "name": "twitter_audience_summary",
+      "description": "Summarise who an audience is in ONE call: samples up to 100 followers of an account (username or user_id) or retweeters of a tweet (tweet_id), reads each sampled account's About country, and returns a country histogram (shares over accounts with a known country) plus a likely-bot share from documented profile signals (default avatar, no bio, under 5 followers, extreme follow ratio, never posted, created in the last 30 days, digit-suffix handle; 3 or more signals = likely automated, a heuristic, not a verdict). Billed per item: each sample page that added accounts plus each sampled account X answered About for, so sample=100 costs at most $0.08 plus up to 3 pages. Shares the one-batch-per-key slot with the batch tools."
     },
     {
       "name": "twitter_user_tweets",
