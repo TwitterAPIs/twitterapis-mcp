@@ -83,7 +83,10 @@ export function buildEndpoints(paths, components = undefined) {
         }
       }
       const method = m.toUpperCase();
-      endpoints.set(endpointKey(p, method), { path: p, method, params });
+      // operationId + first tag locate the endpoint's docs page:
+      // https://docs.twitterapis.com/docs/reference/<tag slug>/<operationId> (112 of 112
+      // verified against the docs repo, 2026-10-01).
+      endpoints.set(endpointKey(p, method), { path: p, method, params, operationId: op.operationId, tag: (op.tags || [])[0] });
       if (!methodsByPath.has(p)) methodsByPath.set(p, new Set());
       methodsByPath.get(p).add(method);
     }

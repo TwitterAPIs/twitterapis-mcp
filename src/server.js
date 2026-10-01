@@ -173,6 +173,12 @@ export const INSTRUCTIONS =
  *        that has already authenticated the caller some other way (an OAuth
  *        token resolved to an account) and forwards calls over its own trusted
  *        channel. When set, no API key is required or sent.
+ * @param {boolean} [opts.inlineCredentials=true]
+ *        false hides the per-call X session args (each tool's headerArgs: auth_token,
+ *        ct0, proxy_url, user_agent) from every tool schema and drops them from calls.
+ *        For a hosted, directory-listed server: callers bind their session once with
+ *        twitter_customer_session (whose own credential payload is NOT a headerArg),
+ *        so raw cookies never pass through a model per call.
  */
 export function createServer({
   apiKey,
@@ -183,6 +189,7 @@ export function createServer({
   authHeaders = null,
   sleepImpl = (ms) => new Promise((r) => setTimeout(r, ms)),
   retryDelaysMs = [3000, 8000],
+  inlineCredentials = true,
 } = {}) {
   const BASE_URL = String(baseUrl).replace(/\/+$/, "");
   const REQUEST_TIMEOUT_MS = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : DEFAULT_TIMEOUT_MS;
@@ -404,10 +411,22 @@ export function createServer({
         return result;
       };
     }
+    let shape = tool.shape;
+    let description = tool.description;
+    let run = handler;
+    if (!inlineCredentials && tool.headerArgs && tool.headerArgs.length) {
+      const hidden = new Set(tool.headerArgs);
+      shape = Object.fromEntries(Object.entries(tool.shape || {}).filter(([k]) => !hidden.has(k)));
+      // Even a client that ignores the schema cannot smuggle cookies through.
+      run = (args, extra) => handler(Object.fromEntries(Object.entries(args || {}).filter(([k]) => !hidden.has(k))), extra);
+    }
+    if (!inlineCredentials) {
+      description = description.replace(" Most tools also accept auth_token/ct0 per-call without registering.", "");
+    }
     server.registerTool(
       tool.name,
-      { description: tool.description, inputSchema: tool.shape, annotations },
-      handler,
+      { description, inputSchema: shape, annotations },
+      run,
     );
   }
 
