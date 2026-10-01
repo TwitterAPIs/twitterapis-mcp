@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.19.0 (2026-10-01)
+
+### Added
+
+- **`twitter_check_follow_relationship_batch`.** One account against up to 100 others
+  in one call, in either direction: fix a source and list targets, or fix a target and
+  list sources (which of these accounts follow the brand). Relationship is always from
+  the source's side. Billed per pair answered with a relationship.
+- **`twitter_audience_summary`.** Samples up to 100 followers or retweeters and returns
+  a country histogram from the About data plus a likely-bot share from documented
+  profile signals.
+
+### Changed
+
+- **`twitter_check_follow_relationship` takes usernames too** (`source_username`,
+  `target_username`), as the API already did.
+
 ## 0.18.0 (2026-10-01)
 
 ### Added

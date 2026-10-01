@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 110 tools (66 reads, 44 writes).
+// Catalog: 112 tools (68 reads, 44 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -207,19 +207,86 @@ export const TOOLS = [
     name: "twitter_check_follow_relationship",
     path: "/twitter/user/check_follow_relationship",
     description:
-      "Check the follow relationship between two accounts by numeric user id: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Both ids are required. Use this to verify a follow before/after a follow action, or to detect mutuals.",
+      "Check the follow relationship between two accounts: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Give each side as a numeric user id or a username (an unknown username returns a not-found error, not billed). Use this to verify a follow before/after a follow action, or to detect mutuals. For one account against many, use twitter_check_follow_relationship_batch.",
     shape: {
-      source_user_id: z.string().describe(
-        "Numeric user id of the SOURCE account (the 'is this account following...' subject).",
+      source_user_id: z.string().optional().describe(
+        "Numeric user id of the SOURCE account (the 'is this account following...' subject). Or send source_username.",
       ),
-      target_user_id: z.string().describe(
-        "Numeric user id of the TARGET account (the '...the target?' object).",
+      source_username: z.string().optional().describe(
+        "Handle of the SOURCE account, as an alternative to source_user_id.",
+      ),
+      target_user_id: z.string().optional().describe(
+        "Numeric user id of the TARGET account (the '...the target?' object). Or send target_username.",
+      ),
+      target_username: z.string().optional().describe(
+        "Handle of the TARGET account, as an alternative to target_user_id.",
       ),
       fields: z.string().optional().describe(
         "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) always survive; any other top-level key you do not name is dropped. Use it to cut a page down to the fields you will actually read.",
       ),
       compact: z.enum(["1","true"]).optional().describe(
         "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+    },
+  },
+  {
+    name: "twitter_check_follow_relationship_batch",
+    path: "/twitter/user/check_follow_relationship/batch",
+    description:
+      "Check one account against up to 100 others in ONE call. Fix one source (source_user_id or source_username) and list up to 100 targets (target_usernames or target_user_ids), OR fix one target and list up to 100 sources (source_usernames or source_user_ids): a list on one side only. Each result carries the relationship from the SOURCE's side (following = source follows target, followed_by = target follows source), in request order. Use it to find which of a shortlist of accounts already follow a brand: fix the brand as target_username and list the accounts as source_usernames. Billed per pair answered with a relationship; not_found, forbidden, rate_limited and unavailable pairs are free. One batch per API key runs at a time (a concurrent call gets 429 batch_in_progress, not billed). fields/compact apply inside each item's relationship object.",
+    shape: {
+      source_user_id: z.string().optional().describe(
+        "Numeric id of the single SOURCE account, when the list is targets.",
+      ),
+      source_username: z.string().optional().describe(
+        "Handle of the single SOURCE account, when the list is targets.",
+      ),
+      target_user_id: z.string().optional().describe(
+        "Numeric id of the single TARGET account, when the list is sources.",
+      ),
+      target_username: z.string().optional().describe(
+        "Handle of the single TARGET account, when the list is sources.",
+      ),
+      target_usernames: z.string().optional().describe(
+        "Comma-separated target handles (with or without @), 1 to 100, when the source is fixed.",
+      ),
+      target_user_ids: z.string().optional().describe(
+        "Comma-separated numeric target ids, 1 to 100, when the source is fixed.",
+      ),
+      source_usernames: z.string().optional().describe(
+        "Comma-separated source handles (with or without @), 1 to 100, when the target is fixed.",
+      ),
+      source_user_ids: z.string().optional().describe(
+        "Comma-separated numeric source ids, 1 to 100, when the target is fixed.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) always survive; any other top-level key you do not name is dropped. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.enum(["1","true"]).optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+    },
+  },
+  {
+    name: "twitter_audience_summary",
+    path: "/twitter/user/audience_summary",
+    description:
+      "Summarise who an audience is in ONE call: samples up to 100 followers of an account (username or user_id) or retweeters of a tweet (tweet_id), reads each sampled account's About country, and returns a country histogram (shares over accounts with a known country) plus a likely-bot share from documented profile signals (default avatar, no bio, under 5 followers, extreme follow ratio, never posted, created in the last 30 days, digit-suffix handle; 3 or more signals = likely automated, a heuristic, not a verdict). Billed per item: each sample page that added accounts plus each sampled account X answered About for, so sample=100 costs up to about $0.08 plus 2 to 3 pages. Shares the one-batch-per-key slot with the batch tools.",
+    shape: {
+      username: z.string().optional().describe(
+        "Handle whose FOLLOWERS to sample (or send user_id).",
+      ),
+      user_id: z.string().optional().describe(
+        "Numeric id whose FOLLOWERS to sample (or send username).",
+      ),
+      tweet_id: z.string().optional().describe(
+        "Tweet whose RETWEETERS to sample, instead of a user's followers.",
+      ),
+      source: z.string().optional().describe(
+        "Optional: 'followers' (with username/user_id) or 'retweeters' (with tweet_id); must agree with what you send.",
+      ),
+      sample: z.number().int().optional().describe(
+        "How many accounts to sample, 10 to 100 (default 50).",
       ),
     },
   },

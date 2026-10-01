@@ -126,19 +126,16 @@
                       "description": "Account holder name."
                     },
                     "credits_remaining": {
-                      "type": "object",
-                      "description": "Credits currently available, in USD.",
-                      "additionalProperties": true
+                      "type": "number",
+                      "description": "Credits currently available, in USD."
                     },
                     "credits_used": {
-                      "type": "object",
-                      "description": "Total credits consumed to date, in USD.",
-                      "additionalProperties": true
+                      "type": "number",
+                      "description": "Total credits consumed to date, in USD."
                     },
                     "total_requests": {
-                      "type": "object",
-                      "description": "Total number of API requests served for this account.",
-                      "additionalProperties": true
+                      "type": "number",
+                      "description": "Total number of API requests served for this account."
                     },
                     "created_at": {
                       "type": "string",
@@ -6038,32 +6035,893 @@
           {
             "name": "source_user_id",
             "in": "query",
-            "required": true,
-            "description": "Numeric ID of the account whose following is checked.",
+            "required": false,
+            "description": "Numeric ID of the account whose following is checked. Send this or source_username.",
             "schema": {
               "type": "string",
-              "description": "Numeric ID of the account whose following is checked.",
+              "description": "Numeric ID of the account whose following is checked. Send this or source_username.",
               "example": "745273"
             },
             "example": "745273"
           },
           {
-            "name": "target_user_id",
+            "name": "source_username",
             "in": "query",
-            "required": true,
-            "description": "Numeric ID of the account being checked against.",
+            "required": false,
+            "description": "Handle of the source account, as an alternative to source_user_id. Resolved to its ID first; an unknown handle returns a 404 and nothing is billed.",
             "schema": {
               "type": "string",
-              "description": "Numeric ID of the account being checked against.",
+              "description": "Handle of the source account, as an alternative to source_user_id. Resolved to its ID first; an unknown handle returns a 404 and nothing is billed.",
+              "example": "naval"
+            },
+            "example": "naval"
+          },
+          {
+            "name": "target_user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the account being checked against. Send this or target_username.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the account being checked against. Send this or target_username.",
               "example": "2178758961"
             },
             "example": "2178758961"
+          },
+          {
+            "name": "target_username",
+            "in": "query",
+            "required": false,
+            "description": "Handle of the target account, as an alternative to target_user_id. Resolved to its ID first; an unknown handle returns a 404 and nothing is billed.",
+            "schema": {
+              "type": "string",
+              "description": "Handle of the target account, as an alternative to target_user_id. Resolved to its ID first; an unknown handle returns a 404 and nothing is billed.",
+              "example": "openai"
+            },
+            "example": "openai"
           },
           {
             "$ref": "#/components/parameters/fields"
           },
           {
             "$ref": "#/components/parameters/compact"
+          }
+        ]
+      }
+    },
+    "/user/check_follow_relationship/batch": {
+      "get": {
+        "operationId": "user-check-follow-relationship-batch",
+        "summary": "Check Follow Relationship Batch",
+        "description": "Check the directional relationship between one fixed account and up to 100 others in one request: one source against up to 100 targets, or one target against up to 100 sources. Each item carries the same relationship object GET /user/check_follow_relationship returns, read from the source's side: whether the source follows the target (following) and the target follows the source (followed_by), plus block, mute, and DM-eligibility flags. Results come back in request order, each with its relationship object or an error code. Cost: $0.0008 per billed item.",
+        "tags": [
+          "User Reads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/user/check_follow_relationship/batch?source_username=stripe&target_usernames=nasa,openai,no_such_handle\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/check_follow_relationship/batch\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"source_username\": \"stripe\", \"target_usernames\": \"nasa,openai,no_such_handle\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/check_follow_relationship/batch\");\nurl.search = new URLSearchParams({ source_username: \"stripe\", target_usernames: \"nasa,openai,no_such_handle\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Check one account's follow relationship with up to 100 others in one request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "source_user_id": {
+                      "type": "string",
+                      "description": "Numeric ID of the single source account. Present when the list is targets."
+                    },
+                    "target_user_id": {
+                      "type": "string",
+                      "description": "Numeric ID of the single target account. Present when the list is sources."
+                    },
+                    "requested": {
+                      "type": "integer",
+                      "description": "Number of distinct accounts in the list, after duplicates were removed."
+                    },
+                    "served": {
+                      "type": "integer",
+                      "description": "Number of items that returned a relationship object."
+                    },
+                    "billed_items": {
+                      "type": "integer",
+                      "description": "Number of pairs this call was billed for: every pair that came back with a relationship object (not_found is free). Multiply by $0.0008 for the charge."
+                    },
+                    "results": {
+                      "type": "array",
+                      "description": "One entry per listed account, in request order.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "target_username": {
+                            "type": "string",
+                            "description": "The target handle as you sent it, without the leading @. Present when the request used target_usernames."
+                          },
+                          "target_user_id": {
+                            "type": "string",
+                            "description": "The target ID as you sent it. Present when the request used target_user_ids."
+                          },
+                          "source_username": {
+                            "type": "string",
+                            "description": "The source handle as you sent it, without the leading @. Present when the request used source_usernames."
+                          },
+                          "source_user_id": {
+                            "type": "string",
+                            "description": "The source ID as you sent it. Present when the request used source_user_ids."
+                          },
+                          "relationship": {
+                            "allOf": [
+                              {
+                                "$ref": "#/components/schemas/Relationship"
+                              }
+                            ],
+                            "description": "The relationship between this pair, the same object GET /user/check_follow_relationship returns, read from the source's side: following is true when the source follows the target, followed_by when the target follows the source, plus blocking, blocked_by, muting, can_dm, source_id and target_id. Present only on a found item."
+                          },
+                          "error": {
+                            "type": "string",
+                            "description": "Present only on an item without a relationship object. One of not_found (no relationship to report, because an account does not exist or a listed handle did not resolve; not billed), forbidden (X refuses this pair to every caller; not billed, retrying will not help), rate_limited or unavailable (failed on our side; not billed, safe to retry)."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "source_user_id": "102812444",
+                  "requested": 3,
+                  "served": 2,
+                  "billed_items": 3,
+                  "results": [
+                    {
+                      "target_username": "nasa",
+                      "relationship": {
+                        "source_id": "102812444",
+                        "target_id": "11348282",
+                        "following": false,
+                        "followed_by": true,
+                        "blocking": null,
+                        "blocked_by": null,
+                        "muting": null,
+                        "can_dm": false
+                      }
+                    },
+                    {
+                      "target_username": "openai",
+                      "relationship": {
+                        "source_id": "102812444",
+                        "target_id": "4398626122",
+                        "following": true,
+                        "followed_by": true,
+                        "blocking": null,
+                        "blocked_by": null,
+                        "muting": null,
+                        "can_dm": true
+                      }
+                    },
+                    {
+                      "target_username": "no_such_handle",
+                      "error": "not_found"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Send a list on ONE side only: target_usernames/target_user_ids or source_usernames/source_user_ids."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "Missing or invalid x-api-key header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Not enough credits for 3 items. Top up, or send a smaller batch."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "Could not resolve @no_such_handle."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "batch_in_progress",
+                  "message": "One batch per API key at a time. Retry when the running batch returns. Not billed."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message",
+                    "retry_after_seconds"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retry_after_seconds": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "No item could be fetched right now. This is temporary; retry shortly.",
+                  "retry_after_seconds": 5
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "source_user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the single source account, when the list is targets. Used as sent, with no lookup; wins over source_username when both are sent.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the single source account, when the list is targets. Used as sent, with no lookup; wins over source_username when both are sent.",
+              "example": "102812444"
+            },
+            "example": "102812444"
+          },
+          {
+            "name": "source_username",
+            "in": "query",
+            "required": false,
+            "description": "Handle of the single source account, when the list is targets. Resolved to its numeric ID first; an unknown handle returns a 404 and nothing is billed.",
+            "schema": {
+              "type": "string",
+              "description": "Handle of the single source account, when the list is targets. Resolved to its numeric ID first; an unknown handle returns a 404 and nothing is billed.",
+              "example": "stripe"
+            },
+            "example": "stripe"
+          },
+          {
+            "name": "target_usernames",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated target handles, with or without the leading @, checked against the single source. Send this or target_user_ids, never both, and never together with a source list. Between 1 and 100 distinct entries after duplicates are removed (handles compare case-insensitively). A malformed handle returns a 400 for the whole request.",
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated target handles, with or without the leading @, checked against the single source. Send this or target_user_ids, never both, and never together with a source list. Between 1 and 100 distinct entries after duplicates are removed (handles compare case-insensitively). A malformed handle returns a 400 for the whole request.",
+              "example": "nasa,openai"
+            },
+            "example": "nasa,openai"
+          },
+          {
+            "name": "target_user_ids",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated numeric target IDs, as an alternative to target_usernames. Same 1 to 100 limit. Leading zeros are ignored for duplicates (012 and 12 are one account); results echo each ID as you sent it.",
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated numeric target IDs, as an alternative to target_usernames. Same 1 to 100 limit. Leading zeros are ignored for duplicates (012 and 12 are one account); results echo each ID as you sent it.",
+              "example": "11348282,4398626122"
+            },
+            "example": "11348282,4398626122"
+          },
+          {
+            "name": "target_user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the single target account, when the list is sources. Used as sent, with no lookup; wins over target_username when both are sent.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the single target account, when the list is sources. Used as sent, with no lookup; wins over target_username when both are sent.",
+              "example": "102812444"
+            },
+            "example": "102812444"
+          },
+          {
+            "name": "target_username",
+            "in": "query",
+            "required": false,
+            "description": "Handle of the single target account, when the list is sources. Resolved to its numeric ID first; an unknown handle returns a 404 and nothing is billed.",
+            "schema": {
+              "type": "string",
+              "description": "Handle of the single target account, when the list is sources. Resolved to its numeric ID first; an unknown handle returns a 404 and nothing is billed.",
+              "example": "stripe"
+            },
+            "example": "stripe"
+          },
+          {
+            "name": "source_usernames",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated source handles, with or without the leading @, each checked against the single target. Send this or source_user_ids, never both, and never together with a target list. Between 1 and 100 distinct entries after duplicates are removed (handles compare case-insensitively). A malformed handle returns a 400 for the whole request.",
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated source handles, with or without the leading @, each checked against the single target. Send this or source_user_ids, never both, and never together with a target list. Between 1 and 100 distinct entries after duplicates are removed (handles compare case-insensitively). A malformed handle returns a 400 for the whole request.",
+              "example": "nasa,openai"
+            },
+            "example": "nasa,openai"
+          },
+          {
+            "name": "source_user_ids",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated numeric source IDs, as an alternative to source_usernames. Same 1 to 100 limit. Leading zeros are ignored for duplicates (012 and 12 are one account); results echo each ID as you sent it.",
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated numeric source IDs, as an alternative to source_usernames. Same 1 to 100 limit. Leading zeros are ignored for duplicates (012 and 12 are one account); results echo each ID as you sent it.",
+              "example": "11348282,4398626122"
+            },
+            "example": "11348282,4398626122"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          }
+        ]
+      }
+    },
+    "/user/audience_summary": {
+      "get": {
+        "operationId": "user-audience-summary",
+        "summary": "Audience Summary",
+        "description": "Sample up to 100 of an account's followers, or of a tweet's retweeters, read each sampled account's About object, and return a country histogram of account_based_in with each country's share of the accounts whose country is known. The response also counts how many sampled accounts show each of seven documented profile signals and how many show three or more (likely_bot_count), a heuristic over profile fields rather than a verdict on any account. Cost: $0.0008 per billed item.",
+        "tags": [
+          "User Reads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/user/audience_summary?username=stripe&sample=50\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/audience_summary\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"username\": \"stripe\", \"sample\": 50},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/audience_summary\");\nurl.search = new URLSearchParams({ username: \"stripe\", sample: 50 }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Summarize a sample of an account's followers or a tweet's retweeters by country and likely-bot share.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "description": "The audience sampled: followers or retweeters."
+                    },
+                    "user_id": {
+                      "type": "string",
+                      "description": "Numeric ID of the account whose followers were sampled. Present when source is followers."
+                    },
+                    "tweet_id": {
+                      "type": "string",
+                      "description": "The tweet whose retweeters were sampled. Present when source is retweeters."
+                    },
+                    "sample_requested": {
+                      "type": "integer",
+                      "description": "The sample size you asked for (the sample parameter, default 50)."
+                    },
+                    "sample_size": {
+                      "type": "integer",
+                      "description": "Distinct accounts actually sampled. Lower than sample_requested when the audience is smaller or the pages ran out."
+                    },
+                    "about_answered": {
+                      "type": "integer",
+                      "description": "Sampled accounts X answered an About read for, found or not_found. Each is billed."
+                    },
+                    "countries": {
+                      "type": "array",
+                      "description": "Country histogram over the sampled accounts with a known account_based_in, most common first (ties in alphabetical order).",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "country": {
+                            "type": "string",
+                            "description": "The country, as X reports it in account_based_in."
+                          },
+                          "count": {
+                            "type": "integer",
+                            "description": "Sampled accounts based in this country."
+                          },
+                          "share": {
+                            "type": "number",
+                            "description": "count divided by country_known, rounded to three decimals. Shares are over accounts with a known country, not over the whole sample."
+                          }
+                        }
+                      }
+                    },
+                    "country_known": {
+                      "type": "integer",
+                      "description": "Sampled accounts whose About read returned a country."
+                    },
+                    "country_unknown": {
+                      "type": "integer",
+                      "description": "sample_size minus country_known: accounts with no country on X, accounts answered not_found, and accounts whose About read failed."
+                    },
+                    "likely_bot_count": {
+                      "type": "integer",
+                      "description": "Sampled accounts showing 3 or more of the 7 bot signals. A heuristic over profile fields, not a verdict on any account."
+                    },
+                    "likely_bot_share": {
+                      "type": "number",
+                      "description": "likely_bot_count divided by sample_size, rounded to three decimals. 0 when nothing was sampled."
+                    },
+                    "bot_signal_counts": {
+                      "type": "object",
+                      "description": "How many sampled accounts show each signal, one key per signal. A field the profile does not carry never counts.",
+                      "additionalProperties": true,
+                      "properties": {
+                        "default_profile_image": {
+                          "type": "integer",
+                          "description": "Accounts that still have X's default profile image."
+                        },
+                        "empty_bio": {
+                          "type": "integer",
+                          "description": "Accounts with no bio."
+                        },
+                        "under_5_followers": {
+                          "type": "integer",
+                          "description": "Accounts with fewer than 5 followers."
+                        },
+                        "follow_ratio_over_20": {
+                          "type": "integer",
+                          "description": "Accounts that follow over 500 accounts and more than 20 times their follower count."
+                        },
+                        "no_posts": {
+                          "type": "integer",
+                          "description": "Accounts that have never posted."
+                        },
+                        "created_under_30_days": {
+                          "type": "integer",
+                          "description": "Accounts created in the last 30 days."
+                        },
+                        "digit_suffix_handle": {
+                          "type": "integer",
+                          "description": "Accounts whose handle ends in 6 or more digits (the auto-generated pattern)."
+                        }
+                      }
+                    },
+                    "bot_rule": {
+                      "type": "string",
+                      "description": "The likely-bot rule in plain words: the threshold and the 7 signals, exactly as applied to this response."
+                    },
+                    "pages_fetched": {
+                      "type": "integer",
+                      "description": "Sample pages that added at least one account, at most 3. Each is billed; an empty trailing page is not counted."
+                    },
+                    "billed_items": {
+                      "type": "integer",
+                      "description": "pages_fetched plus about_answered: the items this call was billed for. Multiply by $0.0008 for the charge."
+                    }
+                  }
+                },
+                "example": {
+                  "source": "followers",
+                  "user_id": "102812444",
+                  "sample_requested": 50,
+                  "sample_size": 50,
+                  "about_answered": 48,
+                  "countries": [
+                    {
+                      "country": "United States",
+                      "count": 21,
+                      "share": 0.477
+                    },
+                    {
+                      "country": "India",
+                      "count": 9,
+                      "share": 0.205
+                    },
+                    {
+                      "country": "United Kingdom",
+                      "count": 6,
+                      "share": 0.136
+                    },
+                    {
+                      "country": "Germany",
+                      "count": 5,
+                      "share": 0.114
+                    },
+                    {
+                      "country": "Brazil",
+                      "count": 3,
+                      "share": 0.068
+                    }
+                  ],
+                  "country_known": 44,
+                  "country_unknown": 6,
+                  "likely_bot_count": 4,
+                  "likely_bot_share": 0.08,
+                  "bot_signal_counts": {
+                    "default_profile_image": 7,
+                    "empty_bio": 12,
+                    "under_5_followers": 5,
+                    "follow_ratio_over_20": 3,
+                    "no_posts": 4,
+                    "created_under_30_days": 2,
+                    "digit_suffix_handle": 6
+                  },
+                  "bot_rule": "an account counts as likely automated when it shows 3 or more of: still has X's default profile image; no bio; fewer than 5 followers; follows over 500 accounts and more than 20 times its follower count; has never posted; account created in the last 30 days; handle ends in 6 or more digits (the auto-generated pattern)",
+                  "pages_fetched": 2,
+                  "billed_items": 50
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "`sample` must be a whole number from 10 to 100."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "Missing or invalid x-api-key header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Not enough credits for 53 items. Top up, or send a smaller batch."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "Could not resolve @no_such_handle."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "batch_in_progress",
+                  "message": "One batch per API key at a time. Retry when the running batch returns. Not billed."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message",
+                    "upstream_status"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "upstream_status": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "The audience could not be sampled right now. Not billed; retry shortly.",
+                  "upstream_status": 503
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "required": false,
+            "description": "Handle whose followers are sampled, with or without the leading @. Send username, user_id, or tweet_id. An unknown handle returns a 404 and nothing is billed.",
+            "schema": {
+              "type": "string",
+              "description": "Handle whose followers are sampled, with or without the leading @. Send username, user_id, or tweet_id. An unknown handle returns a 404 and nothing is billed.",
+              "example": "stripe"
+            },
+            "example": "stripe"
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID whose followers are sampled, as an alternative to username. Used as sent, with no lookup.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID whose followers are sampled, as an alternative to username. Used as sent, with no lookup.",
+              "example": "102812444"
+            },
+            "example": "102812444"
+          },
+          {
+            "name": "tweet_id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric tweet ID whose retweeters are sampled, instead of a user's followers. Cannot be combined with username or user_id.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric tweet ID whose retweeters are sampled, instead of a user's followers. Cannot be combined with username or user_id.",
+              "example": "1866512345678901234"
+            },
+            "example": "1866512345678901234"
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "description": "Optional confirmation of the audience: followers (with username or user_id) or retweeters (with tweet_id). When sent, it must agree with the identifier, or the request returns a 400.",
+            "schema": {
+              "type": "string",
+              "description": "Optional confirmation of the audience: followers (with username or user_id) or retweeters (with tweet_id). When sent, it must agree with the identifier, or the request returns a 400.",
+              "example": "followers"
+            },
+            "example": "followers"
+          },
+          {
+            "name": "sample",
+            "in": "query",
+            "required": false,
+            "description": "How many distinct accounts to sample, a whole number from 10 to 100. Default 50. Also sets the balance needed up front: sample plus 3 items.",
+            "schema": {
+              "type": "integer",
+              "description": "How many distinct accounts to sample, a whole number from 10 to 100. Default 50. Also sets the balance needed up front: sample plus 3 items.",
+              "example": "50"
+            },
+            "example": "50"
           }
         ]
       }
@@ -11586,34 +12444,28 @@
                           "description": "X's internal media key for the Space recording."
                         },
                         "created_at": {
-                          "type": "object",
-                          "description": "Millisecond epoch. Every timestamp on this object is a number, including ended_at, which X itself sends as a string.",
-                          "additionalProperties": true
+                          "type": "number",
+                          "description": "Millisecond epoch. Every timestamp on this object is a number, including ended_at, which X itself sends as a string."
                         },
                         "scheduled_start": {
-                          "type": "object",
-                          "description": "Millisecond epoch the host scheduled the Space to begin. 0 when absent.",
-                          "additionalProperties": true
+                          "type": "number",
+                          "description": "Millisecond epoch the host scheduled the Space to begin. 0 when absent."
                         },
                         "started_at": {
-                          "type": "object",
-                          "description": "Millisecond epoch the Space actually began. 0 when it has not started.",
-                          "additionalProperties": true
+                          "type": "number",
+                          "description": "Millisecond epoch the Space actually began. 0 when it has not started."
                         },
                         "ended_at": {
-                          "type": "object",
-                          "description": "Millisecond epoch the Space ended. 0 while it is still running.",
-                          "additionalProperties": true
+                          "type": "number",
+                          "description": "Millisecond epoch the Space ended. 0 while it is still running."
                         },
                         "total_live_listeners": {
-                          "type": "object",
-                          "description": "Peak concurrent listeners while the Space was live.",
-                          "additionalProperties": true
+                          "type": "number",
+                          "description": "Peak concurrent listeners while the Space was live."
                         },
                         "total_replay_watched": {
-                          "type": "object",
-                          "description": "Cumulative replay views after the Space ended.",
-                          "additionalProperties": true
+                          "type": "number",
+                          "description": "Cumulative replay views after the Space ended."
                         },
                         "is_space_available_for_replay": {
                           "type": "boolean",
@@ -24397,7 +25249,8 @@
           },
           "can_dm": {
             "type": "boolean",
-            "description": "True when the source can send a direct message to the target."
+            "nullable": true,
+            "description": "True when the source can send a direct message to the target. Null when X does not say."
           }
         }
       },
