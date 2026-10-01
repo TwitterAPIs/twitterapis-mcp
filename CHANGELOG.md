@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.19.1 (2026-10-01)
+
+### Changed
+
+- **`twitter_dm_list` says what it does not return**: conversations X has moved to
+  end-to-end encrypted chat, and possibly conversations still in message requests.
+
 ## 0.19.0 (2026-10-01)
 
 ### Added
