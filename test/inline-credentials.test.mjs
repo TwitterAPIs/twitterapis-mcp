@@ -33,6 +33,10 @@ ok("hosted server drops smuggled cookies a client sends anyway");
 assert.ok(!hosted.twitter_customer_session.description.includes("per-call without registering"));
 ok("hosted customer_session description no longer promises per-call creds");
 
+const offering = Object.entries(hosted).filter(([name, t]) => name !== "twitter_customer_session" && /pass auth_token|auth_token\/ct0 (per-call|for this call)/.test(t.description || "")).map(([name]) => name);
+assert.deepEqual(offering, []);
+ok("no hosted tool description offers per-call cookies");
+
 const noDocs = TOOLS.filter((t) => !/Docs: https:\/\/docs\.twitterapis\.com\/docs\/reference\/[a-z0-9-]+\/[a-z0-9-]+$/.test(t.description)).map((t) => t.name);
 assert.deepEqual(noDocs, []);
 ok(`all ${TOOLS.length} tool descriptions end with their docs page`);

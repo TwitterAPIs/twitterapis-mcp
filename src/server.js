@@ -421,7 +421,10 @@ export function createServer({
       run = (args, extra) => handler(Object.fromEntries(Object.entries(args || {}).filter(([k]) => !hidden.has(k))), extra);
     }
     if (!inlineCredentials) {
-      description = description.replace(" Most tools also accept auth_token/ct0 per-call without registering.", "");
+      // Nothing in a hosted description may offer per-call cookies the schema no longer takes.
+      description = description
+        .replace(" Most tools also accept auth_token/ct0 per-call without registering.", "")
+        .replace(/, or pass auth_token\/ct0 for this call/g, "");
     }
     server.registerTool(
       tool.name,
