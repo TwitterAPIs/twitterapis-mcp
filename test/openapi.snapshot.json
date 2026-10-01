@@ -50,7 +50,7 @@
     },
     {
       "name": "Trends",
-      "description": "Read what is trending on Twitter/X right now, worldwide, for a single country or for one X Explore topic tab, plus the full set of locations trends are available for."
+      "description": "Read what is trending on Twitter/X right now, worldwide, for a single country, for one X Explore tab or for the trends X labels Business and finance, plus the full set of locations trends are available for."
     },
     {
       "name": "Spaces",
@@ -11934,7 +11934,7 @@
       "get": {
         "operationId": "trends",
         "summary": "Trends",
-        "description": "Fetch the current top trends for one location. Ask for it by country name, ISO code, or numeric WOEID; with no location parameter you get Worldwide. X returns roughly 50 trends per location, ranked. Pass category instead to read one X Explore topic tab: trending, news, sports or entertainment. Cost: $0.0008 per call.",
+        "description": "Fetch the current top trends for one location. Ask for it by country name, ISO code, or numeric WOEID; with no location parameter you get Worldwide. X returns roughly 50 trends per location, ranked. Pass category instead: trending, news, sports, entertainment or for_you reads that X Explore tab, and business_and_finance keeps only the ranked trends X labels Business and finance on its Trending and News tabs. Cost: $0.0008 per call.",
         "tags": [
           "Trends"
         ],
@@ -11962,23 +11962,23 @@
           },
           {
             "lang": "bash",
-            "label": "cURL: Read an Explore topic tab",
+            "label": "cURL: Read an Explore tab",
             "source": "curl \"https://api.twitterapis.com/twitter/trends?category=news\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
           },
           {
             "lang": "python",
-            "label": "Python: Read an Explore topic tab",
+            "label": "Python: Read an Explore tab",
             "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/trends\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"category\": \"news\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
           },
           {
             "lang": "js",
-            "label": "JavaScript: Read an Explore topic tab",
+            "label": "JavaScript: Read an Explore tab",
             "source": "const url = new URL(\"https://api.twitterapis.com/twitter/trends\");\nurl.search = new URLSearchParams({ category: \"news\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
           }
         ],
         "responses": {
           "200": {
-            "description": "Read the current trending topics for a location or an Explore topic tab.",
+            "description": "Read the current trending topics for a location, an Explore tab or a trend label.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11986,7 +11986,7 @@
                   "properties": {
                     "category": {
                       "type": "string",
-                      "description": "The Explore topic tab you asked for, lowercased: trending, news, sports or entertainment. Present only when the call sent category; a location call has no category key."
+                      "description": "The category you asked for, lowercased: trending, news, sports, entertainment, for_you or business_and_finance. Present only when the call sent category; a location call has no category key."
                     },
                     "location": {
                       "allOf": [
@@ -12012,7 +12012,7 @@
                     },
                     "trends": {
                       "type": "array",
-                      "description": "Ranked trend objects: name, url, query, promoted_content, tweet_volume, is_hashtag, rank, meta_description. On a category call each also carries is_ai_story, and story items follow the ranked trends.",
+                      "description": "Ranked trend objects: name, url, query, promoted_content, tweet_volume, is_hashtag, rank, meta_description. On a category call each also carries is_ai_story. On an Explore tab story items follow the ranked trends; business_and_finance returns ranked trends only, re-ranked from 1.",
                       "items": {
                         "$ref": "#/components/schemas/Trend"
                       }
@@ -12179,10 +12179,10 @@
             "name": "category",
             "in": "query",
             "required": false,
-            "description": "Read one X Explore topic tab instead of a location: trending, news, sports or entertainment. Case-insensitive. Cannot be combined with country or woeid (400 bad_request). An unknown value returns 400 bad_request, and the message lists the four values.",
+            "description": "Read a category instead of a location. trending, news, sports, entertainment and for_you each read that X Explore tab. business_and_finance is not a tab but a filter: it reads the Trending and News tabs and keeps only the ranked trends X labels \"Business and finance\", with no story items. Case-insensitive. Results reflect the Explore view of the X account the API reads with, not yours. Cannot be combined with country or woeid (400 bad_request). An unknown value returns 400 bad_request, and the message lists the six values.",
             "schema": {
               "type": "string",
-              "description": "Read one X Explore topic tab instead of a location: trending, news, sports or entertainment. Case-insensitive. Cannot be combined with country or woeid (400 bad_request). An unknown value returns 400 bad_request, and the message lists the four values.",
+              "description": "Read a category instead of a location. trending, news, sports, entertainment and for_you each read that X Explore tab. business_and_finance is not a tab but a filter: it reads the Trending and News tabs and keeps only the ranked trends X labels \"Business and finance\", with no story items. Case-insensitive. Results reflect the Explore view of the X account the API reads with, not yours. Cannot be combined with country or woeid (400 bad_request). An unknown value returns 400 bad_request, and the message lists the six values.",
               "example": "news"
             },
             "example": "news"
@@ -24850,16 +24850,16 @@
           },
           "rank": {
             "type": "integer",
-            "description": "1-based position of the trend in X's trending-rank order, assigned before any count truncation. On a category call, story items are ranked after the ranked trends."
+            "description": "1-based position of the trend in X's trending-rank order, assigned before any count truncation. On an Explore tab category call, story items are ranked after the ranked trends. On category=business_and_finance the kept trends are re-ranked from 1 after the label filter."
           },
           "meta_description": {
             "type": "string",
             "nullable": true,
-            "description": "The context line X shows under a trend. On a category call it is X's own line, for example \"Music · Trending\" on a ranked trend or \"8 hours ago · News · 116K posts\" on a story item. Null on every location trend today: those are read from X's REST trends/place.json, whose trend object carries no context string, so there is nothing to return; the field fills in on its own the day that changes. It is deliberately not synthesised from tweet_volume, because a line written here and presented as X's would be a fabrication."
+            "description": "The context line X shows under a trend. On a category call it is X's own line, for example \"Music · Trending\" on a ranked trend or \"8 hours ago · News · 116K posts\" on a story item. category=business_and_finance keeps only the ranked trends whose line starts with \"Business and finance\", for example \"Business and finance · Trending\". Null on every location trend today: those are read from X's REST trends/place.json, whose trend object carries no context string, so there is nothing to return; the field fills in on its own the day that changes. It is deliberately not synthesised from tweet_volume, because a line written here and presented as X's would be a fabrication."
           },
           "is_ai_story": {
             "type": "boolean",
-            "description": "Present only on a category call. True on an item X itself marks as AI-written: every story item from the tab's stories module, and any ranked trend X flags as AI-written (which keeps its rank). False on the other ranked trends. Location trends do not carry this key."
+            "description": "Present only on a category call. True on an item X itself marks as AI-written: every story item from an Explore tab's stories module, and any ranked trend X flags as AI-written (which keeps its rank). False on the other ranked trends. category=business_and_finance returns ranked trends only, never story items. Location trends do not carry this key."
           }
         }
       },
