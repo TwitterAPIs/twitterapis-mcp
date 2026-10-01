@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.21.1 (2026-10-01)
+
+### Changed
+
+- **Every tool description ends with its docs page** (`Docs: https://docs.twitterapis.com/docs/reference/<tag>/<operationId>`),
+  derived from the OpenAPI spec by the generator, never hand-typed. All 112 URLs verified live.
+
+### Added
+
+- **`createServer({ inlineCredentials: false })`.** Hides the per-call X session args
+  (auth_token, ct0, proxy_url, user_agent) from every tool on a hosted, directory-listed
+  server, and drops them from calls even if a client sends them. Callers bind their session
+  once with `twitter_customer_session`, whose own credential payload is unaffected. Default
+  `true`, so the stdio package is unchanged. Each tool now carries `headerArgs`.
+
 ## 0.21.0 (2026-10-01)
 
 ### Added

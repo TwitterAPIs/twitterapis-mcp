@@ -287,7 +287,16 @@ for (const t of TOOL_OVERRIDES) {
     }
   }
 
-  resolved.push({ ...t, path, method, args: finalArgs, pathParams });
+  // Every tool names its docs page, so a model (and a directory reviewer) can follow it to
+  // the full reference. Derived from the spec, never hand-typed (feedback 538e90b5).
+  if (!ep.operationId || !ep.tag) bad(`tool ${t.name}: spec endpoint ${t.endpoint} has no operationId or tag, so its docs page cannot be named`);
+  const docsUrl = `https://docs.twitterapis.com/docs/reference/${String(ep.tag).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}/${ep.operationId}`;
+  const description = t.description.includes(docsUrl) ? t.description : `${t.description} Docs: ${docsUrl}`;
+  // Per-call inline credentials (override args marked header:true: auth_token, ct0, ...).
+  // Emitted so a host can hide them (createServer({ inlineCredentials: false })) without
+  // touching a tool whose OWN payload is credentials, e.g. twitter_customer_session.
+  const headerArgs = args.filter((a) => a && a.header).map((a) => a.name);
+  resolved.push({ ...t, description, docsUrl, headerArgs, path, method, args: finalArgs, pathParams });
 }
 
 // Every spec endpoint needs a tool. This is the drift check that catches a route
@@ -364,6 +373,7 @@ const body = resolved
     if (t.local) L.push(`    local: ${q(t.local)},`);
     const localArgs = t.args.filter((a) => a.local).map((a) => a.name);
     if (localArgs.length) L.push(`    localArgs: ${JSON.stringify(localArgs)},`);
+    if (t.headerArgs && t.headerArgs.length) L.push(`    headerArgs: ${JSON.stringify(t.headerArgs)},`);
     L.push("    description:");
     L.push(`      ${q(t.description)},`);
     if (t.args.length === 0) {
