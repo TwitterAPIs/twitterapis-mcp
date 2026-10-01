@@ -1,5 +1,5 @@
 {
-  "toolCount": 109,
+  "toolCount": 110,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -7,6 +7,7 @@
     "twitter_user_info_by_id",
     "twitter_user_status",
     "twitter_user_about",
+    "twitter_user_about_batch",
     "twitter_user_affiliates",
     "twitter_check_follow_relationship",
     "twitter_user_tweets",
@@ -385,6 +386,47 @@
           },
           "user_id": {
             "description": "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) always survive; any other top-level key you do not name is dropped. Use it to cut a page down to the fields you will actually read.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+            "type": "string",
+            "enum": [
+              "1",
+              "true"
+            ]
+          }
+        }
+      }
+    },
+    "twitter_user_about_batch": {
+      "name": "twitter_user_about_batch",
+      "path": "/twitter/user/user_about/batch",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Get the 'About' object (account country, how the account was created, username-change history, verification and the rest of twitter_user_about) for up to 100 accounts in ONE call. Provide usernames or user_ids as a comma-separated list, never both. Results come back in request order, each with an about object or an error code (not_found is billed; forbidden is free but X refuses that account to everyone; rate_limited and unavailable are free and safe to retry). Billed per account X answered for, so use this instead of looping twitter_user_about when vetting a list of accounts, e.g. checking where a creator's audience sample is based. One batch per API key runs at a time: a second concurrent call gets 429 batch_in_progress (not billed), so run batches one after another. fields/compact apply inside each item's about object (fields=account_based_in); a results.* path returns about: {}.",
+      "args": [
+        "usernames",
+        "user_ids",
+        "fields",
+        "compact"
+      ],
+      "required": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "usernames": {
+            "description": "Comma-separated handles, with or without the leading @ (e.g. 'openai,naval,sama'). 1 to 100 after duplicates are removed.",
+            "type": "string"
+          },
+          "user_ids": {
+            "description": "Comma-separated numeric user ids (e.g. '44196397,745273'), as an alternative to usernames. 1 to 100.",
             "type": "string"
           },
           "fields": {

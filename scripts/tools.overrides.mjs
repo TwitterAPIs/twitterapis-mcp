@@ -217,6 +217,21 @@ export const TOOL_OVERRIDES = [
     ],
   },
   {
+    name: "twitter_user_about_batch",
+    endpoint: "/user/user_about/batch",
+    description:
+      "Get the 'About' object (account country, how the account was created, username-change history, verification and the rest of twitter_user_about) for up to 100 accounts in ONE call. Provide usernames or user_ids as a comma-separated list, never both. Results come back in request order, each with an about object or an error code (not_found is billed; forbidden is free but X refuses that account to everyone; rate_limited and unavailable are free and safe to retry). Billed per account X answered for, so use this instead of looping twitter_user_about when vetting a list of accounts, e.g. checking where a creator's audience sample is based. One batch per API key runs at a time: a second concurrent call gets 429 batch_in_progress (not billed), so run batches one after another. fields/compact apply inside each item's about object (fields=account_based_in); a results.* path returns about: {}.",
+    args: [
+      { name: "usernames",
+        describe:
+          "Comma-separated handles, with or without the leading @ (e.g. 'openai,naval,sama'). 1 to 100 after duplicates are removed." },
+      { name: "user_ids",
+        describe:
+          "Comma-separated numeric user ids (e.g. '44196397,745273'), as an alternative to usernames. 1 to 100." },
+      "@PROJECTION",
+    ],
+  },
+  {
     name: "twitter_user_affiliates",
     endpoint: "/user/affiliates",
     description:

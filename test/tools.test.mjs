@@ -73,8 +73,9 @@ const writes = TOOLS.filter((t) => t.write);
 // this package claims exact parity, the claim is about what is ADVERTISED; ask
 // separately what the router still answers.
 // 109 endpoints, 65 reads and 44 writes, still exact parity.
-const EXPECTED_TOOLS = 109;
-const EXPECTED_READS = 65;
+// 2026-10-01 (#45): twitter_user_about_batch, a read. 110 endpoints, 66 reads, 44 writes.
+const EXPECTED_TOOLS = 110;
+const EXPECTED_READS = 66;
 const EXPECTED_WRITES = 44;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);

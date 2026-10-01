@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.18.0 (2026-10-01)
+
+### Added
+
+- **`twitter_user_about_batch`.** The About object (account country, how the account
+  was created, username-change history, verification) for up to 100 accounts in one
+  call, by `usernames` or `user_ids`. Results come back in request order, each with
+  an `about` object or an error code. Billed per account X answered for; items that
+  failed on our side are free and safe to retry. Takes `fields` and `compact` like
+  every other read.
+
 ## 0.17.0 (2026-09-30)
 
 ### Added
