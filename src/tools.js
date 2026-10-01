@@ -1452,7 +1452,7 @@ export const TOOLS = [
     name: "twitter_dm_list",
     path: "/twitter/dm/list",
     description:
-      "List YOUR authenticated account's Direct Message conversations (inbox), each with the participant and a conversation_id you can pass to twitter_dm_conversation. Requires an authenticated session behind your key. Read-only: this does not send DMs. It reads X's standard DM inbox: conversations X has moved to end-to-end encrypted chat do not appear, and conversations still in the message-requests folder may be missing.",
+      "List YOUR authenticated account's Direct Message conversations (inbox), each with the participant and a conversation_id you can pass to twitter_dm_conversation. Requires an authenticated session behind your key. Read-only: this does not send DMs. It reads X's standard DM inbox, so conversations X has moved to end-to-end encrypted chat may not appear, and conversations still in the message-requests folder may be missing.",
     shape: {
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie, to act AS that account for this call (must be paired with ct0). Travels out of band: as the x-auth-token request header on most tools, or inside the JSON request body on the tools that take one. Never a query parameter, so it never reaches a URL or an access log.",
