@@ -793,7 +793,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_trends",
     endpoint: "/trends",
     description:
-      "Get the current top trends for a location, or for one of X's Explore topic tabs. With no parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Or pass category (trending, news, sports or entertainment) to read that Explore tab instead; category cannot be combined with country or woeid (400). A category response echoes category, has location null, and lists X's ranked trends first, then the tab's story items: AI-written headlines X marks, each with is_ai_story true, the headline as query, an x.com/i/trending link and the post count as tweet_volume. Sports and Entertainment are often only story items. Use count to truncate the list. A location X will not serve returns a 400.",
+      "Get the current top trends for a location, or for one of X's Explore topic tabs. With no parameter, returns Worldwide (WOEID 1, X's own default). Pass country (an ISO code or country name, e.g. 'US' or 'Japan') or a numeric woeid from twitter_trends_locations; woeid wins when both are given. Or pass category (trending, news, sports or entertainment) to read that Explore tab instead; category cannot be combined with country or woeid (400). Returns the as_of timestamp and the ranked trends; a location call also returns the resolved location and created_at. A category response echoes category, has location and created_at null, and lists X's ranked trends first, then the tab's story items: AI-written headlines X marks, each with the headline as query, an x.com/i/trending/<id> url and the post count as tweet_volume. Story items carry is_ai_story true, but so can a ranked trend X flags as AI-written, so tell them apart by the x.com/i/trending url. A tab may hold only story items. Use count to truncate the list. A location X will not serve returns a 400.",
     args: [
       { name: "category", enum: ["trending", "news", "sports", "entertainment"],
         describe:
@@ -806,7 +806,7 @@ export const TOOL_OVERRIDES = [
           "Numeric WOEID from twitter_trends_locations. Takes precedence over country when both are supplied." },
       { name: "count", type: "int", min: 1,
         describe:
-          "Truncate the returned trends list to at most this many. Omit to return X's full list for the location." },
+          "Truncate the returned trends list to at most this many. Omit to return X's full list for the location or tab." },
       "@PROJECTION",
     ],
   },

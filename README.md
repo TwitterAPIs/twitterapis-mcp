@@ -150,7 +150,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_community_memberships` | The inverse lookup: every community a given numeric `user_id` belongs to |
 | `twitter_grok_chat` | Ask X's own Grok, grounded in live X data, and get the answer plus the sources it cited |
 | `twitter_grok_config` | Whether the authenticated account can use Grok, and which models it may pick |
-| `twitter_trends` | Current top trends for a location (by `country` or `woeid`) |
+| `twitter_trends` | Current top trends for a location (by `country` or `woeid`) or an X Explore topic tab (by `category`) |
 | `twitter_trends_locations` | Every location X has trends for, each with its WOEID |
 | `twitter_account_me` | Your twitterapis.com account: credits, usage, email (free) |
 | `twitter_account_payments` | Your twitterapis.com payment history (free) |

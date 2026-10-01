@@ -166,12 +166,13 @@ const server = (fetchImpl, extra = {}) =>
 }
 {
   // A cancel mid-request aborts the fetch and is reported as a cancel, not a timeout.
+  // Abort only once the server HOLDS the request: a fixed 50ms timer raced the request
+  // under load (the abort landed before the request arrived, so hits stayed 0).
   let hits = 0;
-  const srv = createHttp(() => { hits++; });
-  await new Promise((r) => srv.listen(0, "127.0.0.1", r));
   const ac = new AbortController();
+  const srv = createHttp(() => { hits++; setTimeout(() => ac.abort(), 20); });
+  await new Promise((r) => srv.listen(0, "127.0.0.1", r));
   const p = server(fetch, { baseUrl: `http://127.0.0.1:${srv.address().port}` }).callEndpoint("/twitter/user/info", { username: "x" }, "GET", false, [], { signal: ac.signal });
-  setTimeout(() => ac.abort(), 50);
   const r = await p;
   srv.closeAllConnections?.(); srv.close();
   assert.equal(hits, 1);
