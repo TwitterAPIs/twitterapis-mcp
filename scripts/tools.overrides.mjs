@@ -249,7 +249,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_check_follow_relationship",
     endpoint: "/user/check_follow_relationship",
     description:
-      "Check the follow relationship between two accounts: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Give each side as a numeric user id or a username (an unknown username returns a not-found error, not billed). Use this to verify a follow before/after a follow action, or to detect mutuals. For one account against many, use twitter_check_follow_relationship_batch.",
+      "Check the follow relationship between two accounts: whether the source follows the target, whether the target follows the source, blocking/muting flags where available. Give each side as a numeric user id or a username (an unknown username or id returns a not-found error, not billed). Use this to verify a follow before/after a follow action, or to detect mutuals. For one account against many, use twitter_check_follow_relationship_batch.",
     args: [
       { name: "source_user_id",
         describe:
@@ -287,7 +287,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_audience_summary",
     endpoint: "/user/audience_summary",
     description:
-      "Summarise who an audience is in ONE call: samples up to 100 followers of an account (username or user_id) or retweeters of a tweet (tweet_id), reads each sampled account's About country, and returns a country histogram (shares over accounts with a known country) plus a likely-bot share from documented profile signals (default avatar, no bio, under 5 followers, extreme follow ratio, never posted, created in the last 30 days, digit-suffix handle; 3 or more signals = likely automated, a heuristic, not a verdict). Billed per item: each sample page that added accounts plus each sampled account X answered About for, so sample=100 costs up to about $0.08 plus 2 to 3 pages. Shares the one-batch-per-key slot with the batch tools.",
+      "Summarise who an audience is in ONE call: samples up to 100 followers of an account (username or user_id) or retweeters of a tweet (tweet_id), reads each sampled account's About country, and returns a country histogram (shares over accounts with a known country) plus a likely-bot share from documented profile signals (default avatar, no bio, under 5 followers, extreme follow ratio, never posted, created in the last 30 days, digit-suffix handle; 3 or more signals = likely automated, a heuristic, not a verdict). Billed per item: each sample page that added accounts plus each sampled account X answered About for, so sample=100 costs at most $0.08 plus up to 3 pages. Shares the one-batch-per-key slot with the batch tools.",
     args: [
       { name: "username", describe: "Handle whose FOLLOWERS to sample (or send user_id)." },
       { name: "user_id", describe: "Numeric id whose FOLLOWERS to sample (or send username)." },

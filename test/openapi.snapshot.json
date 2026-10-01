@@ -5871,7 +5871,7 @@
       "get": {
         "operationId": "user-check-follow-relationship",
         "summary": "Check Follow Relationship",
-        "description": "Return the directional relationship between a source and target user: whether source follows target (following) and target follows source (followed_by), plus block, mute, and DM-eligibility flags. The relationship object is null when either user is not found. Cost: $0.0008 per call.",
+        "description": "Return the directional relationship between a source and target user: whether source follows target (following) and target follows source (followed_by), plus block, mute, and DM-eligibility flags. An account that does not exist returns a 404 with error not_found; the relationship object is null when X returns none. Cost: $0.0008 per call.",
         "tags": [
           "User Reads"
         ],
@@ -5912,7 +5912,7 @@
                           "$ref": "#/components/schemas/Relationship"
                         }
                       ],
-                      "description": "The directional relationship between source and target. Null when either user is not found.",
+                      "description": "The directional relationship between source and target. Null when X returns no relationship object.",
                       "nullable": true
                     }
                   }
@@ -6192,7 +6192,7 @@
                   "source_user_id": "102812444",
                   "requested": 3,
                   "served": 2,
-                  "billed_items": 3,
+                  "billed_items": 2,
                   "results": [
                     {
                       "target_username": "nasa",
@@ -6600,7 +6600,7 @@
                     },
                     "bot_signal_counts": {
                       "type": "object",
-                      "description": "How many sampled accounts show each signal, one key per signal. A field the profile does not carry never counts.",
+                      "description": "How many sampled accounts show each signal, one key per signal. A field the profile does not carry never counts; the default image is read from default_profile_image, or from the profile image URL when X omits that flag.",
                       "additionalProperties": true,
                       "properties": {
                         "default_profile_image": {
