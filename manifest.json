@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "twitterapis-mcp",
   "display_name": "TwitterAPIs",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "icon": "icon.png",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
   "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
@@ -66,6 +66,10 @@
     {
       "name": "twitter_user_about",
       "description": "Get a user's full 'About' object: the structured profile facts X surfaces beyond the bio, including account category and professional/business labels, verification and identity-verification flags, joined date, location and linked website, follower/following counts, and X's 'About this account' transparency panel (the account's country, how the account was created, and its username-change history). Provide a username or a user_id. Use this to enrich a profile beyond what twitter_user_info returns."
+    },
+    {
+      "name": "twitter_user_about_batch",
+      "description": "Get the 'About' object (account country, how the account was created, username-change history, verification and the rest of twitter_user_about) for up to 100 accounts in ONE call. Provide usernames or user_ids as a comma-separated list, never both. Results come back in request order, each with an about object or an error code (not_found is billed; rate_limited, forbidden and unavailable are free and safe to retry). Billed per account X answered for, so use this instead of looping twitter_user_about when vetting a list of accounts, e.g. checking where a creator's audience sample is based."
     },
     {
       "name": "twitter_user_affiliates",

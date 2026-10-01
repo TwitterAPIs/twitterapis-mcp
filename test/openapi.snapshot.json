@@ -4384,6 +4384,304 @@
         ]
       }
     },
+    "/user/user_about/batch": {
+      "get": {
+        "operationId": "user-user-about-batch",
+        "summary": "User About Batch",
+        "description": "Read the full About object for up to 100 accounts in one request: the same object GET /user/user_about returns, including X's \"About this account\" transparency panel (account country, how the account was created, and username-change history). Results come back in request order, each with its about object or an error code. Cost: $0.0008 per billed item.",
+        "tags": [
+          "User Reads"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/user/user_about/batch?usernames=stripe,nasa,openai\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/user/user_about/batch\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"usernames\": \"stripe,nasa,openai\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/user/user_about/batch\");\nurl.search = new URLSearchParams({ usernames: \"stripe,nasa,openai\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fetch the About object for up to 100 accounts in one request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requested": {
+                      "type": "integer",
+                      "description": "Number of distinct accounts looked up, after duplicates were removed."
+                    },
+                    "served": {
+                      "type": "integer",
+                      "description": "Number of items that returned an about object."
+                    },
+                    "billed_items": {
+                      "type": "integer",
+                      "description": "Number of items this call was billed for: every account X answered for, found or not_found. Multiply by $0.0008 for the charge."
+                    },
+                    "results": {
+                      "type": "array",
+                      "description": "One entry per requested account, in request order.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "username": {
+                            "type": "string",
+                            "description": "The handle as you sent it, without the leading @. Present when the request used usernames."
+                          },
+                          "user_id": {
+                            "type": "string",
+                            "description": "The numeric user ID as you sent it. Present when the request used user_ids."
+                          },
+                          "about": {
+                            "allOf": [
+                              {
+                                "$ref": "#/components/schemas/About"
+                              }
+                            ],
+                            "description": "The account's full About object, the same object GET /user/user_about returns. Present only on a found item."
+                          },
+                          "error": {
+                            "type": "string",
+                            "description": "Present only on an item without an about object. One of not_found (X confirmed no such account; billed), rate_limited, forbidden, or unavailable (failed on our side; not billed, safe to retry)."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "requested": 3,
+                  "served": 1,
+                  "billed_items": 2,
+                  "results": [
+                    {
+                      "username": "stripe",
+                      "about": {
+                        "id": "102812444",
+                        "username": "stripe",
+                        "name": "Stripe",
+                        "verified_type": "Business",
+                        "professional_type": "Business",
+                        "account_based_in": "United States",
+                        "created_via": "Web",
+                        "username_changes": {
+                          "count": 0,
+                          "last_changed_at": null
+                        },
+                        "created_country_accurate": true
+                      }
+                    },
+                    {
+                      "username": "no_such_handle",
+                      "error": "not_found"
+                    },
+                    {
+                      "username": "nasa",
+                      "error": "rate_limited"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Provide `usernames` or `user_ids`, not both."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "Missing or invalid x-api-key header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Not enough credits for 3 items. Top up, or send a smaller batch."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message",
+                    "retry_after_seconds",
+                    "limit_per_minute"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retry_after_seconds": {
+                      "type": "integer"
+                    },
+                    "limit_per_minute": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Rate limit exceeded (600 requests/min per API key). Retry after 12s.",
+                  "retry_after_seconds": 12,
+                  "limit_per_minute": 600
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "HTTP 503",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message",
+                    "retry_after_seconds"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "retry_after_seconds": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "No item could be fetched right now. This is temporary; retry shortly.",
+                  "retry_after_seconds": 5
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "usernames",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated handles, with or without the leading @. Send this or user_ids, never both. Between 1 and 100 distinct entries after duplicates are removed (handles compare case-insensitively). A malformed handle returns a 400 for the whole request.",
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated handles, with or without the leading @. Send this or user_ids, never both. Between 1 and 100 distinct entries after duplicates are removed (handles compare case-insensitively). A malformed handle returns a 400 for the whole request.",
+              "example": "stripe,nasa,openai"
+            },
+            "example": "stripe,nasa,openai"
+          },
+          {
+            "name": "user_ids",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated numeric user IDs, as an alternative to usernames. Send this or usernames, never both. Same 1 to 100 limit. Each ID is resolved to its current handle, then looked up; results echo each ID as you sent it.",
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated numeric user IDs, as an alternative to usernames. Send this or usernames, never both. Same 1 to 100 limit. Each ID is resolved to its current handle, then looked up; results echo each ID as you sent it.",
+              "example": "44196397,11348282"
+            },
+            "example": "44196397,11348282"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          }
+        ]
+      }
+    },
     "/user/media": {
       "get": {
         "operationId": "user-media",

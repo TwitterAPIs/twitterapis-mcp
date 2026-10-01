@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 109 tools (65 reads, 44 writes).
+// Catalog: 110 tools (66 reads, 44 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -145,6 +145,26 @@ export const TOOLS = [
       ),
       user_id: z.string().optional().describe(
         "Numeric Twitter/X user id (e.g. \"44196397\"). Provide exactly one of username or user_id.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) always survive; any other top-level key you do not name is dropped. Use it to cut a page down to the fields you will actually read.",
+      ),
+      compact: z.enum(["1","true"]).optional().describe(
+        "Optional. Set to \"1\" for the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. Trims what it recognises and, on its own, never turns a body into {}. Combine with fields to keep extra paths (then only the named paths and the envelope keys survive).",
+      ),
+    },
+  },
+  {
+    name: "twitter_user_about_batch",
+    path: "/twitter/user/user_about/batch",
+    description:
+      "Get the 'About' object (account country, how the account was created, username-change history, verification and the rest of twitter_user_about) for up to 100 accounts in ONE call. Provide usernames or user_ids as a comma-separated list, never both. Results come back in request order, each with an about object or an error code (not_found is billed; rate_limited, forbidden and unavailable are free and safe to retry). Billed per account X answered for, so use this instead of looping twitter_user_about when vetting a list of accounts, e.g. checking where a creator's audience sample is based.",
+    shape: {
+      usernames: z.string().optional().describe(
+        "Comma-separated handles WITHOUT the leading @ (e.g. 'openai,naval,sama'). 1 to 100 after duplicates are removed.",
+      ),
+      user_ids: z.string().optional().describe(
+        "Comma-separated numeric user ids (e.g. '44196397,745273'), as an alternative to usernames. 1 to 100.",
       ),
       fields: z.string().optional().describe(
         "Optional. Comma-separated dotted field paths to KEEP in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) always survive; any other top-level key you do not name is dropped. Use it to cut a page down to the fields you will actually read.",
