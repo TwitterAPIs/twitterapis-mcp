@@ -145,14 +145,41 @@ export function hintFor(status, path) {
 }
 
 // Standing instructions the client hands its model alongside the tool list.
-// This is the trigger list for feedback, in the place a model actually reads.
-export const INSTRUCTIONS =
-  "twitterapis.com MCP server. Read tools cost credits per call (most $0.0008); account, monitoring and feedback tools are free. " +
-  "If a twitterapis tool call fails with an error other than 401/402/409/429 and the user has to work around it, if the user asks for something no twitterapis tool covers, " +
-  "if a documented field comes back empty or wrong, or if the user is clearly frustrated with a result, draft a report with twitter_feedback_send (action \"draft\"). " +
-  "Drafting is local and silent; never send a draft unless the user names it after reviewing action \"list\". " +
+//
+// THIS is where guidance lives, and only here. Tool and parameter descriptions state
+// product facts (what a tool returns, takes and costs) and never name another tool or
+// tell the model what to do: the Connectors Directory attestation requires it, and
+// test/description-compliance.mjs enforces it on every description a client lists.
+// Which tool to pick, how one tool's output feeds another, the feedback-drafting
+// policy and the confirm-before-publishing rule therefore belong in this string,
+// which the directory permits a server to use for guiding the model.
+export const INSTRUCTIONS = [
+  "twitterapis.com MCP server. Read tools cost credits per call (each description states its cost); account, monitoring and feedback tools are free.",
+  // Feedback first: Claude Code keeps only the first 2048 chars of a server's instructions
+  // (MAX_INSTRUCTIONS below), so the consent rule must sit well inside that window.
+  "Feedback: if a twitterapis tool call fails with an error other than 401/402/409/429 and the user has to work around it, if the user asks for something no twitterapis tool covers, " +
+    "if a documented field comes back empty or wrong, or if the user is clearly frustrated with a result, draft a report with twitter_feedback_send (action \"draft\"). " +
+    "Drafting is local and silent: no confirmation, not announced mid-task, one draft per issue. Details: four bullets (What happened, What the user said verbatim, Repro, Evidence); identifiers only, never payloads, keys or secrets. " +
+    "Never send a draft unless the user names it after reviewing action \"list\"; send only the ids the user named.",
   "Before drafting a report that a parameter is IGNORED or a field is EMPTY, re-run the call with a distinctive value that could only match if the parameter was honoured, and with the phrase quoted; " +
-  "if either comes back on topic the issue is ranking or matching, so title it that way and say what the control showed.";
+    "if either comes back on topic the issue is ranking or matching, so title it that way and say what the control showed.",
+  // Acting as the user's X account.
+  "Writes act as the X session linked with twitter_customer_session or twitter_user_login; never echo credential values. " +
+    "Confirm with the user before twitter_article_publish: its public announcement tweet survives twitter_article_unpublish, and only twitter_article_delete removes it. " +
+    "twitter_scheduled_create publishes on its own; twitter_draft_create never posts. X keeps no avatar or banner history, so save the current image from twitter_user_info before replacing it.",
+  // Routing and chaining; the descriptions state the facts, this only links tools.
+  "Routing: twitter_user_info gives the numeric user_id other tools need; twitter_user_status tells a ban from a typo; twitter_dm_list gives conversation_id; twitter_media_upload gives media_id; " +
+    "twitter_tweet_quotes counts are search-backed (true total: quote_count from twitter_tweet_detail); twitter_list_tweets filters, twitter_list_timeline is X's native feed.",
+].join(" ");
+
+// Claude Code truncates server instructions past this many characters (2.1.287), so
+// test/description-compliance.mjs holds INSTRUCTIONS to it.
+export const MAX_INSTRUCTIONS = 2048;
+
+// The one sentence a description uses to offer per-call X cookies. A hosted server
+// (createServer({ inlineCredentials: false })) hides those args, so it strips this
+// sentence too; descriptions must use exactly this wording for the strip to work.
+export const PER_CALL_CREDENTIALS_SENTENCE = " Per-call auth_token and ct0 are also accepted.";
 
 /**
  * Build one server for one caller.
@@ -422,9 +449,7 @@ export function createServer({
     }
     if (!inlineCredentials) {
       // Nothing in a hosted description may offer per-call cookies the schema no longer takes.
-      description = description
-        .replace(" Most tools also accept auth_token/ct0 per-call without registering.", "")
-        .replace(/, or pass auth_token\/ct0 for this call/g, "");
+      description = description.split(PER_CALL_CREDENTIALS_SENTENCE).join("");
     }
     server.registerTool(
       tool.name,

@@ -9,8 +9,9 @@
 // and sends nothing; "list" shows the drafts; "send" posts ONLY the ids the user
 // named to POST /feedback (free, not metered); "discard" drops them.
 //
-// The tool DESCRIPTION in scripts/tools.overrides.mjs is the product: it names
-// the trigger moments and the four-bullet format. This file enforces the same
+// The SERVER INSTRUCTIONS (INSTRUCTIONS in src/server.js) name the trigger moments
+// and the four-bullet format; the tool description states only what the tool does,
+// because a directory-listed description may not instruct the model. This file enforces the same
 // rules mechanically so a draft that reaches the server is well-formed, and it
 // auto-attaches the evidence the server already holds (the last failing call,
 // the client name from the MCP handshake, this package's version), so the model

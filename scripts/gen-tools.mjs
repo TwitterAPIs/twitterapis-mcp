@@ -291,7 +291,23 @@ for (const t of TOOL_OVERRIDES) {
   // the full reference. Derived from the spec, never hand-typed (feedback 538e90b5).
   if (!ep.operationId || !ep.tag) bad(`tool ${t.name}: spec endpoint ${t.endpoint} has no operationId or tag, so its docs page cannot be named`);
   const docsUrl = `https://docs.twitterapis.com/docs/reference/${String(ep.tag).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}/${ep.operationId}`;
-  const description = t.description.includes(docsUrl) ? t.description : `${t.description} Docs: ${docsUrl}`;
+  // Every tool also states its cost, read from the spec rather than typed: the operation's
+  // x-cost-usd and the billing unit its own description names ("Cost: $0.0008 per call." or
+  // "... per billed item."). The two must agree, so a price change upstream that updates one
+  // and not the other fails the build instead of shipping a wrong number to a model.
+  const op = (spec.paths[t.endpoint] || {})[epMethod.toLowerCase()] || {};
+  const costMatches = String(op.description || "").match(/Cost: (?:Free per call|\$\d+(?:\.\d+)? per (?:call|billed item))\./g) || [];
+  const costUsd = op["x-cost-usd"];
+  let costSentence = null;
+  if (costMatches.length !== 1 || typeof costUsd !== "number") {
+    bad(`tool ${t.name}: spec ${epMethod} ${t.endpoint} needs exactly one "Cost: ..." sentence and a numeric x-cost-usd (found ${costMatches.length} sentence(s), x-cost-usd ${JSON.stringify(costUsd)})`);
+  } else {
+    costSentence = costMatches[0];
+    const stated = costSentence.startsWith("Cost: Free") ? 0 : Number(costSentence.match(/\$(\d+(?:\.\d+)?)/)[1]);
+    if (Math.abs(stated - costUsd) > 1e-9) bad(`tool ${t.name}: spec cost sentence "${costSentence}" disagrees with x-cost-usd ${costUsd}`);
+  }
+  if (/\bCost: /.test(t.description)) bad(`tool ${t.name}: the override description types its own "Cost:" sentence; the generator derives it from the spec`);
+  const description = `${t.description}${costSentence ? ` ${costSentence}` : ""} Docs: ${docsUrl}`;
   // Per-call inline credentials (override args marked header:true: auth_token, ct0, ...).
   // Emitted so a host can hide them (createServer({ inlineCredentials: false })) without
   // touching a tool whose OWN payload is credentials, e.g. twitter_customer_session.
