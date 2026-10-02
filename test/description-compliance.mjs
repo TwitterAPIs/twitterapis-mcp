@@ -102,6 +102,7 @@ const LINK = /https?:\/\/[^\s"'<>)\]]+/gi;
 const EXAMPLE_HOSTS = new Set(["example.com", "example.org", "example.net", "host"]);
 const TWEET_URL_FORMAT = /^https:\/\/x\.com\/[A-Za-z0-9_]{1,15}\/status\/\d+$/;
 function isFormatExample(url, host) {
+  if (!/^https:\/\//.test(url)) return false; // review 2026-10-02: an http example is not allowed
   return EXAMPLE_HOSTS.has(host) || (host === "x.com" && TWEET_URL_FORMAT.test(url));
 }
 
