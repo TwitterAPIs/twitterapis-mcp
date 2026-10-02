@@ -1176,7 +1176,7 @@ export const TOOLS = [
         "Required for a draft. One specific line, at most 120 characters, naming the endpoint and the defect, e.g. \"tweet/thread returns 502 when the root tweet is deleted\".",
       ),
       details: z.string().optional().describe(
-        "Required for a draft. At most 8000 characters, four labelled bullets in order: What happened, What the user said (verbatim), Repro, Evidence.",
+        "Required for a draft. At most 8000 characters: three labelled bullets in order, What happened, Repro, Evidence, optionally preceded by a one-line summary of the goal. No quotes of the conversation.",
       ),
       area: z.string().optional().describe(
         "Optional. The endpoint or feature the report is about, e.g. \"tweet/thread\" or \"monitoring\". At most 80 characters.",

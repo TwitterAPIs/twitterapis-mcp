@@ -35,7 +35,7 @@ const queue = () => JSON.parse(readFileSync(queuePath(env), "utf8")).drafts;
 
 // ── draft ──────────────────────────────────────────────────────────────────
 {
-  const r = await tool({ type: "bug", title: "thread 502 on deleted root", details: "- What happened: 502\n- What the user said: none\n- Repro: x\n- Evidence: y", area: "tweet/thread" });
+  const r = await tool({ type: "bug", title: "thread 502 on deleted root", details: "- What happened: 502\n- Repro: x\n- Evidence: y", area: "tweet/thread" });
   check("draft is not an error", !r.isError, txt(r));
   check("draft says nothing was sent", /Nothing was sent/.test(txt(r)));
   check("draft made no network call", calls.length === 0);
@@ -70,7 +70,7 @@ const queue = () => JSON.parse(readFileSync(queuePath(env), "utf8")).drafts;
   const bad2 = await tool({ type: "idea", title: "", details: "d" });
   check("empty title is an error", bad2.isError && /title is required/.test(txt(bad2)));
   const bad3 = await tool({ type: "idea", title: "t", details: "" });
-  check("empty details is an error", bad3.isError && /four labelled bullets/.test(txt(bad3)));
+  check("empty details is an error", bad3.isError && /three labelled bullets/.test(txt(bad3)) && !/What the user said/.test(txt(bad3)));
   const bad4 = await tool({ type: "idea", title: "t", details: "d", evidence: { blob: "x".repeat(5000) } });
   check("oversized evidence is an error", bad4.isError && /4096/.test(txt(bad4)));
   check("rejections wrote nothing", queue().length === 2);
@@ -216,15 +216,15 @@ const queue = () => JSON.parse(readFileSync(queuePath(env), "utf8")).drafts;
         // While the FIRST send is on the network, another process drafts. With the
         // lock held across the call this either times out (3s wait) or, past
         // LOCK_STALE_MS, reclaims the lock and is overwritten by the sender.
-        midSendDraft = await other({ type: "idea", title: "landed mid-send", details: "- What happened: x\n- What the user said: y\n- Repro: z\n- Evidence: w" });
+        midSendDraft = await other({ type: "idea", title: "landed mid-send", details: "- What happened: x\n- Repro: z\n- Evidence: w" });
       }
       if (calls4 === 2) duringSecond = q4();
       return { content: [{ type: "text", text: JSON.stringify({ id: `srv-${calls4}` }) }] };
     },
     version: "9.9.9", getClientInfo: () => ({ name: "a", version: "1" }), getLastError: () => null, env: env4,
   });
-  await slow({ type: "bug", title: "first", details: "- What happened: 1\n- What the user said: 2\n- Repro: 3\n- Evidence: 4" });
-  await slow({ type: "bug", title: "second", details: "- What happened: 1\n- What the user said: 2\n- Repro: 3\n- Evidence: 4" });
+  await slow({ type: "bug", title: "first", details: "- What happened: 1\n- Repro: 3\n- Evidence: 4" });
+  await slow({ type: "bug", title: "second", details: "- What happened: 1\n- Repro: 3\n- Evidence: 4" });
   const ids4 = JSON.parse(readFileSync(queuePath(env4), "utf8")).drafts.map((d) => d.id);
   const r4 = await slow({ action: "send", ids: ids4 });
   check("slow send is not an error", !r4.isError, txt(r4));
@@ -253,7 +253,7 @@ const queue = () => JSON.parse(readFileSync(queuePath(env), "utf8")).drafts;
     },
     version: "9.9.9", getClientInfo: () => ({ name: "a", version: "1" }), getLastError: () => null, env: env5,
   });
-  await stuck({ type: "bug", title: "stuck one", details: "- What happened: 1\n- What the user said: 2\n- Repro: 3\n- Evidence: 4" });
+  await stuck({ type: "bug", title: "stuck one", details: "- What happened: 1\n- Repro: 3\n- Evidence: 4" });
   const id5 = JSON.parse(readFileSync(queuePath(env5), "utf8")).drafts[0].id;
   const t0 = Date.now();
   const r5 = await stuck({ action: "send", ids: [id5] });

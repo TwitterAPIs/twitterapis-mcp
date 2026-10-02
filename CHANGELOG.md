@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.22.1 (2026-10-02)
+
+### Changed
+
+- **Feedback reports no longer ask for the user's words.** `twitter_feedback_send` `details` is
+  three bullets (What happened, Repro, Evidence), optionally after a one-line summary of the goal,
+  and the server instructions say the same: no quote of the conversation is collected, per the
+  Connectors Directory rule against extraneous conversation data.
+- **The description gate refuses conversation-data asks** (what the user said, verbatim user
+  words) in descriptions and instructions, and now also sees bare hosts, backslash authorities,
+  emails, IP addresses and javascript:/data: schemes.
+
 ## 0.22.0 (2026-10-02)
 
 ### Changed

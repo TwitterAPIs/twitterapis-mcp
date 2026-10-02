@@ -2600,7 +2600,7 @@
             "type": "string"
           },
           "details": {
-            "description": "Required for a draft. At most 8000 characters, four labelled bullets in order: What happened, What the user said (verbatim), Repro, Evidence.",
+            "description": "Required for a draft. At most 8000 characters: three labelled bullets in order, What happened, Repro, Evidence, optionally preceded by a one-line summary of the goal. No quotes of the conversation.",
             "type": "string"
           },
           "area": {

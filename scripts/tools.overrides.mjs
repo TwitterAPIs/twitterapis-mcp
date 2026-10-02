@@ -843,7 +843,7 @@ export const TOOL_OVERRIDES = [
   // high-signal moment into a local queue (src/feedback.js) and nothing is sent
   // until the user reviews and names the drafts to send. Free, not metered,
   // zero-rated in billing like account/* and the monitoring tools. The
-  // drafting POLICY (when to draft, the four-bullet format, send only named ids)
+  // drafting POLICY (when to draft, the three-bullet format, send only named ids)
   // lives in INSTRUCTIONS in src/server.js; the description below states only
   // what each action does. The `local` handler owns the queue;
   // `action` and `ids` never reach the API.
@@ -867,7 +867,7 @@ export const TOOL_OVERRIDES = [
           "Required for a draft. One specific line, at most 120 characters, naming the endpoint and the defect, e.g. \"tweet/thread returns 502 when the root tweet is deleted\"." },
       { name: "details", required: false,
         describe:
-          "Required for a draft. At most 8000 characters, four labelled bullets in order: What happened, What the user said (verbatim), Repro, Evidence." },
+          "Required for a draft. At most 8000 characters: three labelled bullets in order, What happened, Repro, Evidence, optionally preceded by a one-line summary of the goal. No quotes of the conversation." },
       { name: "area",
         describe:
           "Optional. The endpoint or feature the report is about, e.g. \"tweet/thread\" or \"monitoring\". At most 80 characters." },
