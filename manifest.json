@@ -97,7 +97,7 @@
     },
     {
       "name": "twitter_user_tweets_complete",
-      "description": "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed a flat $0.0024 per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets-complete"
+      "description": "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed flat per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets-complete"
     },
     {
       "name": "twitter_user_media",
@@ -317,7 +317,7 @@
     },
     {
       "name": "twitter_scheduled_create",
-      "description": "Schedules a tweet to POST PUBLICLY at a future instant from the authenticated account. This is NOT a draft: it goes out on its own at execute_at unless it is cancelled first. execute_at is epoch SECONDS, not milliseconds (Date.now() returns milliseconds, so divide by 1000), and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It has to be strictly in the future. Requires an authenticated X session behind the API key. Returns ok, scheduled_tweet_id, and the execute_at sent. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/scheduled-create"
+      "description": "Schedules a tweet to POST PUBLICLY at a future instant from the authenticated account. This is NOT a draft: it goes out on its own at execute_at unless it is cancelled first. execute_at is epoch SECONDS, not milliseconds (a Date.now() millisecond value is 1000x too large), and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It has to be strictly in the future. Requires an authenticated X session behind the API key. Returns ok, scheduled_tweet_id, and the execute_at sent. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/scheduled-create"
     },
     {
       "name": "twitter_scheduled_delete",
@@ -329,7 +329,7 @@
     },
     {
       "name": "twitter_favorite_tweet",
-      "description": "Likes (favorites) a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-favorite"
+      "description": "Likes (favorites) a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-favorite"
     },
     {
       "name": "twitter_unfavorite_tweet",
@@ -337,7 +337,7 @@
     },
     {
       "name": "twitter_retweet",
-      "description": "Retweets a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-retweet"
+      "description": "Retweets a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-retweet"
     },
     {
       "name": "twitter_unretweet",
@@ -345,7 +345,7 @@
     },
     {
       "name": "twitter_bookmark_tweet",
-      "description": "Bookmarks a tweet to the authenticated account's private bookmarks. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-bookmark"
+      "description": "Bookmarks a tweet to the authenticated account's private bookmarks. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-bookmark"
     },
     {
       "name": "twitter_unbookmark_tweet",
@@ -353,7 +353,7 @@
     },
     {
       "name": "twitter_follow_user",
-      "description": "Follows a user as the authenticated account, by numeric user_id or by @handle (exactly one of the two). Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/user-follow"
+      "description": "Follows a user as the authenticated account, by numeric user_id or by @handle (exactly one of the two). Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/user-follow"
     },
     {
       "name": "twitter_unfollow_user",
@@ -361,11 +361,11 @@
     },
     {
       "name": "twitter_list_add_member",
-      "description": "Adds one account to a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the change landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-add-member"
+      "description": "Adds one account to a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the change landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-add-member"
     },
     {
       "name": "twitter_list_remove_member",
-      "description": "Removes one account from a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: pruning accounts that have gone quiet from a curated List. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the removal landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was not a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-remove-member"
+      "description": "Removes one account from a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: pruning accounts that have gone quiet from a curated List. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the removal landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was not a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-remove-member"
     },
     {
       "name": "twitter_list_create",

@@ -154,24 +154,27 @@ export function hintFor(status, path) {
 // policy and the confirm-before-publishing rule therefore belong in this string,
 // which the directory permits a server to use for guiding the model.
 export const INSTRUCTIONS = [
-  "twitterapis.com MCP server. Read tools cost credits per call (most $0.0008; each description states its cost); account, monitoring and feedback tools are free.",
-  // Choosing between sibling tools.
-  "Choosing: twitter_user_status (not twitter_user_info) tells a suspended or deleted account from a typo. twitter_user_search ignores bios; for bios, filter twitter_user_followers or twitter_advanced_search results.",
-  "twitter_user_tweets includes replies and retweets (filter on is_reply/is_retweet); for a back-catalogue repeat twitter_user_tweets_complete with next_cursor until it is null, never stopping on count.",
-  "twitter_list_tweets is the filterable List feed without retweets; twitter_list_timeline is X's native feed. twitter_community_search yields the id the other community tools take; list moderators with twitter_community_moderators, not a filtered twitter_community_members page.",
-  "twitter_tweet_quotes is search-backed: say so when reporting its count, give quote_count from twitter_tweet_detail as the true total, and discard a page whose quote_matched is 0. Prefer the _batch tools to looping per account, one batch at a time per key.",
-  // Chaining one tool's output into another.
-  "Chaining: twitter_user_info gives the numeric user_id that twitter_user_likes, twitter_user_tweets_complete, twitter_community_memberships, twitter_dm_send and the list member tools need. twitter_dm_list gives conversation_id for twitter_dm_conversation; twitter_trends_locations gives woeid for twitter_trends. twitter_media_upload gives media_id for tweets, drafts, scheduled posts and article covers; poll twitter_media_status for video until succeeded. twitter_monitor_create delivers to webhooks from twitter_monitor_webhook_create, whose secret is shown once: store it.",
-  // Acting as the user's X account.
-  "Writes act as the X session linked with twitter_customer_session or twitter_user_login (check with twitter_customer_session_status); never echo credential values. twitter_draft_create never posts; twitter_scheduled_create publishes on its own at execute_at (epoch seconds), so check twitter_scheduled_list first. Confirm with the user before twitter_article_publish: its public announcement tweet stays up after twitter_article_unpublish and only twitter_article_delete removes it. Before twitter_update_avatar or twitter_update_banner, save the current image from twitter_user_info; X keeps no history.",
-  // Feedback.
+  "twitterapis.com MCP server. Read tools cost credits per call (each description states its cost); account, monitoring and feedback tools are free.",
+  // Feedback first: Claude Code keeps only the first 2048 chars of a server's instructions
+  // (MAX_INSTRUCTIONS below), so the consent rule must sit well inside that window.
   "Feedback: if a twitterapis tool call fails with an error other than 401/402/409/429 and the user has to work around it, if the user asks for something no twitterapis tool covers, " +
     "if a documented field comes back empty or wrong, or if the user is clearly frustrated with a result, draft a report with twitter_feedback_send (action \"draft\"). " +
-    "Drafting is local and silent: no confirmation, not announced mid-task, one draft per issue, details as four bullets (What happened, What the user said verbatim, Repro, Evidence), facts only, no secrets. " +
+    "Drafting is local and silent: no confirmation, not announced mid-task, one draft per issue. Details: four bullets (What happened, What the user said verbatim, Repro, Evidence); identifiers only, never payloads, keys or secrets. " +
     "Never send a draft unless the user names it after reviewing action \"list\"; send only the ids the user named.",
   "Before drafting a report that a parameter is IGNORED or a field is EMPTY, re-run the call with a distinctive value that could only match if the parameter was honoured, and with the phrase quoted; " +
     "if either comes back on topic the issue is ranking or matching, so title it that way and say what the control showed.",
+  // Acting as the user's X account.
+  "Writes act as the X session linked with twitter_customer_session or twitter_user_login; never echo credential values. " +
+    "Confirm with the user before twitter_article_publish: its public announcement tweet survives twitter_article_unpublish, and only twitter_article_delete removes it. " +
+    "twitter_scheduled_create publishes on its own; twitter_draft_create never posts. X keeps no avatar or banner history, so save the current image from twitter_user_info before replacing it.",
+  // Routing and chaining; the descriptions state the facts, this only links tools.
+  "Routing: twitter_user_info gives the numeric user_id other tools need; twitter_user_status tells a ban from a typo; twitter_dm_list gives conversation_id; twitter_media_upload gives media_id; " +
+    "twitter_tweet_quotes counts are search-backed (true total: quote_count from twitter_tweet_detail); twitter_list_tweets filters, twitter_list_timeline is X's native feed.",
 ].join(" ");
+
+// Claude Code truncates server instructions past this many characters (2.1.287), so
+// test/description-compliance.mjs holds INSTRUCTIONS to it.
+export const MAX_INSTRUCTIONS = 2048;
 
 // The one sentence a description uses to offer per-call X cookies. A hosted server
 // (createServer({ inlineCredentials: false })) hides those args, so it strips this

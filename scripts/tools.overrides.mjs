@@ -109,7 +109,7 @@ export const ARG_GROUPS = {
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required." },
     { name: "url",
       describe:
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required." },
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required." },
   ],
   // Per-call inline credentials. Pass an account's own X session cookies to act
   // AS that account for this one call, without pre-registering a session, so a
@@ -157,7 +157,7 @@ export const TOOL_OVERRIDES = [
           "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'." },
       { name: "product", enum: ["Top","Latest","Media","People"],
         describe:
-          "Result ranking mode. 'Latest' = reverse-chronological (best for monitoring). 'Top' = engagement-ranked (best for finding popular tweets, default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts." },
+          "Result ranking mode. 'Latest' = reverse-chronological. 'Top' = engagement-ranked (default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts." },
       "@PAGINATION",
       "@PROJECTION",
       "@PAID_PROMOTION",
@@ -331,7 +331,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_user_tweets_complete",
     endpoint: "/user/tweets/complete",
     description:
-      "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed a flat $0.0024 per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones.",
+      "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed flat per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones.",
     args: [
       { name: "user_id",
         describe:
@@ -1231,7 +1231,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/scheduled/create",
     write: true,
     description:
-      "Schedules a tweet to POST PUBLICLY at a future instant from the authenticated account. This is NOT a draft: it goes out on its own at execute_at unless it is cancelled first. execute_at is epoch SECONDS, not milliseconds (Date.now() returns milliseconds, so divide by 1000), and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It has to be strictly in the future. Requires an authenticated X session behind the API key. Returns ok, scheduled_tweet_id, and the execute_at sent.",
+      "Schedules a tweet to POST PUBLICLY at a future instant from the authenticated account. This is NOT a draft: it goes out on its own at execute_at unless it is cancelled first. execute_at is epoch SECONDS, not milliseconds (a Date.now() millisecond value is 1000x too large), and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It has to be strictly in the future. Requires an authenticated X session behind the API key. Returns ok, scheduled_tweet_id, and the execute_at sent.",
     args: [
       { name: "text", minLength: 1,
         describe:
@@ -1283,7 +1283,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/tweet/favorite",
     write: true,
     description:
-      "Likes (favorites) a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key.",
+      "Likes (favorites) a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Reversible.",
     args: [
       "@TWEET_REF",
       "@INLINE",
@@ -1313,7 +1313,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/tweet/retweet",
     write: true,
     description:
-      "Retweets a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key.",
+      "Retweets a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Reversible.",
     args: [
       "@TWEET_REF",
       "@INLINE",
@@ -1343,7 +1343,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/tweet/bookmark",
     write: true,
     description:
-      "Bookmarks a tweet to the authenticated account's private bookmarks. Takes the tweet id or url. Requires write capability behind the API key.",
+      "Bookmarks a tweet to the authenticated account's private bookmarks. Takes the tweet id or url. Requires write capability behind the API key. Reversible.",
     args: [
       "@TWEET_REF",
       "@INLINE",
@@ -1374,7 +1374,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/user/follow",
     write: true,
     description:
-      "Follows a user as the authenticated account, by numeric user_id or by @handle (exactly one of the two). Requires write capability behind the API key.",
+      "Follows a user as the authenticated account, by numeric user_id or by @handle (exactly one of the two). Requires write capability behind the API key. Reversible.",
     args: [
       { name: "user_id",
         describe:
@@ -1434,7 +1434,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/list/add_member",
     write: true,
     description:
-      "Adds one account to a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the change landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed.",
+      "Adds one account to a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the change landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reversible.",
     args: [
       { name: "list_id",
         describe:
@@ -1450,7 +1450,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/list/remove_member",
     write: true, destructive: true,
     description:
-      "Removes one account from a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: pruning accounts that have gone quiet from a curated List. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the removal landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was not a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed.",
+      "Removes one account from a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: pruning accounts that have gone quiet from a curated List. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the removal landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was not a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reversible.",
     args: [
       { name: "list_id",
         describe:
@@ -1504,7 +1504,7 @@ export const TOOL_OVERRIDES = [
           "Optional. Browser User-Agent to send with this session's requests. Defaults to a current Chrome UA." },
       { name: "proxy_url",
         describe:
-          "Optional. HTTP or SOCKS proxy URL to route this session's traffic through, e.g. 'http://user:pass@host:port'." },
+          "Optional. HTTP or SOCKS proxy URL to route this session's traffic through, in the form scheme://user:pass@host:port." },
     ],
   },
   {
@@ -1571,7 +1571,7 @@ export const TOOL_OVERRIDES = [
       // not merely the one login call.
       { name: "proxy_url",
         describe:
-          "Optional. HTTP or SOCKS proxy URL to perform the login through, e.g. 'http://user:pass@host:port'. Stored with the session and reused for its later requests. Absent: the login runs directly from the service's own IP. X treats datacenter logins as automated, so a residential proxy fares better." },
+          "Optional. HTTP or SOCKS proxy URL to perform the login through, in the form scheme://user:pass@host:port. Stored with the session and reused for its later requests. Absent: the login runs directly from the service's own IP. X treats datacenter logins as automated, so a residential proxy fares better." },
       { name: "user_agent",
         describe:
           "Optional. Browser User-Agent to mint and use the session with. Defaults to a current Chrome UA. A mismatch between the UA and the environment the account normally signs in from is itself a signal to X." },
@@ -1792,7 +1792,7 @@ export const TOOL_OVERRIDES = [
           "Optional boolean. true delivers the account's replies as well as its own posts, which is the default and what every monitor has done; false holds replies back and delivers only the account's own posts. A real boolean is required: the string \"false\" and the number 0 are rejected with a 400 rather than coerced, because coercing them would quietly give the opposite of what was typed, and the wrong answer here is invisible since it looks exactly like the account not having posted." },
       { name: "domain_filter", required: false,
         describe:
-          "Optional. A bare hostname ('example.com') or a full URL ('https://example.com/blog') that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric." },
+          "Optional. A bare hostname ('example.com') or a full URL with scheme and path (e.g. example.com/blog over https) that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric." },
     ],
   },
   {
@@ -1922,7 +1922,7 @@ export const TOOL_OVERRIDES = [
     args: [
       { name: "url", minLength: 1,
         describe:
-          "Your https delivery endpoint, e.g. 'https://example.com/webhooks/twitterapis'. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration." },
+          "Your https delivery endpoint, e.g. example.com/webhooks/twitterapis served over https. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration." },
     ],
   },
   {

@@ -41,7 +41,7 @@ export const TOOLS = [
         "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'.",
       ),
       product: z.enum(["Top","Latest","Media","People"]).optional().describe(
-        "Result ranking mode. 'Latest' = reverse-chronological (best for monitoring). 'Top' = engagement-ranked (best for finding popular tweets, default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts.",
+        "Result ranking mode. 'Latest' = reverse-chronological. 'Top' = engagement-ranked (default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts.",
       ),
       count: z.number().int().min(1).max(200).optional().describe(
         "Requested page size, capped at 200. Advisory on this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested, an upstream limit this API does not control. More results come from paging with next_cursor, not from a larger count.",
@@ -352,7 +352,7 @@ export const TOOLS = [
     name: "twitter_user_tweets_complete",
     path: "/twitter/user/tweets/complete",
     description:
-      "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed a flat $0.0024 per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets-complete",
+      "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed flat per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets-complete",
     shape: {
       user_id: z.string().describe(
         "Numeric Twitter/X user id. Required: this endpoint does not accept a username.",
@@ -631,7 +631,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       fields: z.string().optional().describe(
         "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
@@ -651,7 +651,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Absent, the first page is returned; with it, the next page.",
@@ -677,7 +677,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       fields: z.string().optional().describe(
         "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
@@ -700,7 +700,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       count: z.number().int().min(1).max(200).optional().describe(
         "Requested page size, capped at 200. Advisory on this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested, an upstream limit this API does not control. More results come from paging with next_cursor, not from a larger count.",
@@ -726,7 +726,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       product: z.enum(["Latest","Top"]).optional().describe(
         "Search ordering. 'Latest' (default) is reverse-chronological and cheap. 'Top' is X's ranked ordering and is materially slower upstream. Any other value falls back to Latest.",
@@ -1599,7 +1599,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -1842,7 +1842,7 @@ export const TOOLS = [
     write: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Schedules a tweet to POST PUBLICLY at a future instant from the authenticated account. This is NOT a draft: it goes out on its own at execute_at unless it is cancelled first. execute_at is epoch SECONDS, not milliseconds (Date.now() returns milliseconds, so divide by 1000), and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It has to be strictly in the future. Requires an authenticated X session behind the API key. Returns ok, scheduled_tweet_id, and the execute_at sent. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/scheduled-create",
+      "Schedules a tweet to POST PUBLICLY at a future instant from the authenticated account. This is NOT a draft: it goes out on its own at execute_at unless it is cancelled first. execute_at is epoch SECONDS, not milliseconds (a Date.now() millisecond value is 1000x too large), and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It has to be strictly in the future. Requires an authenticated X session behind the API key. Returns ok, scheduled_tweet_id, and the execute_at sent. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/scheduled-create",
     shape: {
       text: z.string().min(1).describe(
         "The tweet body text that will be published. Required: a scheduled post with no text is refused with 400.",
@@ -1937,13 +1937,13 @@ export const TOOLS = [
     write: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Likes (favorites) a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-favorite",
+      "Likes (favorites) a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-favorite",
     shape: {
       id: z.string().optional().describe(
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -1973,7 +1973,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -1996,13 +1996,13 @@ export const TOOLS = [
     write: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Retweets a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-retweet",
+      "Retweets a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-retweet",
     shape: {
       id: z.string().optional().describe(
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -2032,7 +2032,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -2055,13 +2055,13 @@ export const TOOLS = [
     write: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Bookmarks a tweet to the authenticated account's private bookmarks. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-bookmark",
+      "Bookmarks a tweet to the authenticated account's private bookmarks. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-bookmark",
     shape: {
       id: z.string().optional().describe(
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -2091,7 +2091,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -2114,7 +2114,7 @@ export const TOOLS = [
     write: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Follows a user as the authenticated account, by numeric user_id or by @handle (exactly one of the two). Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/user-follow",
+      "Follows a user as the authenticated account, by numeric user_id or by @handle (exactly one of the two). Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/user-follow",
     shape: {
       user_id: z.string().optional().describe(
         "Numeric user id of the account to follow. Exactly one of user_id or username is required; user_id skips the handle lookup.",
@@ -2173,7 +2173,7 @@ export const TOOLS = [
     write: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Adds one account to a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the change landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-add-member",
+      "Adds one account to a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the change landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-add-member",
     shape: {
       list_id: z.string().describe(
         "Numeric id of a List the session owns, found in the list URL: x.com/i/lists/<list_id>.",
@@ -2203,7 +2203,7 @@ export const TOOLS = [
     destructive: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Removes one account from a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: pruning accounts that have gone quiet from a curated List. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the removal landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was not a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-remove-member",
+      "Removes one account from a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: pruning accounts that have gone quiet from a curated List. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the removal landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was not a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-remove-member",
     shape: {
       list_id: z.string().describe(
         "Numeric id of a List the session owns, found in the list URL: x.com/i/lists/<list_id>.",
@@ -2276,7 +2276,7 @@ export const TOOLS = [
         "Optional. Browser User-Agent to send with this session's requests. Defaults to a current Chrome UA.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. HTTP or SOCKS proxy URL to route this session's traffic through, e.g. 'http://user:pass@host:port'.",
+        "Optional. HTTP or SOCKS proxy URL to route this session's traffic through, in the form scheme://user:pass@host:port.",
       ),
     },
   },
@@ -2315,7 +2315,7 @@ export const TOOLS = [
         "The account's base32 two-factor (TOTP) secret. Required only when the account has 2FA enabled.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. HTTP or SOCKS proxy URL to perform the login through, e.g. 'http://user:pass@host:port'. Stored with the session and reused for its later requests. Absent: the login runs directly from the service's own IP. X treats datacenter logins as automated, so a residential proxy fares better.",
+        "Optional. HTTP or SOCKS proxy URL to perform the login through, in the form scheme://user:pass@host:port. Stored with the session and reused for its later requests. Absent: the login runs directly from the service's own IP. X treats datacenter logins as automated, so a residential proxy fares better.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. Browser User-Agent to mint and use the session with. Defaults to a current Chrome UA. A mismatch between the UA and the environment the account normally signs in from is itself a signal to X.",
@@ -2566,7 +2566,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
       ),
       article_id: z.string().optional().describe(
         "OWNER-ONLY form. The article's own entity id (e.g. 'ArticleEntity:1234567890123456789', or the bare numeric rest_id). Requires an authenticated session. Exactly one of id, url, or article_id is required.",
@@ -2679,7 +2679,7 @@ export const TOOLS = [
         "Optional boolean. true delivers the account's replies as well as its own posts, which is the default and what every monitor has done; false holds replies back and delivers only the account's own posts. A real boolean is required: the string \"false\" and the number 0 are rejected with a 400 rather than coerced, because coercing them would quietly give the opposite of what was typed, and the wrong answer here is invisible since it looks exactly like the account not having posted.",
       ),
       domain_filter: z.string().optional().describe(
-        "Optional. A bare hostname ('example.com') or a full URL ('https://example.com/blog') that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric.",
+        "Optional. A bare hostname ('example.com') or a full URL with scheme and path (e.g. example.com/blog over https) that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric.",
       ),
     },
   },
@@ -2814,7 +2814,7 @@ export const TOOLS = [
       "Registers an HTTPS endpoint to receive signed monitor events. The HMAC signing secret is returned ONLY in this response and cannot be retrieved again; it verifies the X-TwitterAPIs-Signature header on every delivery. Cost: Free per call. Docs: https://docs.twitterapis.com/docs/reference/monitoring/webhook-post",
     shape: {
       url: z.string().min(1).describe(
-        "Your https delivery endpoint, e.g. 'https://example.com/webhooks/twitterapis'. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration.",
+        "Your https delivery endpoint, e.g. example.com/webhooks/twitterapis served over https. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration.",
       ),
     },
   },

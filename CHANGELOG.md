@@ -12,7 +12,8 @@
 - **Guidance moved into the server instructions.** Which tool to pick, how one tool's output
   feeds another (user_id, conversation_id, woeid, media_id), the confirm-before-publishing
   rule for articles and the feedback-drafting policy now live in the MCP `instructions`
-  string, which the client hands its model alongside the tool list.
+  string, which the client hands its model alongside the tool list. It is held to 2048
+  characters (Claude Code truncates past that), with the feedback consent rule first.
 - **Every description states its cost** (`Cost: $0.0008 per call.`, `... per billed item.`
   or `Free per call.`), derived from the spec's `x-cost-usd` and its billing unit, never
   hand-typed; the build fails if the two disagree.
@@ -25,7 +26,9 @@
   Lists every tool through `createServer` and an in-memory MCP client, in both the stdio and
   hosted (`inlineCredentials: false`) modes, and fails on any tool or parameter description
   that names another tool, matches a model-instruction pattern, or carries zero-width, bidi
-  or encoded text. It also checks that the server instructions name only real tools.
+  or encoded text, or links to any host other than twitterapis.com and its docs host. It also
+  checks that the server instructions name only real tools, fit 2048 characters in both
+  modes, and carry the send-consent and no-secrets rules inside that window.
 
 ## 0.21.1 (2026-10-01)
 

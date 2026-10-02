@@ -143,7 +143,7 @@
             "description": "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'."
           },
           "product": {
-            "description": "Result ranking mode. 'Latest' = reverse-chronological (best for monitoring). 'Top' = engagement-ranked (best for finding popular tweets, default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts.",
+            "description": "Result ranking mode. 'Latest' = reverse-chronological. 'Top' = engagement-ranked (default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts.",
             "type": "string",
             "enum": [
               "Top",
@@ -801,7 +801,7 @@
       "write": false,
       "destructive": false,
       "jsonBody": false,
-      "description": "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed a flat $0.0024 per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets-complete",
+      "description": "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed flat per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets-complete",
       "args": [
         "user_id",
         "max",
@@ -1403,7 +1403,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "fields": {
@@ -1446,7 +1446,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "cursor": {
@@ -1500,7 +1500,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "fields": {
@@ -1551,7 +1551,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "count": {
@@ -1607,7 +1607,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "product": {
@@ -3440,7 +3440,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -3856,7 +3856,7 @@
       "write": true,
       "destructive": false,
       "jsonBody": false,
-      "description": "Schedules a tweet to POST PUBLICLY at a future instant from the authenticated account. This is NOT a draft: it goes out on its own at execute_at unless it is cancelled first. execute_at is epoch SECONDS, not milliseconds (Date.now() returns milliseconds, so divide by 1000), and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It has to be strictly in the future. Requires an authenticated X session behind the API key. Returns ok, scheduled_tweet_id, and the execute_at sent. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/scheduled-create",
+      "description": "Schedules a tweet to POST PUBLICLY at a future instant from the authenticated account. This is NOT a draft: it goes out on its own at execute_at unless it is cancelled first. execute_at is epoch SECONDS, not milliseconds (a Date.now() millisecond value is 1000x too large), and a millisecond value is refused with a message naming the unit rather than scheduling the post tens of thousands of years out. It has to be strictly in the future. Requires an authenticated X session behind the API key. Returns ok, scheduled_tweet_id, and the execute_at sent. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/scheduled-create",
       "args": [
         "text",
         "execute_at",
@@ -4031,7 +4031,7 @@
       "write": true,
       "destructive": false,
       "jsonBody": false,
-      "description": "Likes (favorites) a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-favorite",
+      "description": "Likes (favorites) a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-favorite",
       "args": [
         "id",
         "url",
@@ -4049,7 +4049,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4096,7 +4096,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4125,7 +4125,7 @@
       "write": true,
       "destructive": false,
       "jsonBody": false,
-      "description": "Retweets a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-retweet",
+      "description": "Retweets a tweet as the authenticated account. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-retweet",
       "args": [
         "id",
         "url",
@@ -4143,7 +4143,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4190,7 +4190,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4219,7 +4219,7 @@
       "write": true,
       "destructive": false,
       "jsonBody": false,
-      "description": "Bookmarks a tweet to the authenticated account's private bookmarks. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-bookmark",
+      "description": "Bookmarks a tweet to the authenticated account's private bookmarks. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-bookmark",
       "args": [
         "id",
         "url",
@@ -4237,7 +4237,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4284,7 +4284,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4313,7 +4313,7 @@
       "write": true,
       "destructive": false,
       "jsonBody": false,
-      "description": "Follows a user as the authenticated account, by numeric user_id or by @handle (exactly one of the two). Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/user-follow",
+      "description": "Follows a user as the authenticated account, by numeric user_id or by @handle (exactly one of the two). Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/user-follow",
       "args": [
         "user_id",
         "username",
@@ -4407,7 +4407,7 @@
       "write": true,
       "destructive": false,
       "jsonBody": false,
-      "description": "Adds one account to a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the change landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-add-member",
+      "description": "Adds one account to a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: adding each speaker at a conference to a List as they are announced. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the change landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account is already a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-add-member",
       "args": [
         "list_id",
         "user_id",
@@ -4461,7 +4461,7 @@
       "write": true,
       "destructive": true,
       "jsonBody": false,
-      "description": "Removes one account from a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: pruning accounts that have gone quiet from a curated List. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the removal landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was not a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-remove-member",
+      "description": "Removes one account from a Twitter/X List that the registered X session owns, by numeric list id and numeric user id. Example: pruning accounts that have gone quiet from a curated List. Returns ok, action, list_id, user_id, the List's member_count read back from X after the write, and the full list object. member_count confirms the removal landed; it is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply (the account was not a member, the List belongs to another account) comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-remove-member",
       "args": [
         "list_id",
         "user_id",
@@ -4600,7 +4600,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. HTTP or SOCKS proxy URL to route this session's traffic through, e.g. 'http://user:pass@host:port'.",
+            "description": "Optional. HTTP or SOCKS proxy URL to route this session's traffic through, in the form scheme://user:pass@host:port.",
             "type": "string"
           }
         },
@@ -4675,7 +4675,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. HTTP or SOCKS proxy URL to perform the login through, e.g. 'http://user:pass@host:port'. Stored with the session and reused for its later requests. Absent: the login runs directly from the service's own IP. X treats datacenter logins as automated, so a residential proxy fares better.",
+            "description": "Optional. HTTP or SOCKS proxy URL to perform the login through, in the form scheme://user:pass@host:port. Stored with the session and reused for its later requests. Absent: the login runs directly from the service's own IP. X treats datacenter logins as automated, so a residential proxy fares better.",
             "type": "string"
           },
           "user_agent": {
@@ -5143,7 +5143,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
             "type": "string"
           },
           "article_id": {
@@ -5348,7 +5348,7 @@
             "type": "string"
           },
           "domain_filter": {
-            "description": "Optional. A bare hostname ('example.com') or a full URL ('https://example.com/blog') that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric.",
+            "description": "Optional. A bare hostname ('example.com') or a full URL with scheme and path (e.g. example.com/blog over https) that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric.",
             "type": "string"
           }
         },
@@ -5626,7 +5626,7 @@
           "url": {
             "type": "string",
             "minLength": 1,
-            "description": "Your https delivery endpoint, e.g. 'https://example.com/webhooks/twitterapis'. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration."
+            "description": "Your https delivery endpoint, e.g. example.com/webhooks/twitterapis served over https. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration."
           }
         },
         "required": [
