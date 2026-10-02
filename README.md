@@ -358,7 +358,9 @@ Calls are billed to your twitterapis.com account. Most endpoints are $0.0008/cal
 `src/tools.js` is **generated**. Do not edit it. The catalog is built at build time from two committed inputs:
 
 - `test/openapi.snapshot.json`, a vendored copy of the published OpenAPI spec, which supplies the structure: which endpoints exist, which parameters each accepts, whether a parameter is required, and its type.
-- `scripts/tools.overrides.mjs`, hand-authored, which supplies everything the spec cannot express: the tool and argument descriptions a model reads to decide how to call a tool, the cross-field rules ("provide exactly one of `username` or `user_id`"), the per-call credential arguments that travel as `x-*` headers, and the write / destructive / JSON-body flags.
+- `scripts/tools.overrides.mjs`, hand-authored, which supplies everything the spec cannot express: the tool and argument descriptions a model reads to decide how to call a tool, the cross-field rules ("provide exactly one of `username` or `user_id`"), the per-call credential arguments that travel as `x-*` headers, and the write / destructive / JSON-body flags. Each description's `Cost:` sentence and `Docs:` link are derived from the spec.
+
+Descriptions state product facts only: what a tool returns, takes and costs. They never name another tool and never instruct the model; guidance on which tool to use when, how one tool's output feeds another, and when to draft feedback lives in the server instructions (`INSTRUCTIONS` in `src/server.js`). `test/description-compliance.mjs` enforces this on every tool and parameter description a client lists, in both the stdio and hosted modes.
 
 The spec is vendored on purpose. Nothing is fetched at install time or at server boot, so the published package is a fixed artifact rather than one that depends on a hostname still answering.
 
@@ -368,7 +370,7 @@ npm run build             # regenerate src/tools.js
 npm test                  # gates, incl. "src/tools.js matches the generator"
 ```
 
-`npm test` fails if `src/tools.js` was hand-edited or left stale, if the catalog and the live spec disagree, or if the tool list and this README disagree.
+`npm test` fails if `src/tools.js` was hand-edited or left stale, if the catalog and the live spec disagree, if the tool list and this README disagree, or if a description carries a model instruction, another tool's name, or hidden text (`npm run check:description-compliance`).
 
 ## License
 

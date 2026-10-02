@@ -2,7 +2,7 @@
 // directory-listed server (feedback 538e90b5), without touching twitter_customer_session,
 // whose own payload IS the credentials. Every tool also names its docs page.
 import assert from "node:assert/strict";
-import { createServer } from "../src/server.js";
+import { createServer, PER_CALL_CREDENTIALS_SENTENCE } from "../src/server.js";
 import { TOOLS } from "../src/tools.js";
 
 const keys = (t) => Object.keys((t.inputSchema && t.inputSchema.shape) || t.inputSchema || {});
@@ -33,7 +33,15 @@ ok("hosted server drops smuggled cookies a client sends anyway");
 assert.ok(!hosted.twitter_customer_session.description.includes("per-call without registering"));
 ok("hosted customer_session description no longer promises per-call creds");
 
-const offering = Object.entries(hosted).filter(([name, t]) => name !== "twitter_customer_session" && /pass auth_token|auth_token\/ct0 (per-call|for this call)/.test(t.description || "")).map(([name]) => name);
+// The default server offers per-call cookies in exactly one sentence (PER_CALL_CREDENTIALS_SENTENCE);
+// the hosted server strips it. Positive control first: the default server must still carry it,
+// or the strip check below proves nothing.
+const offersDefault = Object.entries(open).filter(([, t]) => (t.description || "").includes(PER_CALL_CREDENTIALS_SENTENCE)).map(([name]) => name);
+assert.ok(offersDefault.length >= 2, `only ${offersDefault.length} default descriptions carry the per-call sentence`);
+ok(`default server: ${offersDefault.length} descriptions offer per-call cookies`);
+// The second regex is the hosted backend's own check (twitterapis-backend mcp.test.ts OFFER).
+const OFFER = /\b(accepts?|pass(es)?)\b[^.]{0,40}(auth_token|ct0|session cookies|per-call credentials)/i;
+const offering = Object.entries(hosted).filter(([name, t]) => name !== "twitter_customer_session" && (/pass auth_token|auth_token\/ct0 (per-call|for this call)|[Pp]er-call auth_token/.test(t.description || "") || OFFER.test(t.description || ""))).map(([name]) => name);
 assert.deepEqual(offering, []);
 ok("no hosted tool description offers per-call cookies");
 

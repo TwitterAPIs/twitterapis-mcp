@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.22.0 (2026-10-02)
+
+### Changed
+
+- **Tool and parameter descriptions state product facts only.** Every description now says
+  what the tool returns, takes and costs, and nothing else: no instructions to the model
+  (should, never, always, ask the user, use X instead), no other tool's name, and no hidden
+  or encoded text, as the Claude Connectors Directory requires. Tool names, parameters,
+  schemas, annotations and behaviour are unchanged.
+- **Guidance moved into the server instructions.** Which tool to pick, how one tool's output
+  feeds another (user_id, conversation_id, woeid, media_id), the confirm-before-publishing
+  rule for articles and the feedback-drafting policy now live in the MCP `instructions`
+  string, which the client hands its model alongside the tool list.
+- **Every description states its cost** (`Cost: $0.0008 per call.`, `... per billed item.`
+  or `Free per call.`), derived from the spec's `x-cost-usd` and its billing unit, never
+  hand-typed; the build fails if the two disagree.
+- `twitter_grok_chat` says plainly that its reply is text and JSON only, with no image field,
+  and `image_count` says a generated image is not returned.
+
+### Added
+
+- **`test/description-compliance.mjs`** (in `npm test`, or `npm run check:description-compliance`).
+  Lists every tool through `createServer` and an in-memory MCP client, in both the stdio and
+  hosted (`inlineCredentials: false`) modes, and fails on any tool or parameter description
+  that names another tool, matches a model-instruction pattern, or carries zero-width, bidi
+  or encoded text. It also checks that the server instructions name only real tools.
+
 ## 0.21.1 (2026-10-01)
 
 ### Changed

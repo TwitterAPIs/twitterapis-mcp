@@ -145,14 +145,38 @@ export function hintFor(status, path) {
 }
 
 // Standing instructions the client hands its model alongside the tool list.
-// This is the trigger list for feedback, in the place a model actually reads.
-export const INSTRUCTIONS =
-  "twitterapis.com MCP server. Read tools cost credits per call (most $0.0008); account, monitoring and feedback tools are free. " +
-  "If a twitterapis tool call fails with an error other than 401/402/409/429 and the user has to work around it, if the user asks for something no twitterapis tool covers, " +
-  "if a documented field comes back empty or wrong, or if the user is clearly frustrated with a result, draft a report with twitter_feedback_send (action \"draft\"). " +
-  "Drafting is local and silent; never send a draft unless the user names it after reviewing action \"list\". " +
+//
+// THIS is where guidance lives, and only here. Tool and parameter descriptions state
+// product facts (what a tool returns, takes and costs) and never name another tool or
+// tell the model what to do: the Connectors Directory attestation requires it, and
+// test/description-compliance.mjs enforces it on every description a client lists.
+// Which tool to pick, how one tool's output feeds another, the feedback-drafting
+// policy and the confirm-before-publishing rule therefore belong in this string,
+// which the directory permits a server to use for guiding the model.
+export const INSTRUCTIONS = [
+  "twitterapis.com MCP server. Read tools cost credits per call (most $0.0008; each description states its cost); account, monitoring and feedback tools are free.",
+  // Choosing between sibling tools.
+  "Choosing: twitter_user_status (not twitter_user_info) tells a suspended or deleted account from a typo. twitter_user_search ignores bios; for bios, filter twitter_user_followers or twitter_advanced_search results.",
+  "twitter_user_tweets includes replies and retweets (filter on is_reply/is_retweet); for a back-catalogue repeat twitter_user_tweets_complete with next_cursor until it is null, never stopping on count.",
+  "twitter_list_tweets is the filterable List feed without retweets; twitter_list_timeline is X's native feed. twitter_community_search yields the id the other community tools take; list moderators with twitter_community_moderators, not a filtered twitter_community_members page.",
+  "twitter_tweet_quotes is search-backed: say so when reporting its count, give quote_count from twitter_tweet_detail as the true total, and discard a page whose quote_matched is 0. Prefer the _batch tools to looping per account, one batch at a time per key.",
+  // Chaining one tool's output into another.
+  "Chaining: twitter_user_info gives the numeric user_id that twitter_user_likes, twitter_user_tweets_complete, twitter_community_memberships, twitter_dm_send and the list member tools need. twitter_dm_list gives conversation_id for twitter_dm_conversation; twitter_trends_locations gives woeid for twitter_trends. twitter_media_upload gives media_id for tweets, drafts, scheduled posts and article covers; poll twitter_media_status for video until succeeded. twitter_monitor_create delivers to webhooks from twitter_monitor_webhook_create, whose secret is shown once: store it.",
+  // Acting as the user's X account.
+  "Writes act as the X session linked with twitter_customer_session or twitter_user_login (check with twitter_customer_session_status); never echo credential values. twitter_draft_create never posts; twitter_scheduled_create publishes on its own at execute_at (epoch seconds), so check twitter_scheduled_list first. Confirm with the user before twitter_article_publish: its public announcement tweet stays up after twitter_article_unpublish and only twitter_article_delete removes it. Before twitter_update_avatar or twitter_update_banner, save the current image from twitter_user_info; X keeps no history.",
+  // Feedback.
+  "Feedback: if a twitterapis tool call fails with an error other than 401/402/409/429 and the user has to work around it, if the user asks for something no twitterapis tool covers, " +
+    "if a documented field comes back empty or wrong, or if the user is clearly frustrated with a result, draft a report with twitter_feedback_send (action \"draft\"). " +
+    "Drafting is local and silent: no confirmation, not announced mid-task, one draft per issue, details as four bullets (What happened, What the user said verbatim, Repro, Evidence), facts only, no secrets. " +
+    "Never send a draft unless the user names it after reviewing action \"list\"; send only the ids the user named.",
   "Before drafting a report that a parameter is IGNORED or a field is EMPTY, re-run the call with a distinctive value that could only match if the parameter was honoured, and with the phrase quoted; " +
-  "if either comes back on topic the issue is ranking or matching, so title it that way and say what the control showed.";
+    "if either comes back on topic the issue is ranking or matching, so title it that way and say what the control showed.",
+].join(" ");
+
+// The one sentence a description uses to offer per-call X cookies. A hosted server
+// (createServer({ inlineCredentials: false })) hides those args, so it strips this
+// sentence too; descriptions must use exactly this wording for the strip to work.
+export const PER_CALL_CREDENTIALS_SENTENCE = " Per-call auth_token and ct0 are also accepted.";
 
 /**
  * Build one server for one caller.
@@ -422,9 +446,7 @@ export function createServer({
     }
     if (!inlineCredentials) {
       // Nothing in a hosted description may offer per-call cookies the schema no longer takes.
-      description = description
-        .replace(" Most tools also accept auth_token/ct0 per-call without registering.", "")
-        .replace(/, or pass auth_token\/ct0 for this call/g, "");
+      description = description.split(PER_CALL_CREDENTIALS_SENTENCE).join("");
     }
     server.registerTool(
       tool.name,
