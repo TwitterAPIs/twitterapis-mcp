@@ -10,7 +10,7 @@
 // named to POST /feedback (free, not metered); "discard" drops them.
 //
 // The SERVER INSTRUCTIONS (INSTRUCTIONS in src/server.js) name the trigger moments
-// and the four-bullet format; the tool description states only what the tool does,
+// and the three-bullet format; the tool description states only what the tool does,
 // because a directory-listed description may not instruct the model. This file enforces the same
 // rules mechanically so a draft that reaches the server is well-formed, and it
 // auto-attaches the evidence the server already holds (the last failing call,

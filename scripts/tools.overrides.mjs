@@ -843,7 +843,7 @@ export const TOOL_OVERRIDES = [
   // high-signal moment into a local queue (src/feedback.js) and nothing is sent
   // until the user reviews and names the drafts to send. Free, not metered,
   // zero-rated in billing like account/* and the monitoring tools. The
-  // drafting POLICY (when to draft, the four-bullet format, send only named ids)
+  // drafting POLICY (when to draft, the three-bullet format, send only named ids)
   // lives in INSTRUCTIONS in src/server.js; the description below states only
   // what each action does. The `local` handler owns the queue;
   // `action` and `ids` never reach the API.
