@@ -1403,7 +1403,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "fields": {
@@ -1446,7 +1446,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "cursor": {
@@ -1500,7 +1500,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "fields": {
@@ -1551,7 +1551,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "count": {
@@ -1607,7 +1607,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "product": {
@@ -3440,7 +3440,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4049,7 +4049,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4096,7 +4096,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4143,7 +4143,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4190,7 +4190,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4237,7 +4237,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -4284,7 +4284,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "auth_token": {
@@ -5143,7 +5143,7 @@
             "type": "string"
           },
           "url": {
-            "description": "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+            "description": "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
             "type": "string"
           },
           "article_id": {
@@ -5348,7 +5348,7 @@
             "type": "string"
           },
           "domain_filter": {
-            "description": "Optional. A bare hostname ('example.com') or a full URL with scheme and path (e.g. example.com/blog over https) that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric.",
+            "description": "Optional. A bare hostname ('example.com') or a full URL ('https://example.com/blog') that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric.",
             "type": "string"
           }
         },
@@ -5626,7 +5626,7 @@
           "url": {
             "type": "string",
             "minLength": 1,
-            "description": "Your https delivery endpoint, e.g. example.com/webhooks/twitterapis served over https. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration."
+            "description": "Your https delivery endpoint, e.g. 'https://example.com/webhooks/twitterapis'. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration."
           }
         },
         "required": [

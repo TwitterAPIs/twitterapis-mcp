@@ -95,6 +95,15 @@ export const SIBLING_PATTERNS = [
 // (b) External instruction sources: any link that is not one of our own documented hosts.
 export const OWN_HOSTS = new Set(["twitterapis.com", "www.twitterapis.com", "docs.twitterapis.com", "api.twitterapis.com"]);
 const LINK = /https?:\/\/[^\s"'<>)\]]+/gi;
+// INPUT-FORMAT EXAMPLES ARE NOT INSTRUCTION SOURCES (review 2026-10-02). Writing an
+// example URL without its scheme made inputs ambiguous (a copied bare host 400s), so
+// these documentation placeholders are allowed WITH https://: the RFC 2606 example
+// domains, the proxy placeholder host, and the exact x.com tweet-URL input format.
+const EXAMPLE_HOSTS = new Set(["example.com", "example.org", "example.net", "host"]);
+const TWEET_URL_FORMAT = /^https:\/\/x\.com\/[A-Za-z0-9_]{1,15}\/status\/\d+$/;
+function isFormatExample(url, host) {
+  return EXAMPLE_HOSTS.has(host) || (host === "x.com" && TWEET_URL_FORMAT.test(url));
+}
 
 // (c) Hidden or encoded text.
 const INVISIBLE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F­؜᠎​-‏‪-‮⁠-⁤⁦-⁯﻿￹-￻]|[\u{E0000}-\u{E007F}]/u;
@@ -125,7 +134,9 @@ export function findingsFor(toolName, text, toolNames = new Set()) {
   }
   for (const m of s.matchAll(LINK)) {
     const host = m[0].replace(/^https?:\/\/(?:[^@/]*@)?/i, "").split(/[/:?#]/)[0].toLowerCase();
-    if (!OWN_HOSTS.has(host)) out.push({ kind: "model-instruction", match: `foreign link ${m[0].slice(0, 60)}` });
+    if (!OWN_HOSTS.has(host) && !isFormatExample(m[0].replace(/[.,;]+$/, ""), host)) {
+      out.push({ kind: "model-instruction", match: `foreign link ${m[0].slice(0, 60)}` });
+    }
   }
   const inv = s.match(INVISIBLE);
   if (inv) out.push({ kind: "hidden", match: `U+${inv[0].codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}` });

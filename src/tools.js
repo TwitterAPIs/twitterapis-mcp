@@ -631,7 +631,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       fields: z.string().optional().describe(
         "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
@@ -651,7 +651,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Absent, the first page is returned; with it, the next page.",
@@ -677,7 +677,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       fields: z.string().optional().describe(
         "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
@@ -700,7 +700,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       count: z.number().int().min(1).max(200).optional().describe(
         "Requested page size, capped at 200. Advisory on this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested, an upstream limit this API does not control. More results come from paging with next_cursor, not from a larger count.",
@@ -726,7 +726,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       product: z.enum(["Latest","Top"]).optional().describe(
         "Search ordering. 'Latest' (default) is reverse-chronological and cheap. 'Top' is X's ranked ordering and is materially slower upstream. Any other value falls back to Latest.",
@@ -1599,7 +1599,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -1943,7 +1943,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -1973,7 +1973,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -2002,7 +2002,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -2032,7 +2032,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -2061,7 +2061,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -2091,7 +2091,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -2566,7 +2566,7 @@ export const TOOLS = [
         "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
       ),
       url: z.string().optional().describe(
-        "Full tweet URL with its https scheme, e.g. x.com/elonmusk/status/1789012345678901234. Exactly one of id or url is required.",
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
       ),
       article_id: z.string().optional().describe(
         "OWNER-ONLY form. The article's own entity id (e.g. 'ArticleEntity:1234567890123456789', or the bare numeric rest_id). Requires an authenticated session. Exactly one of id, url, or article_id is required.",
@@ -2679,7 +2679,7 @@ export const TOOLS = [
         "Optional boolean. true delivers the account's replies as well as its own posts, which is the default and what every monitor has done; false holds replies back and delivers only the account's own posts. A real boolean is required: the string \"false\" and the number 0 are rejected with a 400 rather than coerced, because coercing them would quietly give the opposite of what was typed, and the wrong answer here is invisible since it looks exactly like the account not having posted.",
       ),
       domain_filter: z.string().optional().describe(
-        "Optional. A bare hostname ('example.com') or a full URL with scheme and path (e.g. example.com/blog over https) that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric.",
+        "Optional. A bare hostname ('example.com') or a full URL ('https://example.com/blog') that restricts delivery to only the new posts that link to that host or a subdomain of it (e.g. 'example.com' matches both example.com and blog.example.com). Normalized server-side: lowercased, scheme/path/query/fragment/leading www./trailing :port stripped. Absent: no filter, the default (every new post delivered). Rejected with a 400 if what remains after normalization is not a valid hostname shape. A post with no matching link is filtered out of delivery, not silently dropped: it still advances the monitor's cursor and counts toward the account's tweets_domain_filtered health metric.",
       ),
     },
   },
@@ -2814,7 +2814,7 @@ export const TOOLS = [
       "Registers an HTTPS endpoint to receive signed monitor events. The HMAC signing secret is returned ONLY in this response and cannot be retrieved again; it verifies the X-TwitterAPIs-Signature header on every delivery. Cost: Free per call. Docs: https://docs.twitterapis.com/docs/reference/monitoring/webhook-post",
     shape: {
       url: z.string().min(1).describe(
-        "Your https delivery endpoint, e.g. example.com/webhooks/twitterapis served over https. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration.",
+        "Your https delivery endpoint, e.g. 'https://example.com/webhooks/twitterapis'. Private, loopback, link-local, and metadata IPs are refused, re-checked at every delivery, not just at registration.",
       ),
     },
   },
