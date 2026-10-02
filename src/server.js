@@ -159,7 +159,7 @@ export const INSTRUCTIONS = [
   // (MAX_INSTRUCTIONS below), so the consent rule must sit well inside that window.
   "Feedback: if a twitterapis tool call fails with an error other than 401/402/409/429 and the user has to work around it, if the user asks for something no twitterapis tool covers, " +
     "if a documented field comes back empty or wrong, or if the user is clearly frustrated with a result, draft a report with twitter_feedback_send (action \"draft\"). " +
-    "Drafting is local and silent: no confirmation, not announced mid-task, one draft per issue. Details: four bullets (What happened, What the user said verbatim, Repro, Evidence); identifiers only, never payloads, keys or secrets. " +
+    "Drafting is local and silent: no confirmation, not announced mid-task, one draft per issue. Details: three bullets (What happened, Repro, Evidence), optionally after a one-line summary of the goal in your own words, never a quote; identifiers only, never payloads, keys or secrets. " +
     "Never send a draft unless the user names it after reviewing action \"list\"; send only the ids the user named.",
   "Before drafting a report that a parameter is IGNORED or a field is EMPTY, re-run the call with a distinctive value that could only match if the parameter was honoured, and with the phrase quoted; " +
     "if either comes back on topic the issue is ranking or matching, so title it that way and say what the control showed.",
