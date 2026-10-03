@@ -44,7 +44,12 @@ const client = await connect();
 
   for (const r of resources) {
     assert.ok(r.description && r.description.length > 80, `${r.uri} needs a real description`);
-    assert.equal(r.mimeType, PLAYBOOK_MIME);
+    // HARDCODED, NOT THE CONSTANT. Comparing PLAYBOOK_MIME to itself is a
+    // tautology: a review flipped the constant to text/plain and this was the one
+    // structural mutation of twelve the suite missed, while its own label claimed
+    // it had checked a markdown mime type.
+    assert.equal(r.mimeType, "text/markdown");
+    assert.equal(r.mimeType, PLAYBOOK_MIME, "the constant and the asserted literal have diverged");
     assert.ok(r.title, `${r.uri} needs a title`);
   }
   ok("every listed playbook carries a title, a markdown mime type and a description");
@@ -84,7 +89,7 @@ const client = await connect();
     const { contents } = await client.readResource({ uri: p.uri });
     assert.equal(contents.length, 1);
     assert.equal(contents[0].uri, p.uri);
-    assert.equal(contents[0].mimeType, PLAYBOOK_MIME);
+    assert.equal(contents[0].mimeType, "text/markdown");
     const text = contents[0].text;
     assert.ok(text.length > 800, `${p.uri} body is ${text.length} bytes; a stub, not a playbook`);
     assert.match(text, /^# /, `${p.uri} body must open with a heading`);
@@ -193,7 +198,19 @@ const client = await connect();
   assert.ok(Object.keys(loginTool.shape).includes("proxy_url"), "login must take proxy_url");
   const perCall = TOOLS.filter((t) => (t.headerArgs || []).includes("proxy_url"));
   assert.ok(perCall.length > 0, "some tools must take a per-call proxy_url header");
-  assert.ok(text.includes(String(perCall.length)), `the egress playbook must state the real per-call tool count (${perCall.length})`);
+  // THE NUMBER THE SENTENCE ACTUALLY CLAIMS. perCall.length is 47 (tools that
+  // DECLARE proxy_url), but the playbook says "42 of the 47 session tools ...
+  // send them as request headers": 5 of the 47 are jsonBody tools whose args go
+  // in the body, not x-* headers. The old assert looked for "47" and was
+  // satisfied by the incidental 47 later in the same sentence, so 3-of-the-47
+  // and 999-of-the-47 both passed. Egress is the security-relevant surface here,
+  // so the claim gets pinned to the pair, derived from the catalog.
+  const headerBorne = perCall.filter((t) => !t.jsonBody).length;
+  assert.ok(
+    text.includes(`${headerBorne} of the ${perCall.length} session tools`),
+    `the egress playbook must state "${headerBorne} of the ${perCall.length} session tools". Got: ${text.slice(0, 300)}`,
+  );
+  assert.ok(headerBorne !== perCall.length, "if these were equal the assertion above could not distinguish them");
   ok(`the egress playbook's three attachment points all exist in the catalog (per-call on ${perCall.length} tools)`);
 }
 

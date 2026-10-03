@@ -13,6 +13,21 @@
 import { createRequire } from "node:module";
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "./tools.js";
+
+// COUNTS ARE DERIVED FROM THE CATALOG, NEVER TYPED. A review found the paywall
+// payload calling the pooled TOOL count a count of pooled READS: 65 pooled tools
+// are 52 reads and 13 writes, and the sentence then listed those same 13 writes
+// again as "the free account, monitoring and feedback tools". The buyer-facing
+// number was overstated by 13 and its composition was wrong.
+//
+// The same review mutated the login price in two published strings from one cent
+// to nine dollars and the whole suite stayed green, so a hand-typed number here
+// is a number nobody is checking. Deriving them is the fix that holds: the prose
+// cannot drift from the catalog because there is nothing left to drift.
+const POOLED = TOOLS.filter((t) => !t.headerArgs || t.headerArgs.length === 0);
+const POOLED_READS = POOLED.filter((t) => !t.write).length;
+const POOLED_FREE_WRITES = POOLED.filter((t) => t.write).length;
+const SESSION_TOOLS = TOOLS.filter((t) => (t.headerArgs || []).includes("auth_token")).length;
 import { createFeedbackHandler } from "./feedback.js";
 import { PLAYBOOKS, PLAYBOOK_MIME, PROVENANCE_URI_TEMPLATE, provenanceFor } from "./playbooks.js";
 
@@ -84,7 +99,7 @@ export function paywallFor(kind) {
         { step: 3, what: "set TWITTERAPIS_KEY in the MCP client config and restart the client" },
         { step: 4, what: "retry this call" },
       ],
-      unlocks: "the 65 pooled reads (search, user lookups, followers, tweets, threads, trends, communities, spaces) and the free account, monitoring and feedback tools. The 47 account tools additionally need a linked X session, and a priced read additionally needs credits",
+      unlocks: `the ${POOLED_READS} pooled reads (search, user lookups, followers, tweets, threads, trends, communities, spaces), plus ${POOLED_FREE_WRITES} free account, monitoring and feedback tools that need no X session. The ${SESSION_TOOLS} account tools additionally need a linked X session, and a priced read additionally needs credit.`,
       retry: "same call, after the key is set",
     };
   }
@@ -147,8 +162,14 @@ export function paywallFor(kind) {
           note: "free, returns in a normal request, and validates the cookies against X before storing them",
         },
         {
+          // SAME STEP NUMBER, DELIBERATELY NOT. These two are ALTERNATIVES, and
+          // sharing index 2 meant an agent walking `steps` in order could run
+          // both: the password route costs a cent, burns one of ten hourly
+          // attempts, and can hang 120s against a 30s default timeout. The
+          // branch now lives in the structure, not only in the prose.
           step: 2,
-          what: "or link with a username and password",
+          alternative_to: "twitter_customer_session",
+          what: "OR, if no cookies are held, link with a username and password",
           tool: "twitter_user_login",
           note: "$0.01 billed on success only, capped at 10 attempts an hour, and takes up to 120s against a 30s default call timeout; a two-factor account needs totp_secret in the same call, because no later code can be submitted",
         },
@@ -506,7 +527,7 @@ export function createServer({
       const record = provenanceFor(String(toolName || ""), TOOLS);
       if (!record) {
         throw new Error(
-          `No tool named "${toolName}" in this catalog, so there is no row it could have produced. The catalog holds ${TOOLS.length} tools; tools/list has the names.`,
+          `No tool named "${String(toolName).slice(0, 120)}" in this catalog, so there is no row it could have produced. The catalog holds ${TOOLS.length} tools; tools/list has the names.`,
         );
       }
       return {

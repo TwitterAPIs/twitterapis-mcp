@@ -155,4 +155,42 @@ ok("every paywall URL is https on www.twitterapis.com");
   ok("control: the step list reaches a caller in both the text and structuredContent of a real 409");
 }
 
+// ── PUBLISHED NUMBERS ARE PINNED TO THE CATALOG ────────────────────────────
+// A review mutated the login price from one cent to nine dollars in two
+// published strings, and changed the pooled count by a factor of 100, and this
+// suite stayed green on all of it. The only assertions touching `unlocks` were a
+// length floor and two word regexes, neither of which can see a number.
+//
+// It also found a real defect of exactly that class shipping: the payload called
+// the pooled TOOL count a count of pooled READS, which overstated the buyer
+// facing number by the 13 free writes and then listed those same writes again.
+//
+// These cases derive every expected value from TOOLS, so they follow the catalog
+// instead of restating today's value of it. A literal here would stop testing
+// the moment the catalog moved, which is the failure this is meant to prevent.
+{
+  const pooled = TOOLS.filter((t) => !t.headerArgs || t.headerArgs.length === 0);
+  const reads = pooled.filter((t) => !t.write).length;
+  const freeWrites = pooled.filter((t) => t.write).length;
+  const sessionTools = TOOLS.filter((t) => (t.headerArgs || []).includes("auth_token")).length;
+  const u = paywallFor("no_key").unlocks;
+
+  assert.ok(
+    u.includes(`the ${reads} pooled reads`),
+    `unlocks must state the derived pooled READ count (${reads}), not the tool count. Got: ${u}`,
+  );
+  assert.ok(
+    u.includes(`${freeWrites} free account, monitoring and feedback tools`),
+    `unlocks must state the derived free-write count (${freeWrites}). Got: ${u}`,
+  );
+  assert.ok(
+    u.includes(`The ${sessionTools} account tools`),
+    `unlocks must state the derived session-tool count (${sessionTools}). Got: ${u}`,
+  );
+  // THE NUMBERS MUST NOT COLLIDE, or a wrong one could satisfy the right assert.
+  assert.ok(reads !== pooled.length, "a read count equal to the pooled count would make this test blind");
+  assert.ok(reads + freeWrites === pooled.length, `reads + free writes must account for every pooled tool: ${reads} + ${freeWrites} != ${pooled.length}`);
+  ok("the unlocks sentence states catalog-derived counts, and reads exclude the free writes");
+}
+
 console.log(`\npaywall: ${n} passed, 0 failed`);
