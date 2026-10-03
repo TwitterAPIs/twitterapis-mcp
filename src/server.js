@@ -380,8 +380,42 @@ export function createServer({
         headers["x-auth-token"] = auth_token;
         headers["x-ct0"] = ct0;
         if (user_agent) headers["x-user-agent"] = user_agent;
-        if (proxy_url) headers["x-proxy-url"] = proxy_url;
       }
+      // PROXY IS EGRESS, NOT A CREDENTIAL, so it is NOT gated on the cookie pair.
+      //
+      // It used to be. proxy_url was destructured off the args (so it could not
+      // travel as a query param either) and the header was only set INSIDE the
+      // `auth_token && ct0` branch, so a caller who sent proxy_url alone got a
+      // normal 200 answered over the DEFAULT egress with nothing in the response
+      // saying their proxy had been dropped. Reported as feedback b9bc1db5.
+      //
+      // The API honours it without a session on the paths that resolve caller
+      // egress: readCallerProxy (session/write-egress.ts) reads `?proxy=`,
+      // `x-proxy-url` and body `proxy`/`proxy_url` with no credential
+      // precondition. The cookie pair governs WHOSE SESSION acts, which is a
+      // separate question from WHICH EGRESS the call leaves by, and conflating
+      // the two is what produced the silent drop.
+      //
+      // WHAT THE API DOES WITH IT, stated precisely because the first version of
+      // this comment got it WRONG and a false generalization here is dangerous.
+      //
+      // It said "on a READ the header is sent and currently ignored upstream".
+      // That is only true when the proxy travels ALONE. With the cookie pair:
+      // inlineFromRequest returns `proxyUrl: h("x-proxy-url")` alongside the
+      // credentials, buildEphemeralSession copies it onto the ephemeral session
+      // as `proxyUrl`, and a READ then dials that session, which is precisely
+      // why customer.ts guards `session.proxyUrl` with assertPublicProxy on the
+      // read branch as well as the write one.
+      //
+      // Believing the old sentence would make that read-side guard look like
+      // dead code, and removing it reopens the SSRF finding it was written for
+      // (a customer pointing the box at 169.254.169.254 or 127.0.0.1 on every
+      // private-data GET). So:
+      //   proxy ALONE          -> honoured on WRITES (readCallerProxy), ignored on reads
+      //   proxy + the pair     -> becomes the ephemeral session's egress, honoured on BOTH
+      // Sending it unconditionally is right either way: the alternative is this
+      // client deciding on the caller's behalf which of our endpoints care.
+      if (proxy_url) headers["x-proxy-url"] = proxy_url;
     }
 
     // A DEPLOY RESTART IS NOT AN ERROR THE USER SHOULD SEE. While the API

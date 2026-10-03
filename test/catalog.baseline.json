@@ -1355,7 +1355,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -2372,7 +2372,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -2411,7 +2411,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -2744,7 +2744,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -2816,7 +2816,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -2887,7 +2887,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -2950,7 +2950,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3021,7 +3021,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3083,7 +3083,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3147,7 +3147,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3209,7 +3209,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3272,7 +3272,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3338,7 +3338,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3402,7 +3402,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3452,7 +3452,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3509,7 +3509,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3553,7 +3553,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3600,7 +3600,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3663,7 +3663,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3732,7 +3732,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3780,7 +3780,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3827,7 +3827,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3907,7 +3907,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -3955,7 +3955,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4002,7 +4002,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4061,7 +4061,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4108,7 +4108,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4155,7 +4155,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4202,7 +4202,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4249,7 +4249,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4296,7 +4296,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4343,7 +4343,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4390,7 +4390,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4440,7 +4440,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4494,7 +4494,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4553,7 +4553,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4723,7 +4723,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4772,7 +4772,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4824,7 +4824,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4879,7 +4879,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4934,7 +4934,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -4992,7 +4992,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -5055,7 +5055,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -5102,7 +5102,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -5159,7 +5159,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -5231,7 +5231,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
@@ -5301,7 +5301,7 @@
             "type": "string"
           },
           "proxy_url": {
-            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
             "type": "string"
           },
           "user_agent": {
