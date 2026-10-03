@@ -1,5 +1,42 @@
 # Changelog
 
+## Unreleased
+
+Not published. The npm release is held while the Connectors Directory listing is in review.
+
+### Added
+
+- **Playbooks over the MCP resource primitive.** `resources/list` now carries five recipes an
+  agent runs with the tools this package already has: `playbook://launch-day-monitor`,
+  `playbook://competitor-follower-outreach`, `playbook://account-audit`,
+  `playbook://link-x-account` and `playbook://residential-egress`. A resource is fetched only
+  when a client asks for it, so none of this costs context until it is read, and none of it costs
+  credits. Registering them makes the server advertise the resources capability for the first
+  time.
+- **Row provenance**, `provenance://tool/{tool_name}`, a resource template returning where a row
+  came from: the REST endpoint and method, read or write, whether the call ran as the caller's
+  linked X account or the service's shared account pool, the per-call price and the docs URL. All
+  of it is derived from the committed catalog. Row-level upstream facts (when the service read it
+  from X, whether an upstream cache answered, which account read it) are not in any response this
+  package receives, so they are reported as absent rather than guessed.
+
+### Changed
+
+- **A blocked call now answers with the sequence, not a sentence.** The structured payload for a
+  missing key, a rejected key, an empty balance and a missing X session gains an ordered `steps`
+  list and an `unlocks` line. The session payload is the one that changes most: step 1 is the free
+  status read, because a session X has rejected is filtered out of the lookup and fails exactly
+  like one that never existed, so nothing else can tell the two apart; the password route states
+  its 120-second server-side ceiling against the 30-second default call timeout and that a
+  two-factor account needs `totp_secret` in the same call; and `cannot_retry` names the outcomes
+  (locked, suspended, confirmation pending, emailed code) that have to be cleared on x.com.
+- **The Connectors Directory gate now reads resource and template descriptions too.**
+  `test/description-compliance.mjs` audited tool descriptions only, which was the whole listed
+  surface until this release. Resource bodies stay exempt: they are returned only for a URI the
+  caller asked for by name, the way the server instructions are, and `test/playbooks.test.mjs`
+  holds them to their own rules instead (every tool they name must exist, and no hidden text).
+
+
 ## 0.22.1 (2026-10-02)
 
 ### Changed

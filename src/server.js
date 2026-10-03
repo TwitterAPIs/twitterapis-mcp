@@ -11,9 +11,10 @@
 // passes it in.
 
 import { createRequire } from "node:module";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "./tools.js";
 import { createFeedbackHandler } from "./feedback.js";
+import { PLAYBOOKS, PLAYBOOK_MIME, PROVENANCE_URI_TEMPLATE, provenanceFor } from "./playbooks.js";
 
 // Single source of truth for the version. Previously this was a literal in two
 // places and drifted: the package shipped 0.5.0 while the MCP handshake and the
@@ -54,6 +55,19 @@ export const SIGNUP_URL = "https://www.twitterapis.com/signup?utm_source=mcp&utm
 export const API_KEYS_URL = "https://www.twitterapis.com/dashboard?utm_source=mcp&utm_medium=tool_error";
 export const TOP_UP_URL = "https://www.twitterapis.com/dashboard/buy-credits?utm_source=mcp&utm_medium=tool_error";
 
+// ONBOARDING IS A SEQUENCE, AND THE SEQUENCE BELONGS IN THE RESULT. Each payload
+// below already named the one page or tool that clears the block. What it did not
+// say was what comes after that, or how to tell two states apart that fail
+// identically, so an agent handed a 409 could only guess between "never linked"
+// and "linked and expired" and could only retry blind through a login whose
+// server-side ceiling (120s) is four times the default call timeout (30s).
+//
+// So every payload now carries `steps`, an ordered list the agent can follow with
+// tools this catalog already lists, and `unlocks`, which states what resolving
+// the block makes available next. `playbook` points at the resource holding the
+// long version, which costs nothing until a client reads it. None of this is a
+// new capability: it is the sequence that was already implied, written down in
+// the one place an agent is already reading.
 export function paywallFor(kind) {
   if (kind === "no_key") {
     return {
@@ -64,6 +78,13 @@ export function paywallFor(kind) {
         "client config, then retry this call.",
       action_url: SIGNUP_URL,
       api_keys_url: API_KEYS_URL,
+      steps: [
+        { step: 1, what: "sign up", where: SIGNUP_URL, note: "free, no card; the account starts with free credit" },
+        { step: 2, what: "copy the key", where: API_KEYS_URL },
+        { step: 3, what: "set TWITTERAPIS_KEY in the MCP client config and restart the client" },
+        { step: 4, what: "retry this call" },
+      ],
+      unlocks: "every read tool: search, user lookups, followers, tweets, threads, trends, communities, spaces, and the free account and monitoring tools",
       retry: "same call, after the key is set",
     };
   }
@@ -75,6 +96,12 @@ export function paywallFor(kind) {
         "connected app was disconnected). Copy a current key from the dashboard and set TWITTERAPIS_KEY, " +
         "or reconnect the app, then retry this call.",
       action_url: API_KEYS_URL,
+      steps: [
+        { step: 1, what: "open the dashboard and check whether the key still exists", where: API_KEYS_URL },
+        { step: 2, what: "copy a current key, or reconnect the app if it was disconnected" },
+        { step: 3, what: "set TWITTERAPIS_KEY in the MCP client config and restart the client" },
+        { step: 4, what: "retry this call" },
+      ],
       retry: "same call, after the key is replaced or the app reconnected",
     };
   }
@@ -85,6 +112,13 @@ export function paywallFor(kind) {
         "The twitterapis.com account is out of credits. Top up (pay as you go, no subscription), then " +
         "retry this call; nothing was charged for the failed request. twitter_account_me shows the balance.",
       action_url: TOP_UP_URL,
+      steps: [
+        { step: 1, what: "read the current balance", tool: "twitter_account_me", note: "free, and the balance it reports is the one the API bills against" },
+        { step: 2, what: "top up", where: TOP_UP_URL, note: "pay as you go, no subscription" },
+        { step: 3, what: "retry this call", note: "the failed request was not charged" },
+      ],
+      unlocks: "the priced read tools; account, monitoring and feedback tools stay free and work at a zero balance",
+      history_tool: "twitter_account_payments",
       retry: "same call, after topping up",
     };
   }
@@ -96,6 +130,41 @@ export function paywallFor(kind) {
         "own X session, and none is linked or the linked one has expired. Link or re-link it with the " +
         "twitter_user_login tool (or twitter_customer_session with auth_token and ct0), then retry this call.",
       next_tool: "twitter_user_login",
+      // A dead session is filtered out of the lookup, so it fails exactly like a
+      // session that never existed. The status read is the only thing that tells
+      // them apart, which is why it is step 1 rather than a footnote.
+      steps: [
+        {
+          step: 1,
+          what: "read the current link state",
+          tool: "twitter_customer_session_status",
+          note: "free; the only way to tell a session that was never linked from one X has since rejected. registered false means never linked; status dead means re-link; status ok with an unexpected username means the wrong account is linked",
+        },
+        {
+          step: 2,
+          what: "link with cookies already held",
+          tool: "twitter_customer_session",
+          note: "free, returns in a normal request, and validates the cookies against X before storing them",
+        },
+        {
+          step: 2,
+          what: "or link with a username and password",
+          tool: "twitter_user_login",
+          note: "$0.01 billed on success only, capped at 10 attempts an hour, and takes up to 120s against a 30s default call timeout; a two-factor account needs totp_secret in the same call, because no later code can be submitted",
+        },
+        {
+          step: 3,
+          what: "confirm the link",
+          tool: "twitter_customer_session_status",
+          note: "status ok with the expected username; after a client-side timeout check this before retrying, because the login may have completed server side",
+        },
+        { step: 4, what: "retry this call" },
+      ],
+      cannot_retry:
+        "A locked, suspended or confirmation-pending account, or an emailed one-time code, has to be cleared on X itself; retrying here does not change those outcomes.",
+      unlocks:
+        "posting, deleting, liking, reposting, bookmarking, following, DMs, drafts, scheduled posts, articles, list membership, profile and media updates, the home timeline, and the bookmark and like histories",
+      playbook: "playbook://link-x-account",
       retry: "same call, after an X session is linked",
     };
   }
@@ -397,6 +466,54 @@ export function createServer({
   }
 
   const server = new McpServer({ name: "twitterapis", version: VERSION }, { instructions: INSTRUCTIONS });
+
+  // ── Resources ──────────────────────────────────────────────────────────────
+  // Playbooks (recipes run with the tools below) and row provenance. Resources,
+  // not tools, because the generated catalog is bijective with the REST contract
+  // and neither of these wraps an endpoint; src/playbooks.js has the reasoning.
+  // Registering them declares the resources capability, which a server with no
+  // resources does not advertise, so a client that lists none today starts
+  // seeing resources/list and resources/read answered.
+  for (const p of PLAYBOOKS) {
+    server.registerResource(
+      p.name,
+      p.uri,
+      { title: p.title, description: p.description, mimeType: PLAYBOOK_MIME },
+      async (uri) => ({ contents: [{ uri: uri.href, mimeType: PLAYBOOK_MIME, text: p.text }] }),
+    );
+  }
+
+  // One template rather than 112 listed resources: a client asks for the
+  // provenance of a tool it has actually called, and resources/list stays the
+  // five playbooks. `list: undefined` keeps the template out of resources/list
+  // while resources/templates/list still advertises its shape.
+  server.registerResource(
+    "tool-provenance",
+    new ResourceTemplate(PROVENANCE_URI_TEMPLATE, { list: undefined }),
+    {
+      title: "Tool provenance",
+      // Worded without the phrase "the tool", which the Connectors Directory gate
+      // reads as a sibling-tool pointer (test/description-compliance.mjs
+      // SIBLING_PATTERNS). The fact is the same; the phrasing names a catalog
+      // entry rather than gesturing at one.
+      description:
+        "Provenance of a row this server returned, keyed by the catalog name that produced it: the REST endpoint and method behind it, whether it was a read or a write, whether the call acted as the caller's linked X account or the service's shared account pool, its per-call price, and its documentation URL.",
+      mimeType: "application/json",
+    },
+    async (uri, variables) => {
+      const raw = variables?.tool_name;
+      const toolName = Array.isArray(raw) ? raw[0] : raw;
+      const record = provenanceFor(String(toolName || ""), TOOLS);
+      if (!record) {
+        throw new Error(
+          `No tool named "${toolName}" in this catalog, so there is no row it could have produced. The catalog holds ${TOOLS.length} tools; tools/list has the names.`,
+        );
+      }
+      return {
+        contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify(record, null, 2) }],
+      };
+    },
+  );
 
   // Handlers for tools that carry local: "<name>" in the catalog. A name the
   // catalog uses and this map lacks is a boot-time failure, never a silent
