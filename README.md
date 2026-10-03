@@ -249,6 +249,48 @@ Link an X account to your key once, so the account-only reads and write actions 
 | `twitter_customer_session_delete` | Revoke that stored session, deleting your `auth_token` + `ct0` from the service. Idempotent and free |
 | `twitter_user_login` | Log in with `username` + `password` (+ `totp_secret` for 2FA); stores the session against your key. Returns a confirmation, never the cookies |
 
+## Playbooks and provenance
+
+Besides tools, the server exposes MCP **resources**. A client lists them with `resources/list` and fetches one with `resources/read`, so nothing here costs context until it is asked for, and none of it costs credits.
+
+### Playbooks
+
+Short recipes an agent runs with the tools above.
+
+| URI | What it covers |
+|---|---|
+| `playbook://launch-day-monitor` | Watching a launch in near real time: monitor and webhook setup before, true counts and amplifiers during, amplifier profiles after |
+| `playbook://competitor-follower-outreach` | Turning another account's followers into a qualified list, then contacting them from your linked account |
+| `playbook://account-audit` | A reproducible read of one account: identity, output mix, reach, engagement, and which numbers share an observation window |
+| `playbook://link-x-account` | The linking sequence: read the current state, pick a route, the login's timing ceiling, the outcomes that need attention on x.com, and what a session unlocks |
+| `playbook://residential-egress` | Outbound address control: the three places a proxy URL attaches, what a URL has to be, and how to read back which source is in force |
+
+### Provenance
+
+`provenance://tool/{tool_name}` returns, as JSON, where a row you already hold came from: the REST endpoint and method behind it, read or write, whether the call ran as your linked X account or the service's shared account pool, the per-call price, and the docs URL.
+
+```
+provenance://tool/twitter_advanced_search
+```
+
+```json
+{
+  "tool": "twitter_advanced_search",
+  "endpoint": "GET /twitter/tweet/advanced_search",
+  "kind": "read",
+  "destructive": false,
+  "served_by": "the service's shared account pool",
+  "cost": "$0.0008 per call",
+  "docs": "https://docs.twitterapis.com/docs/reference/search/tweet-advanced-search"
+}
+```
+
+Row-level upstream provenance (when the service read it from X, whether an upstream cache answered, which account read it) is not in any response this package receives, so it is absent rather than guessed.
+
+### Blocked calls answer with the next steps
+
+A call blocked on a missing key, a rejected key, an empty balance or a missing X session returns a structured payload (in `structuredContent` and appended to the text) carrying an ordered `steps` list, what resolving it `unlocks`, and, for the session case, the playbook URI and the outcomes a retry cannot fix.
+
 ## Usage examples
 
 ### Search for trending AI tweets

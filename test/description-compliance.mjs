@@ -243,6 +243,42 @@ export async function listTools(opts) {
   return { tools, instructions };
 }
 
+// RESOURCES ARE LISTED TOO. The attestation is about what a model reads, and a
+// client shows resource descriptions from resources/list and
+// resources/templates/list beside every tool description. This gate used to read
+// tools only, which was the right question while the server had no resources;
+// the moment it registered some, a description nothing checked would have
+// shipped under the same attestation. A resource BODY is excluded on purpose: it
+// is returned only for a URI the caller asked for by name, the way the server
+// instructions are permitted to guide the model, and naming tools is the whole
+// point of a playbook (test/playbooks.test.mjs holds the bodies to their own
+// rules: every tool they name must exist, and no hidden characters).
+// Five playbooks plus the provenance template. A new resource raises this; a
+// drop to below it is the defect this floor exists to catch.
+export const EXPECTED_RESOURCE_DESCRIPTIONS = 6;
+
+export async function listResourceDescriptions(opts) {
+  const { server } = createServer({ apiKey: "description-compliance", ...opts });
+  const [clientT, serverT] = InMemoryTransport.createLinkedPair();
+  const client = new Client({ name: "description-compliance", version: "0" });
+  await Promise.all([server.connect(serverT), client.connect(clientT)]);
+  const out = [];
+  let cursor;
+  do {
+    const page = await client.listResources(cursor ? { cursor } : {});
+    for (const r of page.resources) out.push({ id: r.uri, where: "resource description", text: r.description || "" });
+    cursor = page.nextCursor;
+  } while (cursor);
+  cursor = undefined;
+  do {
+    const page = await client.listResourceTemplates(cursor ? { cursor } : {});
+    for (const t of page.resourceTemplates) out.push({ id: t.uriTemplate, where: "template description", text: t.description || "" });
+    cursor = page.nextCursor;
+  } while (cursor);
+  await client.close();
+  return out;
+}
+
 export async function audit(opts = {}) {
   const { tools } = await listTools(opts);
   const names = new Set(tools.map((t) => t.name));
@@ -333,6 +369,27 @@ if (isMain) {
     if (findings.length > shown.length) console.error(`    ... ${findings.length - shown.length} more (run with --report)`);
     total += findings.length;
   }
+  // Resource and template descriptions, both modes, same rules as a tool description.
+  for (const [label, opts] of [["default", {}], ["hosted", { inlineCredentials: false }]]) {
+    const items = await listResourceDescriptions(opts);
+    // A floor, not just a non-zero check. The tool pass has one (tools.length <
+    // 100) for the same reason: if one resource silently stopped being
+    // advertised, a bare non-zero test would still read green on the rest.
+    if (items.length < EXPECTED_RESOURCE_DESCRIPTIONS) {
+      total++;
+      console.error(`  \x1b[31m✗ [${label}] ${items.length} resource and template description(s) listed, expected at least ${EXPECTED_RESOURCE_DESCRIPTIONS}; one stopped being advertised\x1b[0m`);
+    }
+    let findings = 0;
+    for (const it of items) {
+      if (!it.text || it.text.length < 40) { total++; findings++; console.error(`  \x1b[31m✗ ${it.id} ${it.where}: missing or too short\x1b[0m`); continue; }
+      for (const f of findingsFor(it.id, it.text)) {
+        total++; findings++;
+        console.error(`  \x1b[31m✗ ${it.id} ${it.where}: ${f.kind} "${f.match}"\x1b[0m`);
+      }
+    }
+    console.log(`  description-compliance [${label} resources]: scanned ${items.length} resource and template descriptions, ${findings} finding(s)`);
+  }
+
   // The guidance moved into the server instructions, so check that it arrived there and
   // that every tool it names still exists (a renamed tool would leave stale guidance).
   const { tools: listed, instructions } = await listTools({});
