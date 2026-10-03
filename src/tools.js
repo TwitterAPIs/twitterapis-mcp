@@ -608,7 +608,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1067,7 +1067,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1088,7 +1088,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1241,7 +1241,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1277,7 +1277,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1313,7 +1313,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1346,7 +1346,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1382,7 +1382,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1412,7 +1412,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1445,7 +1445,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1475,7 +1475,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1508,7 +1508,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1543,7 +1543,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1578,7 +1578,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1608,7 +1608,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1644,7 +1644,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1671,7 +1671,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1698,7 +1698,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1733,7 +1733,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1771,7 +1771,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1798,7 +1798,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1822,7 +1822,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1866,7 +1866,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1893,7 +1893,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1917,7 +1917,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1952,7 +1952,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -1982,7 +1982,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2011,7 +2011,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2041,7 +2041,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2070,7 +2070,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2100,7 +2100,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2129,7 +2129,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2159,7 +2159,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2188,7 +2188,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2218,7 +2218,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2250,7 +2250,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2342,7 +2342,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2366,7 +2366,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2395,7 +2395,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2427,7 +2427,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2456,7 +2456,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2486,7 +2486,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2521,7 +2521,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2548,7 +2548,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2578,7 +2578,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2614,7 +2614,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
@@ -2653,7 +2653,7 @@ export const TOOLS = [
         "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
       ),
       proxy_url: z.string().optional().describe(
-        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
       ),
       user_agent: z.string().optional().describe(
         "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",

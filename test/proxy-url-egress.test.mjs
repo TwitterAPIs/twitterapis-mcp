@@ -37,9 +37,18 @@ async function headersFor(toolName, args) {
 
 const PROXY = "http://user:pw@proxy.example.com:8080";
 
+// THE FIXTURE MUST DECLARE THE PARAMETER. The first version of this file drove a
+// tool with NO headerArgs at all, so every case proved callEndpoint's header
+// logic against a tool that cannot receive proxy_url and could never deliver it
+// from a real client (zod strips unknown keys). It was a fixture that made the
+// suite look green about the 49 tools it never touched. twitter_bookmarks
+// declares headerArgs ["auth_token","ct0","proxy_url","user_agent"], so this
+// exercises a tool that genuinely exposes the parameter.
+const READ_TOOL = "twitter_bookmarks";
+
 (async () => {
   // THE CASE THAT WAS BROKEN. proxy_url alone, no cookies.
-  const alone = await headersFor("twitter_user_info", { userName: "x", proxy_url: PROXY });
+  const alone = await headersFor(READ_TOOL, { proxy_url: PROXY });
   assert.strictEqual(
     alone["x-proxy-url"],
     PROXY,
@@ -50,9 +59,7 @@ const PROXY = "http://user:pw@proxy.example.com:8080";
   ok("proxy_url travels WITHOUT the cookie pair (the reported defect)");
 
   // THE CASE THAT ALREADY WORKED must not regress.
-  const withCookies = await headersFor("twitter_user_info", {
-    userName: "x",
-    proxy_url: PROXY,
+  const withCookies = await headersFor(READ_TOOL, { proxy_url: PROXY,
     auth_token: "a",
     ct0: "c",
   });
@@ -63,7 +70,7 @@ const PROXY = "http://user:pw@proxy.example.com:8080";
 
   // NEGATIVE CONTROL. Without this, both cases above would also pass if the
   // header were set unconditionally to a constant.
-  const none = await headersFor("twitter_user_info", { userName: "x" });
+  const none = await headersFor(READ_TOOL, {});
   assert.strictEqual(
     none["x-proxy-url"],
     undefined,
@@ -73,7 +80,7 @@ const PROXY = "http://user:pw@proxy.example.com:8080";
 
   // THE CREDENTIAL PAIR IS STILL ALL-OR-NOTHING. Loosening proxy must not have
   // loosened the cookies: a half-supplied session is not a session.
-  const halfCreds = await headersFor("twitter_user_info", { userName: "x", auth_token: "a" });
+  const halfCreds = await headersFor(READ_TOOL, { auth_token: "a" });
   assert.strictEqual(halfCreds["x-auth-token"], undefined, "auth_token travelled without ct0");
   assert.strictEqual(halfCreds["x-ct0"], undefined, "a ct0 header appeared from nowhere");
   ok("auth_token without ct0 still sends NO credential headers (the pair stays all-or-nothing)");
@@ -86,7 +93,7 @@ const PROXY = "http://user:pw@proxy.example.com:8080";
     return new Response(JSON.stringify({ data: "ok" }), { status: 200, headers: { "content-type": "application/json" } });
   };
   const { server } = createServer({ apiKey: "k", fetchImpl, retryDelaysMs: [] });
-  await server._registeredTools["twitter_user_info"].handler({ userName: "x", proxy_url: PROXY }, {});
+  await server._registeredTools[READ_TOOL].handler({ proxy_url: PROXY }, {});
   assert.ok(sawUrl, "no URL captured");
   assert.ok(!sawUrl.includes("proxy"), `proxy_url leaked into the query string: ${sawUrl}`);
   assert.ok(!sawUrl.includes("pw"), `the proxy password leaked into the query string: ${sawUrl}`);

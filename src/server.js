@@ -396,12 +396,25 @@ export function createServer({
       // separate question from WHICH EGRESS the call leaves by, and conflating
       // the two is what produced the silent drop.
       //
-      // HONEST LIMIT, and it is why this is not the whole story: the API
-      // resolves a caller proxy only on WRITE paths (customer.ts gates
-      // resolveWriteEgress behind `if (isWrite)`). On a READ the header is sent
-      // and currently ignored upstream. Sending it is still correct, because the
-      // alternative is this client deciding on the caller's behalf which of our
-      // endpoints care, and that would rot the moment reads honour it too.
+      // WHAT THE API DOES WITH IT, stated precisely because the first version of
+      // this comment got it WRONG and a false generalization here is dangerous.
+      //
+      // It said "on a READ the header is sent and currently ignored upstream".
+      // That is only true when the proxy travels ALONE. With the cookie pair:
+      // inlineFromRequest returns `proxyUrl: h("x-proxy-url")` alongside the
+      // credentials, buildEphemeralSession copies it onto the ephemeral session
+      // as `proxyUrl`, and a READ then dials that session, which is precisely
+      // why customer.ts guards `session.proxyUrl` with assertPublicProxy on the
+      // read branch as well as the write one.
+      //
+      // Believing the old sentence would make that read-side guard look like
+      // dead code, and removing it reopens the SSRF finding it was written for
+      // (a customer pointing the box at 169.254.169.254 or 127.0.0.1 on every
+      // private-data GET). So:
+      //   proxy ALONE          -> honoured on WRITES (readCallerProxy), ignored on reads
+      //   proxy + the pair     -> becomes the ephemeral session's egress, honoured on BOTH
+      // Sending it unconditionally is right either way: the alternative is this
+      // client deciding on the caller's behalf which of our endpoints care.
       if (proxy_url) headers["x-proxy-url"] = proxy_url;
     }
 
