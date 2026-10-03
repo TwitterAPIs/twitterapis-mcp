@@ -84,7 +84,7 @@ export function paywallFor(kind) {
         { step: 3, what: "set TWITTERAPIS_KEY in the MCP client config and restart the client" },
         { step: 4, what: "retry this call" },
       ],
-      unlocks: "every read tool: search, user lookups, followers, tweets, threads, trends, communities, spaces, and the free account and monitoring tools",
+      unlocks: "the 65 pooled reads (search, user lookups, followers, tweets, threads, trends, communities, spaces) and the free account, monitoring and feedback tools. The 47 account tools additionally need a linked X session, and a priced read additionally needs credits",
       retry: "same call, after the key is set",
     };
   }
@@ -163,7 +163,7 @@ export function paywallFor(kind) {
       cannot_retry:
         "A locked, suspended or confirmation-pending account, or an emailed one-time code, has to be cleared on X itself; retrying here does not change those outcomes.",
       unlocks:
-        "posting, deleting, liking, reposting, bookmarking, following, DMs, drafts, scheduled posts, articles, list membership, profile and media updates, the home timeline, and the bookmark and like histories",
+        "the 47 tools that act as the account: posting and deleting, liking, reposting, bookmarking and following with their inverses, DMs, drafts, scheduled posts, articles, list creation and membership, profile, avatar and banner updates, media upload, the home timeline, the bookmark list, folders and bookmark search, the block and mute lists, Grok chat and config, and followers-you-know",
       playbook: "playbook://link-x-account",
       retry: "same call, after an X session is linked",
     };

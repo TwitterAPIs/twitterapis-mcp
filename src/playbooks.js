@@ -6,11 +6,19 @@
 // one tool and every tool needs a real (method, path) in the spec, or the build
 // refuses to emit (scripts/gen-tools.mjs, "spec endpoint ... has NO tool" and
 // "targets endpoint ..., which the vendored spec does not have"). So a tool that
-// wraps no endpoint cannot exist in this package, by design. A recipe an agent
-// follows and the provenance of a row it already holds are both read-only
-// context, which is what resources/list and resources/read are for, so they fit
-// the primitive that is actually open here instead of forcing a tool-shaped hole
-// in a catalog whose whole value is that it matches the API exactly.
+// wraps no endpoint cannot enter the CATALOG without the REST API shipping the
+// endpoint first.
+//
+// That is a bound on the catalog, not a bound on the server: nothing stops a
+// hand-written server.registerTool() here, and no gate compares tools/list
+// against TOOLS. The argument for resources is therefore a design one rather
+// than an impossibility. A hand-registered tool would be the one tool in the
+// surface with no endpoint behind it, no generated schema, no openapi-parity
+// row and no catalog-identity coverage, in a package whose whole value is that
+// its tool surface matches the API exactly. A recipe an agent follows and the
+// provenance of a row it already holds are read-only context, which is what
+// resources/list and resources/read are for, so they go in the primitive that
+// fits rather than the one with an escape hatch.
 //
 // WHAT A PLAYBOOK IS. A short recipe an agent runs with the tools the catalog
 // already lists. It is fetched only when a client asks for it (the MCP spec calls
@@ -34,34 +42,42 @@ Watch a launch in near real time and keep a record of who amplified it.
 
 ## Before the launch
 
-1. \`twitter_monitor_create\` with the handle or keyword you are launching under.
-   Monitors cost no credits; the monitoring plan is the paywall, not per-call
-   credits, so a plan slot has to be free or creation fails with a slot limit.
-2. \`twitter_monitor_webhook_create\` if you want the matches pushed somewhere
-   instead of polled. \`twitter_monitor_webhook_test\` proves the endpoint answers
-   before launch day, when a silent webhook is expensive.
-3. \`twitter_monitor_health\` to confirm the stream is live. Read stream liveness
-   first and coverage second; unknown or null is unanswered, not healthy.
+1. \`twitter_monitor_create\` on the HANDLE you are launching from. A monitor
+   watches an account, not a keyword or a query: every new post from that handle
+   is signed and delivered to the registered webhooks. Keyword coverage is
+   \`twitter_advanced_search\` in step 6, polled, not pushed. Monitors cost no
+   credits; the monitoring plan is the paywall, not per-call credits, so a plan
+   slot has to be free or creation fails with a slot limit.
+2. \`twitter_monitor_webhook_create\` for where the matches go.
+   \`twitter_monitor_webhook_test\` proves the endpoint answers before launch day,
+   when a silent webhook is expensive.
+3. \`twitter_monitor_health\` to confirm the monitor is actually running. It
+   returns status, a degradation flag, the poll interval, a possibly-missed-event
+   count and the cursor position (\`last_tweet_id\`, \`last_poll_at\`). A
+   possibly-missed-event count above zero, or a \`last_poll_at\` that is not
+   recent, is the signal to act on; a bare status is not.
 
 ## During the launch
 
 4. \`twitter_tweet_detail\` on the launch post every 10 to 15 minutes for the
-   true view, reply, repost and quote counts. The quote count here is the real
-   total; a search-backed quote listing is a sample of it.
+   true view, reply, repost and quote counts. The \`quote_count\` here is the
+   real total; the quote listing in step 5 is search-backed and is a sample of it.
 5. \`twitter_tweet_quotes\` and \`twitter_tweet_retweeters\` for who amplified,
-   paging with the cursor until it comes back null. A null cursor with a
-   truncated listing status is a partial answer, so widen the timeframe rather
-   than reporting the partial count as the total.
-6. \`twitter_advanced_search\` for mentions that do not quote the post. Search is
-   freshness-sensitive and is not served from a cache, so a repeated query
-   genuinely re-reads X rather than replaying an earlier answer.
+   paging with the cursor until it comes back null. The quote listing reports
+   \`source\`, \`search_query\`, \`quote_matched\` and which product served it, so
+   compare \`quote_matched\` against the \`quote_count\` from step 4 before
+   quoting either as the total.
+6. \`twitter_advanced_search\` for mentions that do not quote the post, and for
+   the keyword half a monitor cannot watch.
 
 ## After
 
 7. \`twitter_monitor_deliveries\` shows where each match went, which is the record
    of what the monitor actually caught rather than what it was configured to catch.
 8. \`twitter_user_about_batch\` over the amplifier handles collected in step 5,
-   so follower counts and bios land in one call instead of one call per handle.
+   for the About object (account country, creation method, username-change
+   history, verification) on up to 100 accounts in one call. It does not return
+   the bio; \`twitter_user_info\` does.
 9. \`twitter_monitor_delete\` or \`twitter_monitor_update\` when the launch window
    closes, so the plan slot is free for the next one.
 
@@ -86,8 +102,10 @@ people on it from your own linked account.
    high signal, or \`twitter_user_followers\` for the full set. Page with the
    cursor until it is null and keep the cursor between runs; restarting from the
    first page re-reads and re-bills work you already have.
-3. \`twitter_user_about_batch\` over the ids collected, which returns bio,
-   follower count and location for many users in one call.
+3. \`twitter_user_about_batch\` over the ids collected, for the About object on
+   up to 100 accounts in one call: account country, creation method,
+   username-change history and verification. The bio and follower count come
+   from \`twitter_user_info\`.
 
 ## Qualify
 
@@ -99,8 +117,8 @@ people on it from your own linked account.
 
 ## Reach out
 
-Steps 6 and 7 act as your own linked X account, so an X session has to be linked
-first. \`playbook://link-x-account\` is the walk-through.
+Steps 6, 7 and 8 act as your own linked X account, so an X session has to be
+linked first. \`playbook://link-x-account\` is the walk-through.
 
 6. \`twitter_follow_user\` on the qualified set, spread over days rather than in
    one burst.
@@ -190,9 +208,11 @@ covers that.
 There are two ways in, and they are not interchangeable.
 
 **\`twitter_customer_session\`** takes \`auth_token\` and \`ct0\` cookies you already
-hold. It is free, it returns in a normal request, and it validates the cookies
-against X before answering, so a bad pair is rejected at registration rather than
-at the first real call. Use it whenever you have the cookies.
+hold. It is free and returns in a normal request. It probes X before answering
+and reports whether the session validated live, so a bad pair is visible at
+registration instead of at the first real call. The row is stored either way, so
+read that flag rather than treating a response without an error as a working
+session. Use this route whenever you have the cookies.
 
 **\`twitter_user_login\`** takes a username and password and mints the cookies by
 driving a real browser session. It costs $0.01, billed only on success, and it is
@@ -233,10 +253,15 @@ without an error is weaker evidence than the stored state.
 
 ## What a linked session unlocks
 
-Posting, deleting, liking, reposting, bookmarking, following, DMs, drafts,
-scheduled posts, articles, list membership changes, profile and media updates,
-the home timeline, and the bookmark and like histories. Search, user lookups,
-tweet detail, trends, communities, spaces and monitors need no session at all.
+The 47 tools that act as the account: posting and deleting, liking, reposting,
+bookmarking and following with their inverses, DMs, drafts, scheduled posts,
+articles, list creation and membership, profile, avatar and banner updates,
+media upload, the home timeline, the bookmark list, folders and bookmark search,
+the block and mute lists, Grok chat and config, and followers-you-know.
+
+Search, user lookups, a user's public posts, media and likes tabs, tweet detail,
+replies, quotes, reposters, trends, communities, spaces, monitors and the account
+and feedback tools need no session at all.
 
 ## Housekeeping
 
@@ -262,10 +287,17 @@ already in the catalog.
 2. **At login.** \`twitter_user_login\` takes the same two, and the login itself
    is driven through the proxy, so the cookies are minted from the address they
    will later be used from.
-3. **Per call.** The 47 session tools each take \`auth_token\`, \`ct0\`,
-   \`proxy_url\` and \`user_agent\` directly. Supplied there, they travel as request
-   headers rather than in the URL, and they override the stored session for that
-   one call. This is how one API key can act as several accounts.
+3. **Per call, together with cookies.** 42 of the 47 session tools take
+   \`auth_token\`, \`ct0\`, \`proxy_url\` and \`user_agent\` directly and send them as
+   request headers rather than in the URL. This route is all or nothing: the
+   headers are attached only when BOTH \`auth_token\` and \`ct0\` are present in
+   the same call. A \`proxy_url\` passed on its own is dropped, and the call
+   leaves over whatever the stored session or the shared address would have used,
+   with no error. So this route is for acting as a different account on one call,
+   not for changing the proxy of the account already linked. The five remaining
+   session tools (the profile, avatar and banner updates, media upload and the
+   article content update) send their arguments in the request body instead, so
+   they use the stored session's egress.
 
 A hosted deployment can hide the per-call arguments, in which case routes 1 and 2
 are the only ones available.
@@ -356,8 +388,21 @@ export const PLAYBOOKS = [
 export const PROVENANCE_URI_TEMPLATE = "provenance://tool/{tool_name}";
 export const provenanceUri = (toolName) => `provenance://tool/${toolName}`;
 
-const COST_RE = /\bCost: (Free|\$\d+(?:\.\d+)?)[^.]*\./;
+// THE UNIT IS PART OF THE PRICE. The catalog bills two ways: "per call" and
+// "per billed item", and three tools use the second (a batch lookup charges per
+// account answered, up to 100 of them, so one call can cost 100x the figure).
+// Capturing the amount and hardcoding "per call" turned $0.08 into $0.0008 on a
+// field labelled provenance. The whole unit phrase is captured instead, so a new
+// unit upstream carries through rather than being relabelled.
+const COST_RE = /\bCost: (Free|\$\d+(?:\.\d+)?)([^.]*)\./;
 const DOCS_RE = /\bDocs: (https:\/\/\S+)\s*$/;
+
+// Tools whose own REQUEST BODY is the X session credential, rather than taking
+// per-call credential headers. They establish the link, so headerArgs is empty
+// on them and the headerArgs test would file them under the shared pool, which
+// is the opposite of what they do. Derived from the catalog: these are the only
+// jsonBody tools whose arguments are an X credential.
+const SESSION_ESTABLISHING = new Set(["twitter_customer_session", "twitter_user_login"]);
 
 export function provenanceFor(toolName, tools) {
   const tool = tools.find((t) => t.name === toolName);
@@ -366,18 +411,23 @@ export function provenanceFor(toolName, tools) {
   // headerArgs are the per-call X session credentials (auth_token, ct0, ...). A
   // tool that accepts them is one the API serves with the caller's own linked X
   // account; a tool that does not is served from the shared pool behind the key.
-  // twitter_customer_session is the one tool whose credentials are its payload
-  // rather than per-call headers, so it is named explicitly rather than inferred.
-  const actsAsLinkedAccount = (tool.headerArgs || []).length > 0;
+  let servedBy = "the service's shared account pool";
+  if (SESSION_ESTABLISHING.has(tool.name)) servedBy = "the X credential supplied in this call, which it stores against the key";
+  else if ((tool.headerArgs || []).length > 0) servedBy = "the caller's linked X account";
   const costMatch = COST_RE.exec(tool.description || "");
   const docsMatch = DOCS_RE.exec(tool.description || "");
+  let cost = "unstated";
+  if (costMatch) {
+    const unit = costMatch[2].trim();
+    cost = costMatch[1] === "Free" ? "free" : `${costMatch[1]}${unit ? ` ${unit}` : ""}`;
+  }
   return {
     tool: tool.name,
     endpoint: `${method} ${tool.path}`,
     kind: tool.write ? "write" : "read",
     destructive: Boolean(tool.destructive),
-    served_by: actsAsLinkedAccount ? "the caller's linked X account" : "the service's shared account pool",
-    cost: costMatch ? (costMatch[1] === "Free" ? "free" : `${costMatch[1]} per call`) : "unstated",
+    served_by: servedBy,
+    cost,
     docs: docsMatch ? docsMatch[1] : null,
     not_available:
       "Row-level upstream provenance (when the service read it from X, whether an upstream cache answered, which account read it) is not in any response this server receives.",

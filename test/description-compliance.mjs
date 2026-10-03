@@ -253,6 +253,10 @@ export async function listTools(opts) {
 // instructions are permitted to guide the model, and naming tools is the whole
 // point of a playbook (test/playbooks.test.mjs holds the bodies to their own
 // rules: every tool they name must exist, and no hidden characters).
+// Five playbooks plus the provenance template. A new resource raises this; a
+// drop to below it is the defect this floor exists to catch.
+export const EXPECTED_RESOURCE_DESCRIPTIONS = 6;
+
 export async function listResourceDescriptions(opts) {
   const { server } = createServer({ apiKey: "description-compliance", ...opts });
   const [clientT, serverT] = InMemoryTransport.createLinkedPair();
@@ -368,7 +372,13 @@ if (isMain) {
   // Resource and template descriptions, both modes, same rules as a tool description.
   for (const [label, opts] of [["default", {}], ["hosted", { inlineCredentials: false }]]) {
     const items = await listResourceDescriptions(opts);
-    if (!items.length) { total++; console.error(`  \x1b[31m✗ [${label}] no resource or template descriptions listed; the resources capability stopped being advertised\x1b[0m`); }
+    // A floor, not just a non-zero check. The tool pass has one (tools.length <
+    // 100) for the same reason: if one resource silently stopped being
+    // advertised, a bare non-zero test would still read green on the rest.
+    if (items.length < EXPECTED_RESOURCE_DESCRIPTIONS) {
+      total++;
+      console.error(`  \x1b[31m✗ [${label}] ${items.length} resource and template description(s) listed, expected at least ${EXPECTED_RESOURCE_DESCRIPTIONS}; one stopped being advertised\x1b[0m`);
+    }
     let findings = 0;
     for (const it of items) {
       if (!it.text || it.text.length < 40) { total++; findings++; console.error(`  \x1b[31m✗ ${it.id} ${it.where}: missing or too short\x1b[0m`); continue; }

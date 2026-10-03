@@ -22,7 +22,6 @@ import { PLAYBOOKS, PLAYBOOK_MIME, provenanceFor, provenanceUri, PROVENANCE_URI_
 import { TOOLS } from "../src/tools.js";
 
 let n = 0;
-let failed = 0;
 const ok = (m) => { n++; console.log(`  ok  ${m}`); };
 
 async function connect(opts = {}) {
@@ -119,6 +118,58 @@ const client = await connect();
   ok("negative control: a planted non-existent tool name is caught by the same filter");
 }
 
+// ── every identifier a playbook quotes must exist in the catalog ─────────────
+// The stale-TOOL-name check above cannot see a tool that exists but does not do
+// what the recipe says, and that is the defect class that actually shipped: a
+// first draft told an agent to read `stream_liveness` and `coverage_24h` off a
+// health response and to check a `listing_status` on a cursor. All three are
+// field names from a different product. The tools were real, so the name check
+// was green, and an agent following the recipe would have read undefined.
+//
+// So: every snake_case identifier a playbook quotes in backticks has to appear
+// somewhere in the catalog, as a tool name, an argument name, or a word in a
+// tool's own description. An invented field matches none of the three.
+{
+  const corpus = [
+    ...TOOLS.map((t) => t.name),
+    ...TOOLS.flatMap((t) => Object.keys(t.shape || {})),
+    ...TOOLS.map((t) => t.description || ""),
+  ].join("\n");
+  const SNAKE = /`([a-z][a-z0-9]*(?:_[a-z0-9]+)+)`/g;
+  const unknown = new Map();
+  let checked = 0;
+  for (const p of PLAYBOOKS) {
+    for (const m of p.text.matchAll(SNAKE)) {
+      checked++;
+      if (!corpus.includes(m[1])) unknown.set(m[1], p.uri);
+    }
+  }
+  assert.equal(unknown.size, 0, `playbooks quote identifiers the catalog never mentions: ${[...unknown].map(([k, v]) => `${k} (${v})`).join(", ")}`);
+  assert.ok(checked > 20, `only ${checked} identifiers checked; the matcher is not reading the bodies`);
+  ok(`all ${checked} quoted snake_case identifiers across the playbooks appear in the catalog`);
+
+  // NEGATIVE CONTROL: the corpus must not swallow a plausible invented field.
+  for (const planted of ["stream_liveness", "coverage_24h", "listing_status"]) {
+    assert.equal(corpus.includes(planted), false, `control "${planted}" must not be in the catalog`);
+  }
+  // POSITIVE CONTROL: a real field the playbooks do quote.
+  assert.ok(corpus.includes("last_tweet_id"), "control: a real field must be found in the corpus");
+  ok("controls: three plausible invented field names are absent from the corpus, a real one is present");
+}
+
+// ── a playbook may not send an argument a tool does not take ─────────────────
+{
+  // The monitor is handle-driven. A recipe offering it a keyword is the same
+  // class of defect: a real tool, called with something it cannot accept.
+  const monitor = TOOLS.find((t) => t.name === "twitter_monitor_create");
+  const args = Object.keys(monitor.shape);
+  assert.ok(args.includes("handle"), "monitor creation must take a handle");
+  assert.deepEqual(args.filter((a) => /keyword|query|term|search/.test(a)), [], `monitor creation now takes ${args.join(",")}; the launch playbook's wording needs revisiting`);
+  const launch = PLAYBOOKS.find((p) => p.uri === "playbook://launch-day-monitor").text;
+  assert.match(launch, /on the HANDLE you are launching from/, "the launch playbook must say the monitor takes a handle");
+  ok("the launch playbook's monitor step matches the tool's real argument shape");
+}
+
 // ── the linking playbook carries the facts the 409 cannot ────────────────────
 {
   const { contents } = await client.readResource({ uri: "playbook://link-x-account" });
@@ -173,6 +224,39 @@ const client = await connect();
   assert.match(pooledRec.cost, /^\$\d/, "a priced tool must report a dollar cost");
   ok("provenance: a free tool reads free and a priced tool reads its price");
 
+  // THE UNIT IS PART OF THE PRICE. Three tools bill "per billed item", and a
+  // batch call answers up to 100 items, so relabelling the unit "per call"
+  // understated one call by up to 100x on a field called provenance. Asserting
+  // only that the cost is not "unstated" could not see it, which is how it
+  // shipped into review. Every tool's reported cost must carry its own unit.
+  const unitMismatch = [];
+  const perItem = [];
+  for (const t of TOOLS) {
+    const m = /\bCost: (Free|\$\d+(?:\.\d+)?)([^.]*)\./.exec(t.description || "");
+    assert.ok(m, `${t.name} has no parseable cost sentence`);
+    const reported = provenanceFor(t.name, TOOLS).cost;
+    const expected = m[1] === "Free" ? "free" : `${m[1]}${m[2].trim() ? ` ${m[2].trim()}` : ""}`;
+    if (reported !== expected) unitMismatch.push(`${t.name}: ${reported} != ${expected}`);
+    if (/per billed item/.test(m[2])) perItem.push(t.name);
+  }
+  assert.deepEqual(unitMismatch, [], `cost unit misreported: ${unitMismatch.join("; ")}`);
+  // Both controls: the catalog really does bill two ways, so a harness that
+  // only ever saw "per call" would pass this vacuously.
+  assert.ok(perItem.length > 0, "no per-billed-item tool found; the unit check has nothing to distinguish");
+  for (const name of perItem) {
+    assert.match(provenanceFor(name, TOOLS).cost, /per billed item$/, `${name} must report its real unit`);
+  }
+  ok(`provenance: every one of ${TOOLS.length} tools reports its own cost unit, including the ${perItem.length} billed per item`);
+
+  // A tool whose own payload IS the X credential establishes the link; it must
+  // not be filed under the shared pool just because it takes no header args.
+  for (const name of ["twitter_customer_session", "twitter_user_login"]) {
+    const rec = provenanceFor(name, TOOLS);
+    assert.match(rec.served_by, /supplied in this call/, `${name} establishes the session; it is not pooled`);
+    assert.equal((TOOLS.find((t) => t.name === name).headerArgs || []).length, 0, `${name} is expected to carry no headerArgs, which is why it needs the explicit case`);
+  }
+  ok("provenance: the two session-establishing tools are classified by what they do, not by their empty headerArgs");
+
   // Derivation agrees with the catalog for EVERY tool, not just the sampled four.
   let mismatches = 0;
   for (const t of TOOLS) {
@@ -210,5 +294,4 @@ const client = await connect();
 
 await client.close();
 
-if (failed) { console.error(`\nplaybooks: ${n} passed, ${failed} failed`); process.exit(1); }
 console.log(`\nplaybooks: ${n} passed, 0 failed`);
