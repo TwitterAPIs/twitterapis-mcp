@@ -380,8 +380,29 @@ export function createServer({
         headers["x-auth-token"] = auth_token;
         headers["x-ct0"] = ct0;
         if (user_agent) headers["x-user-agent"] = user_agent;
-        if (proxy_url) headers["x-proxy-url"] = proxy_url;
       }
+      // PROXY IS EGRESS, NOT A CREDENTIAL, so it is NOT gated on the cookie pair.
+      //
+      // It used to be. proxy_url was destructured off the args (so it could not
+      // travel as a query param either) and the header was only set INSIDE the
+      // `auth_token && ct0` branch, so a caller who sent proxy_url alone got a
+      // normal 200 answered over the DEFAULT egress with nothing in the response
+      // saying their proxy had been dropped. Reported as feedback b9bc1db5.
+      //
+      // The API honours it without a session on the paths that resolve caller
+      // egress: readCallerProxy (session/write-egress.ts) reads `?proxy=`,
+      // `x-proxy-url` and body `proxy`/`proxy_url` with no credential
+      // precondition. The cookie pair governs WHOSE SESSION acts, which is a
+      // separate question from WHICH EGRESS the call leaves by, and conflating
+      // the two is what produced the silent drop.
+      //
+      // HONEST LIMIT, and it is why this is not the whole story: the API
+      // resolves a caller proxy only on WRITE paths (customer.ts gates
+      // resolveWriteEgress behind `if (isWrite)`). On a READ the header is sent
+      // and currently ignored upstream. Sending it is still correct, because the
+      // alternative is this client deciding on the caller's behalf which of our
+      // endpoints care, and that would rot the moment reads honour it too.
+      if (proxy_url) headers["x-proxy-url"] = proxy_url;
     }
 
     // A DEPLOY RESTART IS NOT AN ERROR THE USER SHOULD SEE. While the API
