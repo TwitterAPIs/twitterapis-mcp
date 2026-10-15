@@ -390,17 +390,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "curl -X POST \"https://api.twitterapis.com/feedback\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"type\": \"bug\", \"title\": \"tweet/thread returns 500 on a quoted reply\", \"details\": \"what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\\nwhat the user said: \\\"it worked yesterday\\\"\\nrepro: GET tweet/thread with that id.\\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.\", \"area\": \"tweet/thread\", \"evidence\": {\"tool\": \"twitter_tweet_thread\", \"endpoint\": \"tweet/thread\", \"status\": 500, \"request_id\": \"req_01J9K2\", \"client\": \"claude-code/2.1.259\", \"mcp_version\": \"0.9.6\"}, \"client\": \"claude-code/2.1.259 via @twitterapis/mcp@0.9.6\"}'"
+            "source": "curl -X POST \"https://api.twitterapis.com/feedback\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"type\": \"bug\", \"title\": \"tweet/thread returns 500 on a quoted reply\", \"details\": \"what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\\nrepro: GET tweet/thread with that id.\\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.\", \"area\": \"tweet/thread\", \"evidence\": {\"tool\": \"twitter_tweet_thread\", \"endpoint\": \"tweet/thread\", \"status\": 500, \"request_id\": \"req_01J9K2\", \"client\": \"claude-code/2.1.259\", \"mcp_version\": \"0.9.6\"}, \"client\": \"claude-code/2.1.259 via @twitterapis/mcp@0.9.6\"}'"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/feedback\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\n        \"type\": \"bug\",\n        \"title\": \"tweet/thread returns 500 on a quoted reply\",\n        \"details\": \"what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\\nwhat the user said: \\\"it worked yesterday\\\"\\nrepro: GET tweet/thread with that id.\\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.\",\n        \"area\": \"tweet/thread\",\n        \"evidence\": {\"tool\": \"twitter_tweet_thread\", \"endpoint\": \"tweet/thread\", \"status\": 500, \"request_id\": \"req_01J9K2\", \"client\": \"claude-code/2.1.259\", \"mcp_version\": \"0.9.6\"},\n        \"client\": \"claude-code/2.1.259 via @twitterapis/mcp@0.9.6\",\n    },\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/feedback\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\n        \"type\": \"bug\",\n        \"title\": \"tweet/thread returns 500 on a quoted reply\",\n        \"details\": \"what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\\nrepro: GET tweet/thread with that id.\\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.\",\n        \"area\": \"tweet/thread\",\n        \"evidence\": {\"tool\": \"twitter_tweet_thread\", \"endpoint\": \"tweet/thread\", \"status\": 500, \"request_id\": \"req_01J9K2\", \"client\": \"claude-code/2.1.259\", \"mcp_version\": \"0.9.6\"},\n        \"client\": \"claude-code/2.1.259 via @twitterapis/mcp@0.9.6\",\n    },\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
           },
           {
             "lang": "js",
             "label": "JavaScript",
-            "source": "const resp = await fetch(\"https://api.twitterapis.com/feedback\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({\n    type: \"bug\",\n    title: \"tweet/thread returns 500 on a quoted reply\",\n    details: \"what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\\nwhat the user said: \\\"it worked yesterday\\\"\\nrepro: GET tweet/thread with that id.\\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.\",\n    area: \"tweet/thread\",\n    evidence: { tool: \"twitter_tweet_thread\", endpoint: \"tweet/thread\", status: 500, request_id: \"req_01J9K2\", client: \"claude-code/2.1.259\", mcp_version: \"0.9.6\" },\n    client: \"claude-code/2.1.259 via @twitterapis/mcp@0.9.6\",\n  }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/feedback\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({\n    type: \"bug\",\n    title: \"tweet/thread returns 500 on a quoted reply\",\n    details: \"what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\\nrepro: GET tweet/thread with that id.\\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.\",\n    area: \"tweet/thread\",\n    evidence: { tool: \"twitter_tweet_thread\", endpoint: \"tweet/thread\", status: 500, request_id: \"req_01J9K2\", client: \"claude-code/2.1.259\", mcp_version: \"0.9.6\" },\n    client: \"claude-code/2.1.259 via @twitterapis/mcp@0.9.6\",\n  }),\n});\nconst data = await resp.json();\nconsole.log(data);"
           }
         ],
         "responses": {
@@ -573,8 +573,8 @@
                   },
                   "details": {
                     "type": "string",
-                    "description": "1 to 8000 characters. Recommended shape, four labelled bullets: what happened (observed vs expected, the exact error text if short), what the user said (quoted verbatim, or \"user did not comment\"), repro (minimal steps), evidence (endpoint, status, request id, tool name, client, version).",
-                    "example": "what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread. what the user said: \"it worked yesterday\". repro: GET tweet/thread with that id. evidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259."
+                    "description": "1 to 8000 characters. Recommended shape, three labelled bullets: what happened (observed vs expected, the exact error text if short), repro (minimal steps), evidence (endpoint, status, request id, tool name, client, version), optionally after a one-line summary of the goal. No quotes of the conversation.",
+                    "example": "what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread. repro: GET tweet/thread with that id. evidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259."
                   },
                   "area": {
                     "type": "string",
@@ -2649,6 +2649,10 @@
                         "$ref": "#/components/schemas/Tweet"
                       }
                     },
+                    "sort": {
+                      "type": "string",
+                      "description": "The reply ordering applied to this response: relevance, latest, or likes."
+                    },
                     "count": {
                       "type": "integer",
                       "description": "Number of items returned in this page."
@@ -2816,6 +2820,285 @@
             "schema": {
               "type": "string",
               "description": "Pagination cursor from a previous response."
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Reply ordering: relevance (default), latest, or likes.",
+            "schema": {
+              "type": "string",
+              "description": "Reply ordering: relevance (default), latest, or likes.",
+              "example": "latest"
+            },
+            "example": "latest"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
+          }
+        ]
+      }
+    },
+    "/tweet/replies-complete": {
+      "get": {
+        "operationId": "tweet-replies-complete",
+        "summary": "Tweet Replies (Complete)",
+        "description": "Fetch all direct replies to a tweet in a single call. The endpoint walks the reply pages for you and returns them together, instead of one cursor page at a time, and reports whether it reached the end. Each call is bounded by max and a server-side time budget, so a large conversation can come back incomplete with a cursor to resume from. Cost: $0.0024 per call.",
+        "tags": [
+          "Tweet Details"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0024,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/tweet/replies-complete?id=1759123456789012345&max=200\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/tweet/replies-complete\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"id\": \"1759123456789012345\", \"max\": 200},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/tweet/replies-complete\");\nurl.search = new URLSearchParams({ id: \"1759123456789012345\", max: \"200\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fetch every reply under a tweet in one call.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of replies returned in this call."
+                    },
+                    "tweets": {
+                      "type": "array",
+                      "description": "The replies gathered across every page walked.",
+                      "items": {
+                        "$ref": "#/components/schemas/Tweet"
+                      }
+                    },
+                    "is_complete": {
+                      "type": "boolean",
+                      "description": "True when X signalled the end of the conversation. False when the call stopped early: on max, the time budget, the page cap, or a page after the first failing. Resume with next_cursor."
+                    },
+                    "pages_fetched": {
+                      "type": "integer",
+                      "description": "How many reply pages were walked to build this response."
+                    },
+                    "sort": {
+                      "type": "string",
+                      "description": "The reply ordering applied to this response: relevance, latest, or likes."
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Opaque cursor for the next page. Null on the final page for list and affiliate endpoints; follower-graph endpoints return a non-null cursor even on the last page, so stop when the collection array is empty."
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when another page is available: this page returned items and carried a usable next_cursor. False on the final page. Follower-graph endpoints keep sending a non-null next_cursor past the end, but has_more still flips to false once the item array comes back empty, so it is the reliable loop-stop signal."
+                    }
+                  }
+                },
+                "example": {
+                  "count": 1,
+                  "next_cursor": null,
+                  "has_more": false,
+                  "is_complete": true,
+                  "pages_fetched": 1,
+                  "sort": "relevance",
+                  "tweets": [
+                    {
+                      "id": "1759123999000111222",
+                      "text": "Congrats on the launch!",
+                      "created_at": "Tue Feb 20 14:30:02 +0000 2026",
+                      "author": {
+                        "id": "9921",
+                        "username": "devjane",
+                        "name": "Jane"
+                      },
+                      "favorite_count": 12,
+                      "reply_count": 1
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the parent tweet. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the parent tweet. Provide either id or url.",
+              "example": "1759123456789012345"
+            },
+            "example": "1759123456789012345"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "description": "Full status URL of the parent tweet. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Full status URL of the parent tweet. Provide either id or url.",
+              "example": "https://x.com/naval/status/1759123456789012345"
+            },
+            "example": "https://x.com/naval/status/1759123456789012345"
+          },
+          {
+            "name": "max",
+            "in": "query",
+            "required": false,
+            "description": "Target number of replies to collect in this call (default 500). Pages arrive whole, so count can pass max by up to one page. Larger values take longer.",
+            "schema": {
+              "type": "integer",
+              "description": "Target number of replies to collect in this call (default 500). Pages arrive whole, so count can pass max by up to one page. Larger values take longer.",
+              "example": "200"
+            },
+            "example": "200"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Reply ordering: relevance (default), latest, or likes.",
+            "schema": {
+              "type": "string",
+              "description": "Reply ordering: relevance (default), latest, or likes.",
+              "example": "latest"
+            },
+            "example": "latest"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Resume point from a previous response's next_cursor when is_complete was false.",
+            "schema": {
+              "type": "string",
+              "description": "Resume point from a previous response's next_cursor when is_complete was false."
             }
           },
           {

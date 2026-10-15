@@ -6,6 +6,8 @@ Not published. The npm release is held while the Connectors Directory listing is
 
 ### Added
 
+- **`twitter_tweet_replies_complete`**, every direct reply under a tweet in one call: the server walks the reply pages and returns `{ count, next_cursor, has_more, is_complete, pages_fetched, sort, tweets }`. `is_complete` is the completion signal; when false, pass `next_cursor` back as `cursor`. Optional `max` (default 500) and `sort`. Flat per call. 113 tools, 69 reads.
+- **`sort` on `twitter_tweet_replies`**: `relevance` (default), `latest` or `likes`, matching the endpoint.
 - **Playbooks over the MCP resource primitive.** `resources/list` now carries five recipes an
   agent runs with the tools this package already has: `playbook://launch-day-monitor`,
   `playbook://competitor-follower-outreach`, `playbook://account-audit`,

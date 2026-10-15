@@ -475,6 +475,29 @@ export const TOOL_OVERRIDES = [
     args: [
       "@TWEET_REF",
       "@CURSOR",
+      { name: "sort", enum: ["relevance", "latest", "likes"],
+        describe:
+          "Optional reply ordering: \"relevance\" (X's default ranking), \"latest\" (newest first) or \"likes\" (most liked first). The response echoes the applied ordering in sort." },
+      "@PROJECTION",
+      "@PAID_PROMOTION",
+    ],
+  },
+  {
+    name: "twitter_tweet_replies_complete",
+    endpoint: "/tweet/replies-complete",
+    description:
+      "Returns every direct reply under a tweet in one call, walking the reply pages server-side: { count, next_cursor, has_more, is_complete, pages_fetched, sort, tweets }. is_complete is the completion signal, not count: true means X signalled the end of the conversation; false means the call stopped early (on max, a server-side time budget, a page cap, or a later page failing), and passing next_cursor back as cursor continues. Billed flat per call however many pages it walks, so one call over a long conversation costs less than paging it one reply page at a time.",
+    args: [
+      "@TWEET_REF",
+      { name: "max", type: "int", min: 1,
+        describe:
+          "Target number of replies to collect in this call. Defaults to 500 when omitted. Pages arrive whole, so count can pass max by up to one page. Larger values take longer." },
+      { name: "sort", enum: ["relevance", "latest", "likes"],
+        describe:
+          "Optional reply ordering: \"relevance\" (X's default ranking), \"latest\" (newest first) or \"likes\" (most liked first). The response echoes the applied ordering in sort." },
+      { name: "cursor",
+        describe:
+          "Resume point from a previous response's next_cursor when is_complete was false. Absent on the first request." },
       "@PROJECTION",
       "@PAID_PROMOTION",
     ],

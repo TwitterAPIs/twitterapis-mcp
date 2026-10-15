@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 112 tools (68 reads, 44 writes).
+// Catalog: 113 tools (69 reads, 44 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -655,6 +655,41 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Absent, the first page is returned; with it, the next page.",
+      ),
+      sort: z.enum(["relevance","latest","likes"]).optional().describe(
+        "Optional reply ordering: \"relevance\" (X's default ranking), \"latest\" (newest first) or \"likes\" (most liked first). The response echoes the applied ordering in sort.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+      ),
+      compact: z.enum(["1","true"]).optional().describe(
+        "Optional. \"1\" applies the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. It trims only what it recognises and on its own does not reduce a body to {}. Combined with fields, only the named paths and the envelope keys remain.",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filters this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and fetches no more, so a page can hold fewer tweets than requested, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
+    },
+  },
+  {
+    name: "twitter_tweet_replies_complete",
+    path: "/twitter/tweet/replies-complete",
+    description:
+      "Returns every direct reply under a tweet in one call, walking the reply pages server-side: { count, next_cursor, has_more, is_complete, pages_fetched, sort, tweets }. is_complete is the completion signal, not count: true means X signalled the end of the conversation; false means the call stopped early (on max, a server-side time budget, a page cap, or a later page failing), and passing next_cursor back as cursor continues. Billed flat per call however many pages it walks, so one call over a long conversation costs less than paging it one reply page at a time. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/tweet-details/tweet-replies-complete",
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+      ),
+      max: z.number().int().min(1).optional().describe(
+        "Target number of replies to collect in this call. Defaults to 500 when omitted. Pages arrive whole, so count can pass max by up to one page. Larger values take longer.",
+      ),
+      sort: z.enum(["relevance","latest","likes"]).optional().describe(
+        "Optional reply ordering: \"relevance\" (X's default ranking), \"latest\" (newest first) or \"likes\" (most liked first). The response echoes the applied ordering in sort.",
+      ),
+      cursor: z.string().optional().describe(
+        "Resume point from a previous response's next_cursor when is_complete was false. Absent on the first request.",
       ),
       fields: z.string().optional().describe(
         "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",

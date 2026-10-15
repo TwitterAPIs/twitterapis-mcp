@@ -75,8 +75,9 @@ const writes = TOOLS.filter((t) => t.write);
 // 109 endpoints, 65 reads and 44 writes, still exact parity.
 // 2026-10-01 (#45): twitter_user_about_batch, a read. 110 endpoints, 66 reads, 44 writes.
 // 2026-10-01 (#45 parts 2-3): follow batch + audience summary, two reads. 112, 68, 44.
-const EXPECTED_TOOLS = 112;
-const EXPECTED_READS = 68;
+// 2026-10-15: twitter_tweet_replies_complete, one read. 113, 69, 44.
+const EXPECTED_TOOLS = 113;
+const EXPECTED_READS = 69;
 const EXPECTED_WRITES = 44;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
