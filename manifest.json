@@ -144,6 +144,10 @@
       "description": "Returns replies to a specific tweet, each with author, text and metrics, cursor-paginated. Covers the conversation under a tweet, its sentiment, and notable responses. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/tweet-details/tweet-replies"
     },
     {
+      "name": "twitter_tweet_replies_complete",
+      "description": "Returns every direct reply under a tweet in one call, walking the reply pages server-side: { count, next_cursor, has_more, is_complete, pages_fetched, sort, tweets }. is_complete is the completion signal, not count: true means X signalled the end of the conversation; false means the call stopped early (on max, a server-side time budget, a page cap, or a later page failing), and passing next_cursor back as cursor continues. Billed flat per call however many pages it walks, so one call over a long conversation costs less than paging it one reply page at a time. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/tweet-details/tweet-replies-complete"
+    },
+    {
       "name": "twitter_tweet_thread",
       "description": "Returns all tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread). Any tweet id or url from the thread returns the full ordered sequence in a single call. Replies from other users are not included. Takes the tweet id or its full URL. Cost: $0.0040 per call. Docs: https://docs.twitterapis.com/docs/reference/tweet-details/tweet-thread"
     },
