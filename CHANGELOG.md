@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed (0.22.3, twitter_tweet_quotes description)
+
+- **`twitter_tweet_quotes` says when search withheld quotes.** The endpoint now returns `quote_count` (the tweet's real total) and `coverage` (`complete`, `partial` with a `coverage_hint`, or `unknown`) beside the rows, so a page that is empty with `has_more` false on a tweet that has quotes reads as withheld rather than as no quotes. The description now explains both fields.
+- **`count` on `twitter_tweet_quotes` is documented as at most 20 per page.** X serves at most 20 quotes per search page; the old text said up to 100. A larger value is still accepted and is clamped to 20, echoed as `requested_count` and `effective_count`. Schema unchanged (1-100), so no existing call starts failing.
+
+Not published.
+
 ### Changed (0.22.2, README only)
 
 - **README opening rewritten for the listings** that copy it word for word (Glama, mcpservers.org, the MCP Registry, npm): one paragraph on what the server does and costs, then the install line, the hosted sign-in line and the website. Three FAQ answers replace the old developer-account answer. No tool, schema or behaviour change; 113 tools.
