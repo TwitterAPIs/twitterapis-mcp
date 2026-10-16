@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed (0.22.2, README only)
+
+- **README opening rewritten for the listings** that copy it word for word (Glama, mcpservers.org, the MCP Registry, npm): one paragraph on what the server does and costs, then the install line, the hosted sign-in line and the website. Three FAQ answers replace the old developer-account answer. No tool, schema or behaviour change; 113 tools.
+- `test/readme-opening.test.mjs` (in `npm test`) holds the opening to the package name, keeps its Website line equal to `server.json` `websiteUrl`, checks every "N tools" claim in the README against `src/tools.js`, and fails when the version differs across `package.json`, `server.json` and `manifest.json`.
+
 Not published. The npm release is held while the Connectors Directory listing is in review.
 
 ### Added

@@ -4,9 +4,13 @@
 [![npm downloads](https://img.shields.io/npm/dm/@twitterapis/mcp)](https://www.npmjs.com/package/@twitterapis/mcp)
 [![license](https://img.shields.io/npm/l/@twitterapis/mcp)](./LICENSE)
 
-Official **Model Context Protocol** server for [twitterapis.com](https://www.twitterapis.com), the Twitter / X API as native tools for Claude, Cursor, Windsurf, and any MCP client. Reads (search, profiles, timelines, followers, DMs) plus write actions (post, like, retweet, follow).
+@twitterapis/mcp is the official MCP server for TwitterAPIs, built for developers and AI agents that need Twitter / X data inside Claude, Cursor, Windsurf, VS Code or any MCP client, with no X developer account. Your agent can search tweets, read profiles, timelines, followers, threads and lists, and post, reply, like, retweet or follow from an X account you link. Reads cost $0.0008 per call, about $0.04 per 1,000 tweets since a call returns about 20, and creating a tweet costs $0.0016. New accounts get $0.50 of free credit with no card. Every tool maps to one REST endpoint at api.twitterapis.com, and the server holds no state.
 
-Ask your agent to search tweets, pull a user's profile or timeline, list followers/following, fetch thread context, or enumerate list members and it calls the API directly. Every tool maps to a REST endpoint at `https://api.twitterapis.com`; the server holds no state and forwards your API key on each call.
+Install: `npx -y @twitterapis/mcp@latest` with `TWITTERAPIS_KEY` from https://www.twitterapis.com/signup
+
+Hosted, sign in instead of pasting a key (Claude Code): `claude mcp add --transport http twitterapis https://api.twitterapis.com/mcp`
+
+Website: https://www.twitterapis.com/mcp
 
 ## Quick start
 
@@ -386,7 +390,11 @@ Calls are billed to your twitterapis.com account. Most endpoints are $0.0008/cal
 
 ## FAQ
 
-**Do I need an X (Twitter) developer account?** No. Get an API key at [twitterapis.com/signup](https://www.twitterapis.com/signup); there is no application or approval step.
+**Do I need an X developer account?** No. One TwitterAPIs key covers every tool.
+
+**What do 1,000 tweets cost?** About $0.04. Reads bill $0.0008 per call and a call returns about 20 tweets.
+
+**Can my agent post or send DMs?** Yes, from an X account you link to your key. Undo actions such as delete and unfollow are marked destructive, so your client can ask before running them.
 
 **Is it read-only?** No. 69 read tools work with just your API key; 44 write actions (post, save or schedule a post, like, retweet, follow, DM, media upload, profile name/bio/avatar/banner updates, List create/add member/remove member, article create/edit/publish/delete, monitor/webhook create/update/delete, feedback send) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD and feedback, which are account administration and need only your API key.
 
