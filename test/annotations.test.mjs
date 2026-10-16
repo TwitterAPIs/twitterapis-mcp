@@ -67,6 +67,50 @@ for (const t of TOOLS) {
 }
 check("hints agree with the catalog's write and destructive flags", disagree.length === 0, disagree.slice(0, 5).join("; "));
 
+// 4b. Name classes the catalog flags cannot see. The catalog's `destructive`
+// flag marks deletes only, so an overwrite (update, edit, a session or login
+// that replaces the linked one) and a write that creates something new on every
+// call (create, send, upload, publish, chat, test) need their own rules.
+const NON_IDEMPOTENT = /(_create|_send|_upload|_publish|_chat|_login|_redrive|_test|_add_user)$|^twitter_create_tweet$/;
+const DESTRUCTIVE = /update|edit|delete|remove|unfollow|unfavorite|unretweet|unbookmark|unpublish/;
+const DESTRUCTIVE_EXACT = new Set(["twitter_customer_session", "twitter_user_login"]);
+function classViolations(lookup) {
+  const out = [];
+  const counts = { nonIdempotent: 0, destructive: 0 };
+  for (const t of TOOLS) {
+    const a = lookup(t.name) || {};
+    if (a.readOnlyHint) continue;
+    if (NON_IDEMPOTENT.test(t.name)) {
+      counts.nonIdempotent++;
+      if (a.idempotentHint !== false) out.push(`${t.name}: creates on every call but idempotentHint ${a.idempotentHint}`);
+    }
+    if (DESTRUCTIVE.test(t.name) || DESTRUCTIVE_EXACT.has(t.name)) {
+      counts.destructive++;
+      if (a.destructiveHint !== true) out.push(`${t.name}: overwrites or removes but destructiveHint ${a.destructiveHint}`);
+    }
+  }
+  return { out, counts };
+}
+const wireLookup = (n) => byName.get(n)?.annotations;
+const real = classViolations(wireLookup);
+check(`class rules cover both classes (${real.counts.nonIdempotent} non-idempotent, ${real.counts.destructive} destructive writes)`, real.counts.nonIdempotent > 0 && real.counts.destructive > 0);
+check("every create/send-style write is non-idempotent and every overwrite/remove write is destructive", real.out.length === 0, real.out.slice(0, 5).join("; "));
+
+// In-band mutation check: the class rules must fire on the two regressions the
+// catalog flags miss. Each mutant must differ from the real hints, or the
+// check below proves nothing.
+const mutants = {
+  "twitter_update_profile destructiveHint=false": ["twitter_update_profile", { destructiveHint: false }],
+  "twitter_dm_send idempotentHint=true": ["twitter_dm_send", { idempotentHint: true }],
+};
+for (const [label, [tool, patch]] of Object.entries(mutants)) {
+  const orig = wireLookup(tool);
+  const mutated = { ...orig, ...patch };
+  const changed = Object.keys(patch).some((k) => orig?.[k] !== mutated[k]);
+  const caught = classViolations((n) => (n === tool ? mutated : wireLookup(n))).out.some((v) => v.startsWith(`${tool}:`));
+  check(`class rules catch mutant ${label}`, changed && caught, changed ? "mutant passed the class rules" : "mutant did not change the hint");
+}
+
 // 5. Spot assertions: three reads, three writes (one destructive).
 const expect = {
   twitter_advanced_search: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
