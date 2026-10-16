@@ -8,6 +8,18 @@ Not published. The npm release is held while the Connectors Directory listing is
 
 - **`twitter_tweet_replies_complete`**, every direct reply under a tweet in one call: the server walks the reply pages and returns `{ count, next_cursor, has_more, is_complete, pages_fetched, sort, tweets }`. `is_complete` is the completion signal; when false, pass `next_cursor` back as `cursor`. Optional `max` (default 500) and `sort`. Flat per call. 113 tools, 69 reads.
 - **`sort` on `twitter_tweet_replies`**: `relevance` (default), `latest` or `likes`, matching the endpoint.
+- **A title and all four annotation hints on every tool** (MCP spec 2025-06-18 `ToolAnnotations`).
+  Each of the 113 tools now carries a short Title Case `title` (for example "Delete Tweet",
+  "Advanced Tweet Search") in place of its raw name, plus `readOnlyHint`, `destructiveHint`,
+  `idempotentHint` and `openWorldHint`. Reads are read-only and idempotent; writes that delete,
+  unpublish, remove, unfollow or overwrite (a profile field, an image, a draft or article body, a
+  stored session, a monitor's settings) are destructive; likes, follows, bookmarks and deletes by id
+  are idempotent; account, billing, feedback, monitor and webhook configuration tools are
+  closed-world, since they touch only this service. `idempotentHint` was not set before, and
+  `openWorldHint` was `true` on every tool. The table is `src/annotations.js`;
+  `test/annotations.test.mjs` reads `tools/list` over a real client and fails when any tool lacks a
+  title or a hint, or when a hint contradicts the catalog's read/write and destructive flags. Tool
+  names, input schemas and behaviour are unchanged.
 - **Playbooks over the MCP resource primitive.** `resources/list` now carries five recipes an
   agent runs with the tools this package already has: `playbook://launch-day-monitor`,
   `playbook://competitor-follower-outreach`, `playbook://account-audit`,

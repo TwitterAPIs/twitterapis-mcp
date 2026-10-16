@@ -29,6 +29,7 @@ const POOLED_READS = POOLED.filter((t) => !t.write).length;
 const POOLED_FREE_WRITES = POOLED.filter((t) => t.write).length;
 const SESSION_TOOLS = TOOLS.filter((t) => (t.headerArgs || []).includes("auth_token")).length;
 import { createFeedbackHandler } from "./feedback.js";
+import { annotationsFor } from "./annotations.js";
 import { PLAYBOOKS, PLAYBOOK_MIME, PROVENANCE_URI_TEMPLATE, provenanceFor } from "./playbooks.js";
 
 // Single source of truth for the version. Previously this was a literal in two
@@ -585,14 +586,11 @@ export function createServer({
 
   for (const tool of TOOLS) {
     const method = tool.method || "GET";
-    // Surface read/write/destructive intent so MCP clients can warn before a
-    // mutating call (default = read-only).
-    const annotations = {
-      title: tool.name,
-      readOnlyHint: !tool.write,
-      destructiveHint: Boolean(tool.destructive),
-      openWorldHint: true,
-    };
+    // A human-readable title plus read/destructive/idempotent/open-world intent,
+    // so MCP clients can label a tool and warn before a mutating call. The table
+    // lives in src/annotations.js; a tool with no row there throws here.
+    const annotations = annotationsFor(tool.name);
+    const title = annotations.title;
     let handler;
     if (tool.local) {
       handler = LOCAL_HANDLERS[tool.local];
@@ -625,7 +623,7 @@ export function createServer({
     }
     server.registerTool(
       tool.name,
-      { description, inputSchema: shape, annotations },
+      { title, description, inputSchema: shape, annotations },
       run,
     );
   }
