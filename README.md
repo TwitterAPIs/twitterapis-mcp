@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/@twitterapis/mcp)](https://www.npmjs.com/package/@twitterapis/mcp)
 [![license](https://img.shields.io/npm/l/@twitterapis/mcp)](./LICENSE)
 
-@twitterapis/mcp is the official MCP server for TwitterAPIs, built for developers and AI agents that need Twitter / X data inside Claude, Cursor, Windsurf, VS Code or any MCP client, with no X developer account. Your agent can search tweets, read profiles, timelines, followers, threads and lists, and post, reply, like, retweet or follow from an X account you link. Reads cost $0.0008 per call, about $0.04 per 1,000 tweets since a call returns about 20, and creating a tweet costs $0.0016. New accounts get $0.50 of free credit with no card. Every tool maps to one REST endpoint at api.twitterapis.com, and the server holds no state.
+@twitterapis/mcp is the official MCP server for TwitterAPIs, built for developers and AI agents that need Twitter / X data inside Claude, Cursor, Windsurf, VS Code or any MCP client, with no X developer account. Your agent can search tweets, read profiles, timelines, followers, threads and lists, and post, reply, like, retweet or follow from an X account you link. Most reads cost $0.0008 per call, about $0.04 per 1,000 tweets since a call returns about 20, and creating a tweet costs $0.0016. New accounts get $0.50 of free credit with no card. Every tool maps to one REST endpoint at api.twitterapis.com, and the server holds no state.
 
 Install: `npx -y @twitterapis/mcp@latest` with `TWITTERAPIS_KEY` from https://www.twitterapis.com/signup
 
@@ -379,7 +379,17 @@ count: 50
 
 ## Pricing
 
-Calls are billed to your twitterapis.com account. Most endpoints are $0.0008/call: nearly every read (search, profiles, tweets, followers, likes) plus the simple write actions (like, retweet, bookmark, follow and their undos, delete). At the read rate that works out to $0.04 per 1,000 tweets, since each call returns about 20 tweets. The premium endpoints cost a little more: tweet creation, sending a DM (`twitter_dm_send`), and DM reads (`twitter_dm_list`, `twitter_dm_conversation`) at $0.0016/call, full tweet history (`twitter_user_tweets_complete`) at $0.0024/call, a full tweet thread (`twitter_tweet_thread`) and a Grok answer (`twitter_grok_chat`) at $0.004/call, and the article-editing writes (`twitter_article_create`, `twitter_article_update_title`, `twitter_article_update_cover_media`, `twitter_article_update_content`, `twitter_article_publish`, `twitter_article_unpublish`) at $0.0016. The compose surface is $0.0016 for `twitter_draft_create`, `twitter_draft_edit`, `twitter_scheduled_create` and, note, BOTH LIST READS (`twitter_draft_list`, `twitter_scheduled_list`), which are the two reads that are not at the read rate; `twitter_draft_delete` and `twitter_scheduled_delete` are $0.0008/call, while `twitter_article_get`, `twitter_article_list` and `twitter_article_delete` stay at the standard $0.0008/call. The three profile writes (`twitter_update_profile`, `twitter_update_avatar`, `twitter_update_banner`) are $0.0016/call each. Your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing). `twitter_user_about_batch` is billed per account answered, $0.0008 each, so one 100-account call costs up to $0.08. `twitter_check_follow_relationship_batch` bills $0.0008 per pair answered, and `twitter_audience_summary` bills $0.0008 per sample page plus per sampled account answered.
+Calls are billed to your twitterapis.com account, at the price each tool's description states. The standard rate is $0.0008 per call: nearly every read (search, profiles, timelines, followers, likes, lists, bookmarks, articles) and the simple write actions (like, retweet, bookmark, follow, list membership and their undos, delete). At that rate 1,000 tweets cost about $0.04, since a call returns about 20 tweets. The account, feedback and monitoring tools are free, and so is registering, checking or revoking a session from your own cookies. Every tool priced differently from the standard rate:
+
+| Price | Tools |
+|---|---|
+| $0.0008 per billed item | `twitter_user_about_batch` (per account answered, so one 100-account call costs up to $0.08), `twitter_check_follow_relationship_batch` (per pair answered), `twitter_audience_summary` (per sample page plus per sampled account answered) |
+| $0.0016 per call | Posting: `twitter_create_tweet`, `twitter_list_create`. DMs: `twitter_dm_send`, `twitter_dm_list`, `twitter_dm_conversation`. Profile: `twitter_update_profile`, `twitter_update_avatar`, `twitter_update_banner`. Drafts and scheduled posts, the two list reads included: `twitter_draft_create`, `twitter_draft_edit`, `twitter_draft_list`, `twitter_scheduled_create`, `twitter_scheduled_list`. Article edits: `twitter_article_create`, `twitter_article_update_title`, `twitter_article_update_cover_media`, `twitter_article_update_content`, `twitter_article_publish`, `twitter_article_unpublish` |
+| $0.0024 per call | `twitter_user_tweets_complete`, `twitter_tweet_replies_complete` (flat per call, however many tweets or pages come back) |
+| $0.004 per call | `twitter_tweet_thread`, `twitter_grok_chat` |
+| $0.01 per call | `twitter_user_login` (logging in with a username and password) |
+
+Deleting a draft or a scheduled post, and reading, listing or deleting an article, stay at the standard $0.0008 per call. Your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing).
 
 ## Links
 
@@ -392,7 +402,7 @@ Calls are billed to your twitterapis.com account. Most endpoints are $0.0008/cal
 
 **Do I need an X developer account?** No. One TwitterAPIs key covers every tool.
 
-**What do 1,000 tweets cost?** About $0.04. Reads bill $0.0008 per call and a call returns about 20 tweets.
+**What do 1,000 tweets cost?** About $0.04. Standard reads bill $0.0008 per call and a call returns about 20 tweets.
 
 **Can my agent post or send DMs?** Yes, from an X account you link to your key. Undo actions such as delete and unfollow are marked destructive, so your client can ask before running them.
 

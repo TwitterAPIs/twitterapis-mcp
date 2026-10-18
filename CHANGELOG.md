@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+Not yet published; the npm page picks this README up on the next release.
+
+### Fixed (README only)
+
+- **The Pricing section no longer contradicts itself.** It called the draft and scheduled lists "the two reads that are not at the read rate" in the same sentence that priced the two DM reads at $0.0016, and it never priced `twitter_tweet_replies_complete` ($0.0024), `twitter_list_create` ($0.0016), `twitter_create_tweet` ($0.0016) or `twitter_user_login` ($0.01). It is now a table of every tool priced differently from the standard $0.0008 per call, each price read from the tool's own description. The opening and the FAQ say "most reads" and "standard reads" instead of claiming every read costs $0.0008.
+
+### Added (tests)
+
+- **`test/readme-prices.mjs`, wired into `npm test`.** Fails when a price the README states for a named tool (pricing table, prose, tool rows that say free, the provenance example) disagrees with the `Cost:` sentence the package ships in `src/tools.js`, when a tool priced above the standard rate has no stated price, or when a claim about all reads or a count of off-rate reads is false. Run against the 0.23.0 README it reports 12 findings.
+- **The price gate fails closed on shapes it cannot attribute.** A sentence that ends with a tool still waiting for a price it holds ("At $X per call: `tool`."), a tool-table row whose later cells state a price, and a table whose price column is not the first now all go through the same check, and a row that names a tool and a price in any other shape fails. `test/readme-prices.redtest.mjs`, wired into `npm test`, plants each of those three shapes with a wrong price and asserts the gate fails, beside a clean README that must pass.
+
 ## 0.23.0 (2026-10-16)
 
 Released to npm as 0.23.0: the 0.22.2 and 0.22.3 changes below plus the new tool, which makes this a minor release (the version-class gate refuses a patch that adds a tool).
