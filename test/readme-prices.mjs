@@ -15,15 +15,19 @@
 //
 // What it checks, all against src/tools.js and never against another document:
 //   1. Pricing table rows ("| $X per call | `tool`, ... |"): every tool in the
-//      row is priced at X in that unit.
+//      cells after the price cell is priced at X in that unit, whichever column
+//      the price sits in.
 //   2. Prose: within one sentence, every backticked tool name is attributed to
 //      the next price that follows it ("`twitter_dm_list` at $0.0016/call").
-//      The README therefore names the tools first and the price after; a price
-//      written before the tools it covers is not attributed to them. A sentence
+//      The README therefore names the tools first and the price after; a tool
+//      still unpriced when a sentence holding a $ price ends fails as an
+//      unattributed price, so the reversed phrasing cannot pass silently. A sentence
 //      that names no tool but says what something "bills" under a heading naming
 //      exactly one tool is attributed to that tool.
-//   3. Tool-table rows that call a tool free, and tools listed under a heading
-//      that calls its section free, must be free in the catalog.
+//   3. Tool-table rows ("| `tool` | ... |"): every $ amount and every "free" in
+//      the cells after the tool's cell is a price for that tool, and tools listed
+//      under a heading that calls its section free must be free in the catalog.
+//      A row that names a tool and a price in any other shape fails closed.
 //   4. The provenance JSON example: its "cost" must be the named tool's cost.
 //   5. Completeness: every paid tool priced other than the standard $0.0008 per
 //      call has its price stated somewhere, so an omission fails like a typo.
@@ -122,20 +126,39 @@ for (let i = 0; i < lines.length; i++) {
   if (/^\s*\|/.test(line)) {
     const cells = line.split("|").slice(1, -1).map((c) => c.trim());
     if (cells.length < 2 || /^:?-+:?$/.test(cells[0])) continue;
-    // 1) pricing table row: the first cell is a price
-    const p = cells[0].match(/^\$(\d+(?:\.\d+)?)(.*)$/);
-    if (p) {
-      const tools = [...cells.slice(1).join(" | ").matchAll(TOOL_RE)].map((m) => m[1]);
-      if (!tools.length) problems.push(`${at}: pricing row "${cells[0]}" names no tool`);
+    // 1) pricing table row: a cell that IS a price ("$X per call"), with the
+    //    tools it covers in the cells after it. Usually the first cell, but a
+    //    table whose price column comes later is read the same way.
+    const priceCol = cells.findIndex((c) => /^\$\d/.test(c));
+    const toolCol = cells.findIndex((c) => /^`twitter_[a-z0-9_]+`/.test(c));
+    if (priceCol !== -1 && (toolCol === -1 || priceCol < toolCol)) {
+      const p = cells[priceCol].match(/^\$(\d+(?:\.\d+)?)(.*)$/);
+      const tools = [...cells.slice(priceCol + 1).join(" | ").matchAll(TOOL_RE)].map((m) => m[1]);
+      if (!tools.length) problems.push(`${at}: pricing row "${cells[priceCol]}" names no tool`);
       for (const t of tools) claim(t, Number(p[1]), unitAfter(p[2]), `${at} (pricing table)`);
       continue;
     }
-    // 3) tool-table row: `tool` | description that calls it free
-    const tr = cells[0].match(/^`(twitter_[a-z0-9_]+)`$/);
-    if (tr) {
-      const desc = cells.slice(1).join(" ");
-      if (/\bfree\b/i.test(desc)) claim(tr[1], 0, null, `${at} (tool row says free)`);
-      else if (/\bfree\b/i.test(heading) && /_\([^)]*\bfree\b/i.test(heading)) claim(tr[1], 0, null, `${at} (under "${heading}")`);
+    // 3) tool-table row: a cell that starts with `tool`. Every $ amount and
+    //    every "free" in the cells after it is a price for that tool, whatever
+    //    column it sits in ("| `tool` | $X per call |" or a description that
+    //    says "$X per call" or "free"), so no price in the row goes unchecked.
+    if (toolCol !== -1) {
+      const tool = cells[toolCol].match(/^`(twitter_[a-z0-9_]+)`/)[1];
+      const rest = cells.slice(toolCol + 1).join(" | ");
+      let priced = false;
+      for (const m of rest.matchAll(PRICE_RE)) {
+        priced = true;
+        claim(tool, Number(m[1]), unitAfter(rest.slice(m.index + m[0].length)), `${at} (tool row)`);
+      }
+      if (/\bfree\b/i.test(rest)) claim(tool, 0, null, `${at} (tool row says free)`);
+      else if (!priced && /\bfree\b/i.test(heading) && /_\([^)]*\bfree\b/i.test(heading)) claim(tool, 0, null, `${at} (under "${heading}")`);
+      continue;
+    }
+    // Fail closed: a row that names a tool and a price that neither rule above
+    // attributed is a price nobody checked.
+    const rowText = cells.join(" | ");
+    if (/`twitter_[a-z0-9_]+`/.test(rowText) && /\$\d/.test(rowText)) {
+      problems.push(`${at}: table row names a tool and a price in a shape this gate cannot attribute; put the price in its own cell, before the tools it covers or after the tool's own cell`);
     }
     continue;
   }
@@ -164,6 +187,11 @@ for (const { text, line, headingTools: ht } of prose) {
         for (const tool of pending) claim(tool, t.usd, t.unit, at);
         pending = [];
       }
+    }
+    // Fail closed: a tool still waiting for a price when a sentence that holds
+    // a $ price ends ("At $X per call: `tool`.") was never checked.
+    if (pending.length && pricesHere.length) {
+      problems.push(`${at}: unattributed price near ${pending.map((t) => `\`${t}\``).join(", ")}; name the tools before the price`);
     }
 
     // 6a) an unqualified claim that reads, as a class, cost one price

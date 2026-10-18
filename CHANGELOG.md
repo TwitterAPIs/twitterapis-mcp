@@ -11,6 +11,7 @@ Not yet published; the npm page picks this README up on the next release.
 ### Added (tests)
 
 - **`test/readme-prices.mjs`, wired into `npm test`.** Fails when a price the README states for a named tool (pricing table, prose, tool rows that say free, the provenance example) disagrees with the `Cost:` sentence the package ships in `src/tools.js`, when a tool priced above the standard rate has no stated price, or when a claim about all reads or a count of off-rate reads is false. Run against the 0.23.0 README it reports 12 findings.
+- **The price gate fails closed on shapes it cannot attribute.** A sentence that ends with a tool still waiting for a price it holds ("At $X per call: `tool`."), a tool-table row whose later cells state a price, and a table whose price column is not the first now all go through the same check, and a row that names a tool and a price in any other shape fails. `test/readme-prices.redtest.mjs`, wired into `npm test`, plants each of those three shapes with a wrong price and asserts the gate fails, beside a clean README that must pass.
 
 ## 0.23.0 (2026-10-16)
 
