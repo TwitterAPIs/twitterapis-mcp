@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "twitterapis-mcp",
   "display_name": "TwitterAPIs",
-  "version": "0.24.2",
+  "version": "0.25.0",
   "icon": "icon.png",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
   "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
@@ -208,6 +208,10 @@
       "description": "The INVERSE community lookup: given a numeric X USER id, lists the communities that account belongs to, cursor-paginated. Each row is the FULL community object (member counts, rules, topic, policies, admin and creator). Takes a numeric user id ONLY, not a @handle. An EMPTY communities array is a real, successful answer (the account is in no communities), not a not-found. role / can_join / is_pinned / viewer_relationship_type are null on every community returned, because this public read does not run as your account. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/communities/community-memberships"
     },
     {
+      "name": "twitter_creator_commentary_video",
+      "description": "Ranks the accounts posting native video about a topic. Runs one X search page for '<query> filter:native_video' and groups the matching posts by author into a ranked creators list; each row carries rank, the full user profile, video_post_count, quote_post_count, total_views, views_known, median_views, median_reply_count, median_quote_count and up to three top_post_ids. Retweets, posts without video or author, and posts under min_views are skipped and counted per reason in skipped (retweet, no_video, no_author, below_min_views), with tweets_scanned and tweets_matched beside them, so a short list can be told apart from a thin page. The ranking rule is returned as text in ranking on every response. One page covers about 20 posts; next_cursor pages the same search. An empty creators list is a successful answer (nobody posted video on the topic in that page), not an error. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/search/creator-commentary-video"
+    },
+    {
       "name": "twitter_grok_chat",
       "description": "Asks X's own Grok a question as the authenticated account and returns ONE complete JSON reply: the answer text, citations (url, domain, title, snippet) merged and de-duplicated across every search Grok ran, the searches themselves (tool_calls), the conversation and turn ids, and both the requested model and which model ACTUALLY answered (they can differ). Grok reads X in real time, so it answers about what is being said right now, and a bare tweet or status URL as the message returns a structured summary of that post. The reply is text and JSON only: it has no image or media field. Buffered, not streamed. STATELESS: nothing is stored, so a multi-turn conversation carries its prior turns in messages[] along with conversation_id. Requires an authenticated X session for the acting account. Cost: $0.0040 per call. Docs: https://docs.twitterapis.com/docs/reference/grok/grok-chat"
     },
@@ -374,6 +378,14 @@
     {
       "name": "twitter_list_create",
       "description": "Creates a new Twitter/X List owned by the registered X session, with a name and an optional description and privacy flag. Returns ok, action, the new list_id, member_count, and the full list object X returned. A List is PUBLIC unless is_private is \"true\", and a private List is not readable through the public List reads (members, tweets, timeline). Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/list-create"
+    },
+    {
+      "name": "twitter_community_join",
+      "description": "Joins an X Community as the authenticated account, by numeric community id. One upstream call, nothing read first. Returns ok, action ('join'), community_id, status ('joined') and community, which holds only the keys X sent back among id, name, member_count, role and join_policy, or is null when X sent no community object. Refusals come back with the same fields plus an error code and are not billed: 409 join_requires_approval (the community requires moderator approval; no join request is submitted), 409 already_member, 404 community_not_found, 403 account_suspended or account_locked, and 422 write_not_applied with X's own reason. Requires an authenticated X session. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/communities/community-join"
+    },
+    {
+      "name": "twitter_community_leave",
+      "description": "Leaves an X Community as the authenticated account, by numeric community id. One upstream call, nothing read first. Returns ok, action ('leave'), community_id, status ('left') and community, which holds only the keys X sent back among id, name, member_count, role and join_policy, or is null when X sent no community object. Refusals come back with the same fields plus an error code and are not billed: 409 not_member, 404 community_not_found, 403 account_suspended or account_locked, and 422 write_not_applied with X's own reason. Requires an authenticated X session. Reversible for a community open to anyone; a community that requires moderator approval cannot be rejoined through this API, since a join there answers 409 join_requires_approval. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/communities/community-leave"
     },
     {
       "name": "twitter_customer_session",

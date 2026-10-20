@@ -783,6 +783,38 @@ export const TOOL_OVERRIDES = [
       "@PROJECTION",
     ],
   },
+  // ── Reads: creators ────────────────────────────────────────────────────────
+  // GET /twitter/creator/commentary_video (backend #667, backlog 5328). One
+  // search page for `<query> filter:native_video` aggregated by author. Billed
+  // as ONE standard read per call: servePooled passes the creator count as the
+  // result count, but billing records it for audit only and prices per call
+  // (billing endpoint-costs.json "creator/commentary_video": 0.0008). Every
+  // limit below is read from scraper/src/server/routes/creator-commentary-video.ts
+  // and scraper/src/twitter/commentary-video-creators.ts at origin/main.
+  {
+    name: "twitter_creator_commentary_video",
+    endpoint: "/creator/commentary_video",
+    description:
+      "Ranks the accounts posting native video about a topic. Runs one X search page for '<query> filter:native_video' and groups the matching posts by author into a ranked creators list; each row carries rank, the full user profile, video_post_count, quote_post_count, total_views, views_known, median_views, median_reply_count, median_quote_count and up to three top_post_ids. Retweets, posts without video or author, and posts under min_views are skipped and counted per reason in skipped (retweet, no_video, no_author, below_min_views), with tweets_scanned and tweets_matched beside them, so a short list can be told apart from a thin page. The ranking rule is returned as text in ranking on every response. One page covers about 20 posts; next_cursor pages the same search. An empty creators list is a successful answer (nobody posted video on the topic in that page), not an error.",
+    args: [
+      { name: "query", minLength: 1,
+        describe:
+          "Topic to search, X search operators allowed, e.g. 'ai agents' or 'from:nasa lang:en'. ' filter:native_video' is appended unless the query already has it, and the result is capped at 500 bytes (a longer query is rejected with a 400, because X answers an over-long search with an empty page rather than an error). A query that excludes native video (-filter:native_video) is rejected with a 400." },
+      { name: "min_views", type: "int", min: 0,
+        describe:
+          "Optional. A post counts toward a creator only when X reports at least this many views. Whole number, default 0. Posts below it are counted in skipped.below_min_views." },
+      { name: "product", enum: ["Top","Latest"],
+        describe:
+          "Optional. 'Top' (default) is X's engagement ranking; 'Latest' is newest first. Any other value is rejected with a 400." },
+      { name: "count", type: "int", min: 1, max: 20,
+        describe:
+          "Optional. Page size asked of X, 1 to 20 (default 20). Advisory: X serves at most about 20 posts per search page, and the response reports requested_count and effective_count." },
+      { name: "cursor",
+        describe:
+          "Opaque pagination cursor from a previous response's next_cursor field. Absent, the first page is returned; with it, the next page of the same search." },
+      "@PROJECTION",
+    ],
+  },
   {
     name: "twitter_grok_chat",
     endpoint: "/grok/chat",
@@ -1500,6 +1532,45 @@ export const TOOL_OVERRIDES = [
       { name: "is_private", type: "boolean",
         describe:
           "Optional. The string \"true\" creates a PRIVATE List. Defaults to false (public), because a public List can be made private later while a leak cannot be undone. A private List is not readable through the public List reads." },
+      "@INLINE",
+    ],
+  },
+  // ── Writes: Communities (join / leave) ─────────────────────────────────────
+  // POST /twitter/community/join and /leave (backend #667, task #199). Like the
+  // List writes these run on the CUSTOMER'S OWN X SESSION (serveCustomer), never
+  // another account, because joining changes which account is a member.
+  //
+  // jsonBody deliberately UNSET, checked rather than copied: communityWriteRoute
+  // in twitterapis-backend scraper/src/server/routes/community-write.ts reads
+  // community_id through resolveBodyParam (query string or JSON body), and the
+  // backend's route-body-modes.json classifies both routes as mode "either".
+  //
+  // Status codes are read from COMMUNITY_WRITE_STATUS in the same file. Every
+  // non-200 is unbilled. An approval-gated community answers 409
+  // join_requires_approval and nothing else is submitted.
+  {
+    name: "twitter_community_join",
+    endpoint: "/community/join",
+    write: true,
+    description:
+      "Joins an X Community as the authenticated account, by numeric community id. One upstream call, nothing read first. Returns ok, action ('join'), community_id, status ('joined') and community, which holds only the keys X sent back among id, name, member_count, role and join_policy, or is null when X sent no community object. Refusals come back with the same fields plus an error code and are not billed: 409 join_requires_approval (the community requires moderator approval; no join request is submitted), 409 already_member, 404 community_not_found, 403 account_suspended or account_locked, and 422 write_not_applied with X's own reason. Requires an authenticated X session. Reversible.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1601841656147345410'. Digits only; a missing or malformed id is rejected with a 400 before any upstream call." },
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_community_leave",
+    endpoint: "/community/leave",
+    write: true, destructive: true,
+    description:
+      "Leaves an X Community as the authenticated account, by numeric community id. One upstream call, nothing read first. Returns ok, action ('leave'), community_id, status ('left') and community, which holds only the keys X sent back among id, name, member_count, role and join_policy, or is null when X sent no community object. Refusals come back with the same fields plus an error code and are not billed: 409 not_member, 404 community_not_found, 403 account_suspended or account_locked, and 422 write_not_applied with X's own reason. Requires an authenticated X session. Reversible for a community open to anyone; a community that requires moderator approval cannot be rejoined through this API, since a join there answers 409 join_requires_approval.",
+    args: [
+      { name: "community_id",
+        describe:
+          "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1601841656147345410'. Digits only; a missing or malformed id is rejected with a 400 before any upstream call." },
       "@INLINE",
     ],
   },

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.25.0 (2026-10-20)
+
+Three new tools for three API routes, so a minor release. 116 tools: 70 reads and 46 writes.
+
+### Added
+
+- **`twitter_community_join`** and **`twitter_community_leave`** (POST /twitter/community/join, /twitter/community/leave): join or leave an X Community as your own linked X session, by numeric `community_id`. One upstream call each, nothing read first. A 200 returns `ok`, `action`, `community_id`, `status` (`joined` or `left`) and `community`, which holds only the keys X sent back (or null). Refusals keep the same fields, add an error code and are not billed: 409 `join_requires_approval` (a community that needs moderator approval; no join request is submitted), 409 `already_member` / `not_member`, 404 `community_not_found`, 403 `account_suspended` / `account_locked`, 422 `write_not_applied`. $0.0008 per call. Leave is marked destructive.
+- **`twitter_creator_commentary_video`** (GET /twitter/creator/commentary_video): who posts native video about a topic. One search page for `<query> filter:native_video`, grouped by author into a ranked `creators` list with video and quote post counts, total and median views, median replies and quotes, and up to three top post ids each. Skipped posts are counted per reason (retweet, no video, no author, below `min_views`), and the ranking rule comes back as text in every response. Takes `query`, `min_views`, `product` (`Top` or `Latest`), `count` (1 to 20), `cursor`, plus `fields` and `compact`. $0.0008 per call.
+
+### Changed (tests)
+
+- `test/tools.test.mjs` counts move to 116 / 70 / 46 and gain two checks: the community writes are POST session writes taking only `community_id` plus the inline credentials (leave destructive, join not), and the creator read enforces a required `query`, `product` Top|Latest, `count` 1 to 20 and a non-negative `min_views`.
+
 ## 0.24.2 (2026-10-20)
 
 A wording-only patch: no tool, argument or schema changed.

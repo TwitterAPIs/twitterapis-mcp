@@ -287,7 +287,7 @@ already in the catalog.
 2. **At login.** \`twitter_user_login\` takes the same two, and the login itself
    is driven through the proxy, so the cookies are minted from the address they
    will later be used from.
-3. **Per call, together with cookies.** 42 of the 47 session tools take
+3. **Per call, together with cookies.** 44 of the 49 session tools take
    \`auth_token\`, \`ct0\`, \`proxy_url\` and \`user_agent\` directly and send them as
    request headers rather than in the URL. This route is all or nothing: the
    headers are attached only when BOTH \`auth_token\` and \`ct0\` are present in

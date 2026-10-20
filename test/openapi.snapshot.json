@@ -14887,6 +14887,532 @@
         ]
       }
     },
+    "/community/join": {
+      "post": {
+        "operationId": "community-join",
+        "summary": "Join Community",
+        "description": "Join an X Community as your own linked X session (registered, or passed per call), never another account. One upstream call, nothing read first. Returns ok, action, community_id, status and the community object X sent back, or null when X sent none. Every non-200 is unbilled. Cost: $0.0008 per call.",
+        "tags": [
+          "Communities"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "community_id": {
+                    "type": "string",
+                    "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL.",
+                    "example": "1601841656147345410"
+                  }
+                },
+                "required": [
+                  "community_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The membership change applied: status is \"joined\".",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the membership change applied."
+                    },
+                    "action": {
+                      "type": "string",
+                      "description": "join or leave."
+                    },
+                    "community_id": {
+                      "type": "string",
+                      "description": "The community the write targeted."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "joined or left."
+                    },
+                    "community": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": true,
+                      "description": "Only the keys X sent among id, name, member_count, role, join_policy; null when X sent no Community object."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "action": "join",
+                  "community_id": "1601841656147345410",
+                  "status": "joined",
+                  "community": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "community_id missing or not a numeric id; no upstream call was made.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key, or the linked X session is dead.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "account_suspended or account_locked: X refused the acting account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "community_not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "join_requires_approval (the community needs moderator approval; nothing was submitted), already_member, or session_required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "write_not_applied: X refused for a reason that cannot be placed; reason carries X's own classification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Upstream error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/community/leave": {
+      "post": {
+        "operationId": "community-leave",
+        "summary": "Leave Community",
+        "description": "Leave an X Community as your own linked X session (registered, or passed per call), never another account. One upstream call, nothing read first. Returns ok, action, community_id, status and the community object X sent back, or null when X sent none. Every non-200 is unbilled. Cost: $0.0008 per call.",
+        "tags": [
+          "Communities"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "community_id": {
+                    "type": "string",
+                    "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL.",
+                    "example": "1601841656147345410"
+                  }
+                },
+                "required": [
+                  "community_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The membership change applied: status is \"left\".",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the membership change applied."
+                    },
+                    "action": {
+                      "type": "string",
+                      "description": "join or leave."
+                    },
+                    "community_id": {
+                      "type": "string",
+                      "description": "The community the write targeted."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "joined or left."
+                    },
+                    "community": {
+                      "type": "object",
+                      "nullable": true,
+                      "additionalProperties": true,
+                      "description": "Only the keys X sent among id, name, member_count, role, join_policy; null when X sent no Community object."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "action": "leave",
+                  "community_id": "1601841656147345410",
+                  "status": "left",
+                  "community": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "community_id missing or not a numeric id; no upstream call was made.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key, or the linked X session is dead.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "account_suspended or account_locked: X refused the acting account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "community_not_found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "not_member, or session_required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "write_not_applied: X refused for a reason that cannot be placed; reason carries X's own classification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Upstream error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/creator/commentary_video": {
+      "get": {
+        "operationId": "creator-commentary-video",
+        "summary": "Commentary Video Creators",
+        "description": "Rank the accounts posting native video about a topic. One search page for `<query> filter:native_video`, aggregated by author: video post count, quote posts, total and median views, median replies and quotes, and up to three top post ids per creator. Retweets, rows without video or author, and posts under min_views are skipped and counted per reason. The ranking rule is echoed in every response. Cost: $0.0008 per call.",
+        "tags": [
+          "Search"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "description": "Topic to search, X search operators allowed, up to 500 bytes. A query that excludes native video is rejected.",
+            "schema": {
+              "type": "string",
+              "description": "Topic to search, X search operators allowed, up to 500 bytes. A query that excludes native video is rejected.",
+              "example": "ai agents"
+            },
+            "example": "ai agents"
+          },
+          {
+            "name": "min_views",
+            "in": "query",
+            "required": false,
+            "description": "A post counts only when X reports at least this many views. Whole number, default 0.",
+            "schema": {
+              "type": "integer",
+              "description": "A post counts only when X reports at least this many views. Whole number, default 0.",
+              "example": "10000"
+            },
+            "example": "10000"
+          },
+          {
+            "name": "product",
+            "in": "query",
+            "required": false,
+            "description": "Top (default, X's engagement ranking) or Latest (newest first).",
+            "schema": {
+              "type": "string",
+              "description": "Top (default, X's engagement ranking) or Latest (newest first).",
+              "example": "Top"
+            },
+            "example": "Top"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Page size asked of X, 1 to 20, advisory: X serves at most about 20 tweets per page.",
+            "schema": {
+              "type": "integer",
+              "description": "Page size asked of X, 1 to 20, advisory: X serves at most about 20 tweets per page.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Pagination cursor from a previous response's next_cursor.",
+            "schema": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response's next_cursor."
+            }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ranked creators for one search page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": {
+                      "type": "string"
+                    },
+                    "search_query": {
+                      "type": "string"
+                    },
+                    "product": {
+                      "type": "string"
+                    },
+                    "min_views": {
+                      "type": "integer"
+                    },
+                    "count": {
+                      "type": "integer"
+                    },
+                    "tweets_scanned": {
+                      "type": "integer"
+                    },
+                    "tweets_matched": {
+                      "type": "integer"
+                    },
+                    "skipped": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "has_more": {
+                      "type": "boolean"
+                    },
+                    "ranking": {
+                      "type": "string"
+                    },
+                    "creators": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "query missing, over 500 bytes or excluding native video; min_views, product or count out of range.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Upstream error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/media/upload": {
       "post": {
         "operationId": "media-upload",
