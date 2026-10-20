@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.24.1 (2026-10-20)
+
+A wording-only patch: no tool, argument or schema changed.
+
+### Changed
+
+- **Tool descriptions, the provenance resource and the README no longer describe how reads are sourced.** Community, monitor and list descriptions now say what the caller gets ("a public read that needs no session", "acts as your own account", "monitoring capacity") instead of naming internal plumbing. The provenance `served_by` value for a key-only call is now "the API key alone (a public read, no linked account)", and the paywall answer counts "public reads".
+- **A new check, `test/sourcing-disclosure.mjs`, runs in `npm test`** over everything the package ships and fails on that class of wording, so it cannot come back.
+
 ## 0.24.0 (2026-10-19)
 
 Released to npm as 0.24.0: the README pricing fix below plus MCP prompts, a new capability, which makes this a minor release.
@@ -59,7 +68,7 @@ Released to npm as 0.23.0: the 0.22.2 and 0.22.3 changes below plus the new tool
   time.
 - **Row provenance**, `provenance://tool/{tool_name}`, a resource template returning where a row
   came from: the REST endpoint and method, read or write, whether the call ran as the caller's
-  linked X account or the service's shared account pool, the per-call price and the docs URL. All
+  linked X account or on the API key alone, the per-call price and the docs URL. All
   of it is derived from the committed catalog. Row-level upstream facts (when the service read it
   from X, whether an upstream cache answered, which account read it) are not in any response this
   package receives, so they are reported as absent rather than guessed.
@@ -474,7 +483,7 @@ Catalog is now **94 tools: 60 reads and 34 write actions**.
 
   The two are separated by their PARAMETER SETS, not by their names, and each tool description says so and names the other, so a model picking between them cannot silently answer a different question than the one asked. A regression check in `test/tools.test.mjs` pins the difference so a later edit cannot harmonise it away.
 
-  Three writes that run on the CUSTOMER'S REGISTERED X SESSION rather than a pooled account, because a List belongs to a specific account:
+  Three writes that run on the CUSTOMER'S REGISTERED X SESSION rather than any other account, because a List belongs to a specific account:
   - **`twitter_list_create`** (POST /twitter/list/create): create a List with a `name` and an optional `description` and `is_private`. A List is public unless you explicitly ask otherwise, and a private List is not readable by the public List read tools.
   - **`twitter_list_add_member`** and **`twitter_list_remove_member`** (POST /twitter/list/add_member, /twitter/list/remove_member): add or remove one account on a List you own. Both return the List's `member_count` read back from X after the write, which is the field to check rather than `ok` alone: X returns a populated `errors[]` on 100% of successful calls to these ops, so the error array cannot tell you whether your write applied, while the count can. `member_count` is null when X returned no list object at all, which is itself the not-applied signal. A write that does not apply comes back with the SAME field layout plus a 422 and a machine-readable reason, and is not billed.
 
@@ -484,7 +493,7 @@ Catalog is now **94 tools: 60 reads and 34 write actions**.
 
 ### Added
 
-- **6 new reads: X Communities and tweet quotes.** `twitter_community_info` (one Community by numeric id: name, counts, join policy, rules, topic, banners, admin), `twitter_community_members` (the member roster, each row carrying that member's `Admin` / `Moderator` / `Member` role), `twitter_community_moderators` (moderators and admins from their own upstream operation, not a filter over the roster), `twitter_community_tweets` (the post timeline, with the pinned post returned as its own `pinned` field), `twitter_community_memberships` (the inverse lookup: every Community a given numeric `user_id` belongs to), and `twitter_tweet_quotes` (tweets that quote a tweet, with their text). The five Community reads are served by the account pool rather than by your session, which is why `role`, `can_join`, `is_pinned` and `viewer_relationship_type` come back null on them: those four describe the account that made the upstream call, and on a pooled read that is a rotating account you have never heard of. `twitter_tweet_quotes` is search-backed, so its `count` is what search returned rather than the tweet's true `quote_count`. The catalog moved to **86 tools: 55 reads and 31 write actions**. (This entry was written on 2026-08-17: the 0.8.0 release bumped the package version and shipped the tools but left no changelog entry behind it.)
+- **6 new reads: X Communities and tweet quotes.** `twitter_community_info` (one Community by numeric id: name, counts, join policy, rules, topic, banners, admin), `twitter_community_members` (the member roster, each row carrying that member's `Admin` / `Moderator` / `Member` role), `twitter_community_moderators` (moderators and admins from their own upstream operation, not a filter over the roster), `twitter_community_tweets` (the post timeline, with the pinned post returned as its own `pinned` field), `twitter_community_memberships` (the inverse lookup: every Community a given numeric `user_id` belongs to), and `twitter_tweet_quotes` (tweets that quote a tweet, with their text). The five Community reads are public reads that do not run as your session, which is why `role`, `can_join`, `is_pinned` and `viewer_relationship_type` come back null on them: those four describe the account that made the upstream call, and on a public read that account is not you. `twitter_tweet_quotes` is search-backed, so its `count` is what search returned rather than the tweet's true `quote_count`. The catalog moved to **86 tools: 55 reads and 31 write actions**. (This entry was written on 2026-08-17: the 0.8.0 release bumped the package version and shipped the tools but left no changelog entry behind it.)
 
 ## 0.7.8 (2026-08-16)
 
@@ -549,7 +558,7 @@ Catalog is now **94 tools: 60 reads and 34 write actions**.
 
 ### Removed
 
-- **`twitter_users_by_ids` removed from the tool list.** X refuses the batch `UsersByRestIds` lookup for the pooled cookie sessions this package's REST backend reads through (confirmed by instrumenting the request and verifying a token was actually attached before it was rejected, not just repeated 403s). The REST endpoint itself stays live and returns an honest `503 endpoint_unavailable` rather than being deleted, but a tool the model can call and always get a hard failure from is worse than no tool at all, so it is out of the catalog. Use `twitter_user_info_by_id` instead: same user object, one id per call. The catalog is now **61 tools: 40 reads and 21 write actions**.
+- **`twitter_users_by_ids` removed from the tool list.** X refuses the batch `UsersByRestIds` lookup on the read path this package's REST backend uses (confirmed by instrumenting the request and verifying a token was actually attached before it was rejected, not just repeated 403s). The REST endpoint itself stays live and returns an honest `503 endpoint_unavailable` rather than being deleted, but a tool the model can call and always get a hard failure from is worse than no tool at all, so it is out of the catalog. Use `twitter_user_info_by_id` instead: same user object, one id per call. The catalog is now **61 tools: 40 reads and 21 write actions**.
 
 ## 0.6.9 (2026-08-10)
 
