@@ -568,8 +568,9 @@ export function createServer({
   }
   for (const p of PLAYBOOKS) {
     // An X handle: 1 to 15 letters, digits or underscores, with an optional leading @.
+    // Empty is allowed: a form that sends a blank optional field as "" gets the plain prompt.
     const argSchema = p.prompt
-      ? { [p.prompt.arg]: z.string().regex(/^@?[A-Za-z0-9_]{1,15}$/, "an X handle: 1 to 15 letters, digits or underscores").optional().describe(p.prompt.describe) }
+      ? { [p.prompt.arg]: z.string().regex(/^(@?[A-Za-z0-9_]{1,15})?$/, "an X handle: 1 to 15 letters, digits or underscores, or empty").optional().describe(p.prompt.describe) }
       : undefined;
     server.registerPrompt(
       p.name,
