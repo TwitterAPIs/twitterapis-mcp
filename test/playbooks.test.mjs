@@ -309,6 +309,35 @@ const client = await connect();
   ok("the hosted mode (inlineCredentials:false) serves the same resources and the same provenance");
 }
 
+// ── prompts (Tab sheet check 2026-10-19) ──────────────────────────────────────
+// One prompt per playbook, and the recipe a prompt hands over is the SAME bytes
+// resources/read serves, so the two surfaces cannot drift apart.
+{
+  const { prompts } = await client.listPrompts();
+  assert.deepEqual(prompts.map((p) => p.name), PLAYBOOKS.map((p) => p.name), "prompts/list must carry every playbook, in order");
+  for (const p of prompts) assert.ok(p.title && p.description && p.description.length > 80, `${p.name} needs a title and a real description`);
+  ok(`prompts/list carries all ${prompts.length} playbooks, each titled and described`);
+
+  for (const p of PLAYBOOKS) {
+    const got = await client.getPrompt({ name: p.name, arguments: {} });
+    const res = got.messages.find((m) => m.content.type === "resource");
+    const read = (await client.readResource({ uri: p.uri })).contents[0].text;
+    assert.equal(res?.content.resource.uri, p.uri);
+    assert.equal(res?.content.resource.text, read, `${p.name}: the prompt must embed exactly what resources/read serves`);
+    assert.ok(read.length > 400, `${p.name}: not a stub`);
+  }
+  ok("every prompt embeds its playbook byte-for-byte as resources/read serves it");
+
+  const audit = await client.getPrompt({ name: "account-audit", arguments: { handle: "@openai" } });
+  assert.equal(audit.messages.at(-1).content.text, "Run this playbook for @openai.");
+  const bare = await client.getPrompt({ name: "account-audit", arguments: {} });
+  assert.equal(bare.messages.at(-1).content.text, "Run this playbook.");
+  const { prompts: listed } = await client.listPrompts();
+  assert.deepEqual(listed.find((p) => p.name === "account-audit").arguments.map((a) => [a.name, a.required]), [["handle", false]]);
+  assert.equal(listed.find((p) => p.name === "link-x-account").arguments, undefined, "a playbook without an argument declares none");
+  ok("a handle argument is optional, the leading @ is normalised, and argument-free playbooks declare none");
+}
+
 await client.close();
 
 console.log(`\nplaybooks: ${n} passed, 0 failed`);

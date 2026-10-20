@@ -336,6 +336,7 @@ export const PLAYBOOKS = [
     description:
       "A recipe for watching an X launch in near real time with this server's monitoring and read tools: set up a monitor and webhook before the launch, track true counts and amplifiers during it, and collect the amplifier profiles after.",
     text: LAUNCH_DAY_MONITOR,
+    prompt: { arg: "handle", describe: "The X handle the launch posts from, without the @.", ask: (v) => `Run this playbook for the launch from @${v}.` },
   },
   {
     uri: "playbook://competitor-follower-outreach",
@@ -344,6 +345,7 @@ export const PLAYBOOKS = [
     description:
       "A recipe for turning another account's followers into a qualified outreach list with this server's follower, profile and relationship reads, then contacting them from a linked X account.",
     text: COMPETITOR_FOLLOWER_OUTREACH,
+    prompt: { arg: "handle", describe: "The X handle whose followers to qualify, without the @.", ask: (v) => `Run this playbook on the followers of @${v}.` },
   },
   {
     uri: "playbook://account-audit",
@@ -352,6 +354,7 @@ export const PLAYBOOKS = [
     description:
       "A recipe for auditing one X account with this server's profile, timeline, media, mention, audience and engagement reads, including which numbers share an observation window.",
     text: ACCOUNT_AUDIT,
+    prompt: { arg: "handle", describe: "The X handle to audit, without the @.", ask: (v) => `Run this playbook for @${v}.` },
   },
   {
     uri: "playbook://link-x-account",

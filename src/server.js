@@ -12,6 +12,7 @@
 
 import { createRequire } from "node:module";
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "./tools.js";
 
 // COUNTS ARE DERIVED FROM THE CATALOG, NEVER TYPED. A review found the paywall
@@ -536,6 +537,33 @@ export function createServer({
       p.uri,
       { title: p.title, description: p.description, mimeType: PLAYBOOK_MIME },
       async (uri) => ({ contents: [{ uri: uri.href, mimeType: PLAYBOOK_MIME, text: p.text }] }),
+    );
+  }
+
+  // ── Prompts ────────────────────────────────────────────────────────────────
+  // One prompt per playbook (Tab sheet check 2026-10-19: a server with tools and
+  // resources but no prompts gives a client nothing to offer as a slash command).
+  // The prompt hands the playbook over as an embedded resource, so the recipe a
+  // user picks is byte-for-byte the one resources/read serves, never a copy that
+  // can drift. Its description is the playbook's, already held to the listed-text
+  // rules in test/description-compliance.mjs. A playbook with a `prompt.arg` takes
+  // that one optional argument; the rest take none.
+  for (const p of PLAYBOOKS) {
+    const argSchema = p.prompt ? { [p.prompt.arg]: z.string().max(64).optional().describe(p.prompt.describe) } : undefined;
+    server.registerPrompt(
+      p.name,
+      { title: p.title, description: p.description, ...(argSchema ? { argsSchema: argSchema } : {}) },
+      async (args = {}) => {
+        const raw = p.prompt ? String(args[p.prompt.arg] ?? "").trim().replace(/^@/, "") : "";
+        const ask = p.prompt && raw ? p.prompt.ask(raw) : "Run this playbook.";
+        return {
+          description: p.description,
+          messages: [
+            { role: "user", content: { type: "resource", resource: { uri: p.uri, mimeType: PLAYBOOK_MIME, text: p.text } } },
+            { role: "user", content: { type: "text", text: ask } },
+          ],
+        };
+      },
     );
   }
 
