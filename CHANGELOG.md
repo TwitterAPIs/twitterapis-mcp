@@ -1,8 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.24.0 (2026-10-19)
 
-Not yet published; the npm page picks this README up on the next release.
+Released to npm as 0.24.0: the README pricing fix below plus MCP prompts, a new capability, which makes this a minor release.
+
+### Added (prompts)
+
+- **One prompt per playbook.** `prompts/list` used to answer "Method not found". It now lists the five playbooks (launch-day monitor, competitor-follower outreach, account audit, link an X account, residential egress), each with the playbook's own title and description. `prompts/get` hands the playbook over as an embedded resource, byte-for-byte what `resources/read` serves, plus a closing line. Launch-day monitor, competitor-follower outreach and account audit take one optional `handle` (an X handle, a leading @ is fine, empty means none).
+- **`prompts/get` without an `arguments` field works.** The field is optional in MCP, so a call that leaves it out gets the plain prompt instead of an invalid-arguments error.
+- **Prompt and prompt-argument descriptions are held to the same listed-text rules as tools and resources** in `test/description-compliance.mjs`.
 
 ### Fixed (README only)
 
