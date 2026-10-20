@@ -73,6 +73,7 @@ const ROWS = {
   twitter_community_moderators: READ_X("Get Community Moderators"),
   twitter_community_tweets: READ_X("Get Community Tweets"),
   twitter_community_memberships: READ_X("Get Community Memberships"),
+  twitter_creator_commentary_video: READ_X("Rank Video Creators by Topic"),
   twitter_trends: READ_X("Get Trends"),
   twitter_trends_locations: READ_X("List Trend Locations"),
 
@@ -127,6 +128,10 @@ const ROWS = {
   twitter_list_add_member: ["Add List Member", false, false, true, true],
   twitter_list_remove_member: ["Remove List Member", false, true, true, true],
   twitter_list_create: ["Create List", false, false, false, true],
+  // A repeat join answers 409 already_member and a repeat leave 409 not_member,
+  // so neither has a further effect when repeated.
+  twitter_community_join: ["Join Community", false, false, true, true],
+  twitter_community_leave: ["Leave Community", false, true, true, true],
 
   // X session linking. Registering replaces any stored session and validates it
   // live on X; a password login mints a fresh session on X every time.

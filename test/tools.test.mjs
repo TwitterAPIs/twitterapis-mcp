@@ -76,9 +76,11 @@ const writes = TOOLS.filter((t) => t.write);
 // 2026-10-01 (#45): twitter_user_about_batch, a read. 110 endpoints, 66 reads, 44 writes.
 // 2026-10-01 (#45 parts 2-3): follow batch + audience summary, two reads. 112, 68, 44.
 // 2026-10-15: twitter_tweet_replies_complete, one read. 113, 69, 44.
-const EXPECTED_TOOLS = 113;
-const EXPECTED_READS = 69;
-const EXPECTED_WRITES = 44;
+// 2026-10-20 (#206, backend #667): twitter_creator_commentary_video, a read, and
+// twitter_community_join / twitter_community_leave, two writes. 116, 70, 46.
+const EXPECTED_TOOLS = 116;
+const EXPECTED_READS = 70;
+const EXPECTED_WRITES = 46;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -193,6 +195,24 @@ check("list writes are POST writes on the customer's own session (inline creds e
   const t = TOOLS.find((x) => x.name === n);
   return t && t.method === "POST" && t.write === true && !t.jsonBody && t.shape.auth_token && t.shape.ct0;
 }));
+// Community join/leave (#206): POST writes on the customer's own session, the
+// backend reads community_id query-or-body (route-body-modes "either"), and
+// leave is the destructive half of the pair.
+check("community join/leave are POST writes on the customer's own session (inline creds exposed, community_id only)", ["twitter_community_join", "twitter_community_leave"].every((n) => {
+  const t = TOOLS.find((x) => x.name === n);
+  return t && t.method === "POST" && t.write === true && !t.jsonBody && t.shape.auth_token && t.shape.ct0
+    && JSON.stringify(Object.keys(t.shape)) === JSON.stringify(["community_id", "auth_token", "ct0", "proxy_url", "user_agent"])
+    && Boolean(t.destructive) === (n === "twitter_community_leave");
+}));
+check("creator/commentary_video is a GET read: query required, product Top|Latest, count 1..20, no session args", (() => {
+  const t = TOOLS.find((x) => x.name === "twitter_creator_commentary_video");
+  if (!t || t.write || t.method || t.headerArgs) return false;
+  const s = t.shape;
+  return !s.query.isOptional() && s.query.safeParse("").success === false
+    && s.product.safeParse("Latest").success && !s.product.safeParse("Media").success
+    && s.count.safeParse(20).success && !s.count.safeParse(21).success
+    && s.min_views.safeParse(0).success && !s.min_views.safeParse(-1).success;
+})());
 
 // Monitoring family (task #14/#488): the first tools in this catalog that carry
 // a REST path parameter (/monitor/{id}, /webhook/{id}, /webhook/{id}/test) and

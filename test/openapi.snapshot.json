@@ -2395,6 +2395,385 @@
         ]
       }
     },
+    "/creator/commentary_video": {
+      "get": {
+        "operationId": "creator-commentary-video",
+        "summary": "Commentary Video Creators",
+        "description": "Search X for native-video posts about a topic and get back the creators behind them, ranked. Each call reads one search page, keeps posts that carry native video, drops retweets, applies your min_views bar and groups what is left by author, with every exclusion counted by reason. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "tags": [
+          "Search"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/creator/commentary_video?query=ai%20agents%20lang%3Aen&min_views=10000\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/creator/commentary_video\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"query\": \"ai agents lang:en\", \"min_views\": 10000},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/creator/commentary_video\");\nurl.search = new URLSearchParams({ query: \"ai agents lang:en\", min_views: \"10000\" }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rank the creators posting native video about a topic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": {
+                      "type": "string",
+                      "description": "Echo of the query you sent, trimmed."
+                    },
+                    "search_query": {
+                      "type": "string",
+                      "description": "The search actually run: your query with filter:native_video appended when you did not include it."
+                    },
+                    "product": {
+                      "type": "string",
+                      "description": "The ranking applied to the search: Top or Latest."
+                    },
+                    "min_views": {
+                      "type": "integer",
+                      "description": "The view bar applied, 0 when none."
+                    },
+                    "requested_count": {
+                      "type": "integer",
+                      "description": "The count you sent (20 when omitted), or null when it was not a number.",
+                      "nullable": true
+                    },
+                    "effective_count": {
+                      "type": "integer",
+                      "description": "The page size actually asked of X, count clamped to 1 to 20."
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of creators returned on this page."
+                    },
+                    "tweets_scanned": {
+                      "type": "integer",
+                      "description": "Posts the search page held."
+                    },
+                    "tweets_matched": {
+                      "type": "integer",
+                      "description": "Posts that counted toward a creator."
+                    },
+                    "skipped": {
+                      "type": "object",
+                      "description": "Posts left out, counted by reason: retweet, no_video, no_author and below_min_views.",
+                      "additionalProperties": true
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Cursor for the next page of the same search, or null when there is none.",
+                      "nullable": true
+                    },
+                    "has_more": {
+                      "type": "boolean",
+                      "description": "True when the search page returned posts and carried a usable next_cursor. It follows the posts scanned, not the creators kept, so a page with zero creators can still have more."
+                    },
+                    "incomplete": {
+                      "type": "boolean",
+                      "description": "Present and true only when X soft-limited the search that served this page, so the page may be missing posts. Absent on every healthy page."
+                    },
+                    "incomplete_reason": {
+                      "type": "string",
+                      "description": "Why the page is incomplete: upstream_soft_limit. Present only with incomplete."
+                    },
+                    "upstream_limit": {
+                      "type": "object",
+                      "description": "X's own limit signal for this page (its error codes and message). Present only with incomplete.",
+                      "additionalProperties": true
+                    },
+                    "ranking": {
+                      "type": "string",
+                      "description": "The ranking rule in plain words, the same in every response."
+                    },
+                    "creators": {
+                      "type": "array",
+                      "description": "The creators on this page, in rank order.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "rank": {
+                            "type": "integer",
+                            "description": "1-based position under the ranking rule."
+                          },
+                          "user": {
+                            "allOf": [
+                              {
+                                "$ref": "#/components/schemas/User"
+                              }
+                            ],
+                            "description": "The author's full user object, the same shape User Info returns."
+                          },
+                          "video_post_count": {
+                            "type": "integer",
+                            "description": "This creator's matching native-video posts on the page."
+                          },
+                          "quote_post_count": {
+                            "type": "integer",
+                            "description": "How many of those posts are quote posts, a reaction or take on another post."
+                          },
+                          "total_views": {
+                            "type": "integer",
+                            "description": "Sum of view_count over the posts whose views X reported."
+                          },
+                          "views_known": {
+                            "type": "integer",
+                            "description": "How many of the posts had a reported view_count; the view figures cover only these."
+                          },
+                          "median_views": {
+                            "type": "number",
+                            "description": "Median view_count over the posts with reported views, or null when none reported views.",
+                            "nullable": true
+                          },
+                          "median_reply_count": {
+                            "type": "number",
+                            "description": "Median reply_count over the matching posts."
+                          },
+                          "median_quote_count": {
+                            "type": "number",
+                            "description": "Median quote_count (times the post was quoted) over the matching posts."
+                          },
+                          "top_post_ids": {
+                            "type": "array",
+                            "description": "Up to 3 post ids, most viewed first.",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "query": "ai agents lang:en",
+                  "search_query": "ai agents lang:en filter:native_video",
+                  "product": "Top",
+                  "min_views": 10000,
+                  "requested_count": 20,
+                  "effective_count": 20,
+                  "count": 1,
+                  "tweets_scanned": 19,
+                  "tweets_matched": 2,
+                  "skipped": {
+                    "retweet": 1,
+                    "no_video": 0,
+                    "no_author": 0,
+                    "below_min_views": 16
+                  },
+                  "next_cursor": "DAADDAABCgABF...",
+                  "has_more": true,
+                  "ranking": "Creators are ordered by: 1) video_post_count, highest first; 2) median_views, highest first, creators with no reported views last; 3) total_views, highest first; 4) median_reply_count, highest first; 5) user id, numerically ascending, so equal creators always come back in the same order.",
+                  "creators": [
+                    {
+                      "rank": 1,
+                      "user": {
+                        "id": "1281109705495130113",
+                        "username": "agentbuilder",
+                        "name": "Agent Builder",
+                        "followers_count": 48210
+                      },
+                      "video_post_count": 2,
+                      "quote_post_count": 1,
+                      "total_views": 184300,
+                      "views_known": 2,
+                      "median_views": 92150,
+                      "median_reply_count": 41,
+                      "median_quote_count": 6.5,
+                      "top_post_ids": [
+                        "1980112233445566778",
+                        "1979887766554433221"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "description": "The topic to search. X search operators work as on Advanced Tweet Search. filter:native_video is appended unless you included it; -filter:native_video is refused. The full query, with the filter added, must be 500 bytes or fewer.",
+            "schema": {
+              "type": "string",
+              "description": "The topic to search. X search operators work as on Advanced Tweet Search. filter:native_video is appended unless you included it; -filter:native_video is refused. The full query, with the filter added, must be 500 bytes or fewer.",
+              "example": "ai agents lang:en"
+            },
+            "example": "ai agents lang:en"
+          },
+          {
+            "name": "min_views",
+            "in": "query",
+            "required": false,
+            "description": "A post counts only when X reports at least this many views for it. Whole number, 0 or more, default 0. Above 0, a post whose view count X did not report is skipped.",
+            "schema": {
+              "type": "integer",
+              "description": "A post counts only when X reports at least this many views for it. Whole number, 0 or more, default 0. Above 0, a post whose view count X did not report is skipped.",
+              "example": "10000"
+            },
+            "example": "10000"
+          },
+          {
+            "name": "product",
+            "in": "query",
+            "required": false,
+            "description": "Top (default), X's engagement ranking, or Latest, newest first.",
+            "schema": {
+              "type": "string",
+              "description": "Top (default), X's engagement ranking, or Latest, newest first.",
+              "example": "Top"
+            },
+            "example": "Top"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Page size asked of X, 1 to 20 (default 20). Advisory: a page holds at most about 20 posts whatever you send. requested_count and effective_count echo what was asked and what was used.",
+            "schema": {
+              "type": "integer",
+              "description": "Page size asked of X, 1 to 20 (default 20). Advisory: a page holds at most about 20 posts whatever you send. requested_count and effective_count echo what was asked and what was used.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "next_cursor from a previous response, for the next page of the same search. Omit on the first call.",
+            "schema": {
+              "type": "string",
+              "description": "next_cursor from a previous response, for the next page of the same search. Omit on the first call."
+            }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          }
+        ]
+      }
+    },
     "/tweet/detail": {
       "get": {
         "operationId": "tweet-detail",
@@ -12209,10 +12588,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+            "description": "A page-size hint passed to X, defaulting to 20 and clamped to 1-100. It is not a cap: X's native List feed sets its own page size and can return more posts than you asked for. Keep the first N yourself if you need fewer.",
             "schema": {
               "type": "integer",
-              "description": "Max items to return for this page. Default 20; clamped to 1-100.",
+              "description": "A page-size hint passed to X, defaulting to 20 and clamped to 1-100. It is not a cap: X's native List feed sets its own page size and can return more posts than you asked for. Keep the first N yourself if you need fewer.",
               "example": "20"
             },
             "example": "20"
@@ -13936,7 +14315,7 @@
                   "properties": {
                     "pinned": {
                       "type": "object",
-                      "description": "The community's PINNED post as a full tweet object, or null when the community has none. It is its own field and is NOT included in tweets: X delivers it under a separate timeline instruction and does not repeat it in the feed, so a parser that reads only the feed drops it without a trace. In the captured community it was the rules post, which is usually the single most useful item in the response. A client that wants one flat list should read pinned first, then tweets.",
+                      "description": "The community's PINNED post as a full tweet object, or null when the community has none. It is its own field and is NOT included in tweets: X delivers it under a separate timeline instruction and does not repeat it in the feed, so a parser that reads only the feed drops it without a trace. In one large community we sampled it was the rules post, which is usually the single most useful item in the response. A client that wants one flat list should read pinned first, then tweets.",
                       "additionalProperties": true,
                       "nullable": true
                     },
@@ -14128,10 +14507,10 @@
             "name": "ranking_mode",
             "in": "query",
             "required": false,
-            "description": "Ordering, sent to X as a real upstream parameter rather than applied as a local sort. Recency is the default and the only value confirmed against a live capture. Relevance is accepted because X's own community tab offers exactly two orderings, but it has not been confirmed live, so do not depend on it. Any other value is a 400.",
+            "description": "Ordering, sent to X as a real upstream parameter rather than applied as a local sort. Recency is the default. Relevance is also accepted, matching the two orderings X's community tab offers, but Recency is the one to depend on. Any other value is a 400.",
             "schema": {
               "type": "string",
-              "description": "Ordering, sent to X as a real upstream parameter rather than applied as a local sort. Recency is the default and the only value confirmed against a live capture. Relevance is accepted because X's own community tab offers exactly two orderings, but it has not been confirmed live, so do not depend on it. Any other value is a 400.",
+              "description": "Ordering, sent to X as a real upstream parameter rather than applied as a local sort. Recency is the default. Relevance is also accepted, matching the two orderings X's community tab offers, but Recency is the one to depend on. Any other value is a 400.",
               "example": "Recency"
             },
             "example": "Recency"
@@ -15859,6 +16238,898 @@
                 },
                 "required": [
                   "name"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/community/join": {
+      "post": {
+        "operationId": "community-join",
+        "summary": "Join Community",
+        "description": "Add your X account to an open X Community by its numeric id. The call runs as your registered X session, sends one join request and reports what X answered, without reading the community first. Approval-gated communities are refused with a 409 and nothing is submitted. Billed at $0.0008 per applied write. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/community/join\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"community_id\": \"1493446837214187523\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/community/join\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"community_id\": \"1493446837214187523\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/community/join\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ community_id: \"1493446837214187523\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Join an open X Community as your own account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the join applied."
+                    },
+                    "action": {
+                      "type": "string",
+                      "description": "Always community_join on this endpoint."
+                    },
+                    "community_id": {
+                      "type": "string",
+                      "description": "The community the write targeted."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "joined when the write applied, null otherwise.",
+                      "nullable": true
+                    },
+                    "community": {
+                      "type": "object",
+                      "description": "Null unless X's answer carried a community object. When present it holds ONLY the keys X sent among id, name, member_count, role and join_policy; a missing key means X did not send it, never a default.",
+                      "additionalProperties": true,
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "action": "community_join",
+                  "community_id": "1493446837214187523",
+                  "status": "joined",
+                  "community": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "`community_id` must be a numeric X community id, e.g. 1493446837214187523 (the digits in x.com/i/communities/<id>)."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "session_dead",
+                  "message": "Your registered Twitter session is no longer valid. Re-register via POST /twitter/customer/session."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "action",
+                    "community_id",
+                    "status",
+                    "error",
+                    "message",
+                    "community"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "community_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "community": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "action": "community_join",
+                  "community_id": "1493446837214187523",
+                  "status": null,
+                  "error": "account_suspended",
+                  "message": "X reports the linked account is suspended (X code 64). No write can succeed until that is resolved in the X app. A registered session has been marked dead and must be re-registered.",
+                  "community": null
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "action",
+                    "community_id",
+                    "status",
+                    "error",
+                    "message",
+                    "community"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "community_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "community": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "action": "community_join",
+                  "community_id": "1493446837214187523",
+                  "status": null,
+                  "error": "community_not_found",
+                  "message": "No community exists with this id, or it is not available to the linked account.",
+                  "community": null
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP 409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "action",
+                    "community_id",
+                    "status",
+                    "error",
+                    "message",
+                    "community"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "community_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "community": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "action": "community_join",
+                  "community_id": "1493446837214187523",
+                  "status": null,
+                  "error": "join_requires_approval",
+                  "message": "This community requires moderator approval to join. Approval-gated communities are not supported yet: this endpoint joins open communities only and did not submit a join request. Check join_policy with GET /twitter/community/info first.",
+                  "community": null
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "HTTP 422",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "action",
+                    "community_id",
+                    "status",
+                    "error",
+                    "message",
+                    "community",
+                    "reason"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "community_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "community": {
+                      "type": "null"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "action": "community_join",
+                  "community_id": "1493446837214187523",
+                  "status": null,
+                  "error": "write_not_applied",
+                  "message": "X did not apply this change. See `reason` for X's own classification.",
+                  "community": null,
+                  "reason": "upstream_error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message",
+                    "reason"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Upstream throttled or blocked this request. Retry shortly.",
+                  "reason": "rate_limited"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "HTTP 502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message",
+                    "reason"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "error",
+                  "message": "Upstream request failed.",
+                  "reason": "upstream_error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "community_id": {
+                    "type": "string",
+                    "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL. Accepted in the JSON body or the query string. Send it as a JSON string, not a number: X ids exceed the safe-integer range.",
+                    "example": "1493446837214187523"
+                  }
+                },
+                "required": [
+                  "community_id"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/community/leave": {
+      "post": {
+        "operationId": "community-leave",
+        "summary": "Leave Community",
+        "description": "Remove your X account from a community it belongs to, by the community's numeric id. The call runs as your registered X session, sends one leave request and reports what X answered, without reading the community first. Billed at $0.0008 per applied write; a leave that does not apply is free. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/community/leave\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"community_id\": \"1493446837214187523\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/community/leave\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"community_id\": \"1493446837214187523\"},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/community/leave\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({ community_id: \"1493446837214187523\" }),\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leave an X Community as your own account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the leave applied."
+                    },
+                    "action": {
+                      "type": "string",
+                      "description": "Always community_leave on this endpoint."
+                    },
+                    "community_id": {
+                      "type": "string",
+                      "description": "The community the write targeted."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "left when the write applied, null otherwise.",
+                      "nullable": true
+                    },
+                    "community": {
+                      "type": "object",
+                      "description": "Null unless X's answer carried a community object. When present it holds ONLY the keys X sent among id, name, member_count, role and join_policy; a missing key means X did not send it, never a default.",
+                      "additionalProperties": true,
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "action": "community_leave",
+                  "community_id": "1493446837214187523",
+                  "status": "left",
+                  "community": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "`community_id` must be a numeric X community id, e.g. 1493446837214187523 (the digits in x.com/i/communities/<id>)."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "session_dead",
+                  "message": "Your registered Twitter session is no longer valid. Re-register via POST /twitter/customer/session."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "action",
+                    "community_id",
+                    "status",
+                    "error",
+                    "message",
+                    "community"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "community_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "community": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "action": "community_leave",
+                  "community_id": "1493446837214187523",
+                  "status": null,
+                  "error": "account_locked",
+                  "message": "X reports the linked account is locked (X code 326). Unlock it in the X app first. A registered session has been marked dead and must be re-registered.",
+                  "community": null
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "action",
+                    "community_id",
+                    "status",
+                    "error",
+                    "message",
+                    "community"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "community_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "community": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "action": "community_leave",
+                  "community_id": "1493446837214187523",
+                  "status": null,
+                  "error": "community_not_found",
+                  "message": "No community exists with this id, or it is not available to the linked account.",
+                  "community": null
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HTTP 409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "action",
+                    "community_id",
+                    "status",
+                    "error",
+                    "message",
+                    "community"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "community_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "community": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "action": "community_leave",
+                  "community_id": "1493446837214187523",
+                  "status": null,
+                  "error": "not_member",
+                  "message": "The linked account is not a member of this community, so there is nothing to leave.",
+                  "community": null
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "HTTP 422",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "action",
+                    "community_id",
+                    "status",
+                    "error",
+                    "message",
+                    "community",
+                    "reason"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "community_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "community": {
+                      "type": "null"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "action": "community_leave",
+                  "community_id": "1493446837214187523",
+                  "status": null,
+                  "error": "write_not_applied",
+                  "message": "X did not apply this change. See `reason` for X's own classification.",
+                  "community": null,
+                  "reason": "upstream_error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message",
+                    "reason"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Upstream throttled or blocked this request. Retry shortly.",
+                  "reason": "rate_limited"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "HTTP 502",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message",
+                    "reason"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "error": "error",
+                  "message": "Upstream request failed.",
+                  "reason": "upstream_error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "community_id": {
+                    "type": "string",
+                    "description": "The numeric community id, the digits in a x.com/i/communities/<id> URL. Accepted in the JSON body or the query string. Send it as a JSON string, not a number: X ids exceed the safe-integer range.",
+                    "example": "1493446837214187523"
+                  }
+                },
+                "required": [
+                  "community_id"
                 ]
               }
             }

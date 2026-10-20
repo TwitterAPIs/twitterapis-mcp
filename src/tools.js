@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 113 tools (69 reads, 44 writes).
+// Catalog: 116 tools (70 reads, 46 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -1062,6 +1062,35 @@ export const TOOLS = [
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Absent on the first page.",
+      ),
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+      ),
+      compact: z.enum(["1","true"]).optional().describe(
+        "Optional. \"1\" applies the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. It trims only what it recognises and on its own does not reduce a body to {}. Combined with fields, only the named paths and the envelope keys remain.",
+      ),
+    },
+  },
+  {
+    name: "twitter_creator_commentary_video",
+    path: "/twitter/creator/commentary_video",
+    description:
+      "Ranks the accounts posting native video about a topic. Runs one X search page for '<query> filter:native_video' and groups the matching posts by author into a ranked creators list; each row carries rank, the full user profile, video_post_count, quote_post_count, total_views, views_known, median_views, median_reply_count, median_quote_count and up to three top_post_ids. Retweets, posts without video or author, and posts under min_views are skipped and counted per reason in skipped (retweet, no_video, no_author, below_min_views), with tweets_scanned and tweets_matched beside them, so a short list can be told apart from a thin page. The ranking rule is returned as text in ranking on every response. One page covers about 20 posts; next_cursor pages the same search. An empty creators list is a successful answer (nobody posted video on the topic in that page), not an error. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/search/creator-commentary-video",
+    shape: {
+      query: z.string().min(1).describe(
+        "Topic to search, X search operators allowed, e.g. 'ai agents' or 'from:nasa lang:en'. ' filter:native_video' is appended unless the query already has it, and the result is capped at 500 bytes (a longer query is rejected with a 400, because X answers an over-long search with an empty page rather than an error). A query that excludes native video (-filter:native_video) is rejected with a 400.",
+      ),
+      min_views: z.number().int().min(0).optional().describe(
+        "Optional. A post counts toward a creator only when X reports at least this many views. Whole number, default 0. Posts below it are counted in skipped.below_min_views.",
+      ),
+      product: z.enum(["Top","Latest"]).optional().describe(
+        "Optional. 'Top' (default) is X's engagement ranking; 'Latest' is newest first. Any other value is rejected with a 400.",
+      ),
+      count: z.number().int().min(1).max(20).optional().describe(
+        "Optional. Page size asked of X, 1 to 20 (default 20). Advisory: X serves at most about 20 posts per search page, and the response reports requested_count and effective_count.",
+      ),
+      cursor: z.string().optional().describe(
+        "Opaque pagination cursor from a previous response's next_cursor field. Absent, the first page is returned; with it, the next page of the same search.",
       ),
       fields: z.string().optional().describe(
         "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
@@ -2277,6 +2306,59 @@ export const TOOLS = [
       ),
       is_private: z.string().optional().describe(
         "Optional. The string \"true\" creates a PRIVATE List. Defaults to false (public), because a public List can be made private later while a leak cannot be undone. A private List is not readable through the public List reads.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
+      ),
+    },
+  },
+  {
+    name: "twitter_community_join",
+    path: "/twitter/community/join",
+    method: "POST",
+    write: true,
+    headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
+    description:
+      "Joins an X Community as the authenticated account, by numeric community id. One upstream call, nothing read first. Returns ok, action ('join'), community_id, status ('joined') and community, which holds only the keys X sent back among id, name, member_count, role and join_policy, or is null when X sent no community object. Refusals come back with the same fields plus an error code and are not billed: 409 join_requires_approval (the community requires moderator approval; no join request is submitted), 409 already_member, 404 community_not_found, 403 account_suspended or account_locked, and 422 write_not_applied with X's own reason. Requires an authenticated X session. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/community-join",
+    shape: {
+      community_id: z.string().describe(
+        "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1601841656147345410'. Digits only; a missing or malformed id is rejected with a 400 before any upstream call.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
+      ),
+    },
+  },
+  {
+    name: "twitter_community_leave",
+    path: "/twitter/community/leave",
+    method: "POST",
+    write: true,
+    destructive: true,
+    headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
+    description:
+      "Leaves an X Community as the authenticated account, by numeric community id. One upstream call, nothing read first. Returns ok, action ('leave'), community_id, status ('left') and community, which holds only the keys X sent back among id, name, member_count, role and join_policy, or is null when X sent no community object. Refusals come back with the same fields plus an error code and are not billed: 409 not_member, 404 community_not_found, 403 account_suspended or account_locked, and 422 write_not_applied with X's own reason. Requires an authenticated X session. Reversible for a community open to anyone; a community that requires moderator approval cannot be rejoined through this API, since a join there answers 409 join_requires_approval. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/community-leave",
+    shape: {
+      community_id: z.string().describe(
+        "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1601841656147345410'. Digits only; a missing or malformed id is rejected with a 400 before any upstream call.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",

@@ -1,5 +1,5 @@
 {
-  "toolCount": 113,
+  "toolCount": 116,
   "order": [
     "twitter_advanced_search",
     "twitter_user_search",
@@ -42,6 +42,7 @@
     "twitter_community_moderators",
     "twitter_community_tweets",
     "twitter_community_memberships",
+    "twitter_creator_commentary_video",
     "twitter_grok_chat",
     "twitter_grok_config",
     "twitter_trends",
@@ -84,6 +85,8 @@
     "twitter_list_add_member",
     "twitter_list_remove_member",
     "twitter_list_create",
+    "twitter_community_join",
+    "twitter_community_leave",
     "twitter_customer_session",
     "twitter_customer_session_status",
     "twitter_customer_session_delete",
@@ -2401,6 +2404,76 @@
         ]
       }
     },
+    "twitter_creator_commentary_video": {
+      "name": "twitter_creator_commentary_video",
+      "path": "/twitter/creator/commentary_video",
+      "method": "GET",
+      "write": false,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Ranks the accounts posting native video about a topic. Runs one X search page for '<query> filter:native_video' and groups the matching posts by author into a ranked creators list; each row carries rank, the full user profile, video_post_count, quote_post_count, total_views, views_known, median_views, median_reply_count, median_quote_count and up to three top_post_ids. Retweets, posts without video or author, and posts under min_views are skipped and counted per reason in skipped (retweet, no_video, no_author, below_min_views), with tweets_scanned and tweets_matched beside them, so a short list can be told apart from a thin page. The ranking rule is returned as text in ranking on every response. One page covers about 20 posts; next_cursor pages the same search. An empty creators list is a successful answer (nobody posted video on the topic in that page), not an error. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/search/creator-commentary-video",
+      "args": [
+        "query",
+        "min_views",
+        "product",
+        "count",
+        "cursor",
+        "fields",
+        "compact"
+      ],
+      "required": [
+        "query"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Topic to search, X search operators allowed, e.g. 'ai agents' or 'from:nasa lang:en'. ' filter:native_video' is appended unless the query already has it, and the result is capped at 500 bytes (a longer query is rejected with a 400, because X answers an over-long search with an empty page rather than an error). A query that excludes native video (-filter:native_video) is rejected with a 400."
+          },
+          "min_views": {
+            "description": "Optional. A post counts toward a creator only when X reports at least this many views. Whole number, default 0. Posts below it are counted in skipped.below_min_views.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "product": {
+            "description": "Optional. 'Top' (default) is X's engagement ranking; 'Latest' is newest first. Any other value is rejected with a 400.",
+            "type": "string",
+            "enum": [
+              "Top",
+              "Latest"
+            ]
+          },
+          "count": {
+            "description": "Optional. Page size asked of X, 1 to 20 (default 20). Advisory: X serves at most about 20 posts per search page, and the response reports requested_count and effective_count.",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "cursor": {
+            "description": "Opaque pagination cursor from a previous response's next_cursor field. Absent, the first page is returned; with it, the next page of the same search.",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "type": "string"
+          },
+          "compact": {
+            "description": "Optional. \"1\" applies the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. It trims only what it recognises and on its own does not reduce a body to {}. Combined with fields, only the named paths and the envelope keys remain.",
+            "type": "string",
+            "enum": [
+              "1",
+              "true"
+            ]
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
     "twitter_grok_chat": {
       "name": "twitter_grok_chat",
       "path": "/twitter/grok/chat",
@@ -4646,6 +4719,100 @@
         },
         "required": [
           "name"
+        ]
+      }
+    },
+    "twitter_community_join": {
+      "name": "twitter_community_join",
+      "path": "/twitter/community/join",
+      "method": "POST",
+      "write": true,
+      "destructive": false,
+      "jsonBody": false,
+      "description": "Joins an X Community as the authenticated account, by numeric community id. One upstream call, nothing read first. Returns ok, action ('join'), community_id, status ('joined') and community, which holds only the keys X sent back among id, name, member_count, role and join_policy, or is null when X sent no community object. Refusals come back with the same fields plus an error code and are not billed: 409 join_requires_approval (the community requires moderator approval; no join request is submitted), 409 already_member, 404 community_not_found, 403 account_suspended or account_locked, and 422 write_not_applied with X's own reason. Requires an authenticated X session. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/community-join",
+      "args": [
+        "community_id",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "community_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "community_id": {
+            "type": "string",
+            "description": "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1601841656147345410'. Digits only; a missing or malformed id is rejected with a 400 before any upstream call."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "community_id"
+        ]
+      }
+    },
+    "twitter_community_leave": {
+      "name": "twitter_community_leave",
+      "path": "/twitter/community/leave",
+      "method": "POST",
+      "write": true,
+      "destructive": true,
+      "jsonBody": false,
+      "description": "Leaves an X Community as the authenticated account, by numeric community id. One upstream call, nothing read first. Returns ok, action ('leave'), community_id, status ('left') and community, which holds only the keys X sent back among id, name, member_count, role and join_policy, or is null when X sent no community object. Refusals come back with the same fields plus an error code and are not billed: 409 not_member, 404 community_not_found, 403 account_suspended or account_locked, and 422 write_not_applied with X's own reason. Requires an authenticated X session. Reversible for a community open to anyone; a community that requires moderator approval cannot be rejoined through this API, since a join there answers 409 join_requires_approval. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/community-leave",
+      "args": [
+        "community_id",
+        "auth_token",
+        "ct0",
+        "proxy_url",
+        "user_agent"
+      ],
+      "required": [
+        "community_id"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "community_id": {
+            "type": "string",
+            "description": "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1601841656147345410'. Digits only; a missing or malformed id is rejected with a 400 before any upstream call."
+          },
+          "auth_token": {
+            "description": "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
+            "type": "string"
+          },
+          "ct0": {
+            "description": "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
+            "type": "string"
+          },
+          "proxy_url": {
+            "description": "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+            "type": "string"
+          },
+          "user_agent": {
+            "description": "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "community_id"
         ]
       }
     },
