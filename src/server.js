@@ -12,6 +12,7 @@
 
 import { createRequire } from "node:module";
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { GetPromptRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "./tools.js";
 
@@ -548,8 +549,28 @@ export function createServer({
   // can drift. Its description is the playbook's, already held to the listed-text
   // rules in test/description-compliance.mjs. A playbook with a `prompt.arg` takes
   // that one optional argument; the rest take none.
+  // `arguments` is optional on prompts/get (MCP spec), but the SDK validates a prompt
+  // that declares arguments against a required object, so a client that leaves it out
+  // gets -32602 for an argument it was told is optional. The SDK installs its
+  // prompts/get handler through the low-level Server the first time a prompt is
+  // registered; wrapping setRequestHandler here, before that, defaults a missing
+  // `arguments` to {} and leaves every other request untouched.
+  {
+    const low = server.server;
+    const setRequestHandler = low.setRequestHandler.bind(low);
+    low.setRequestHandler = (schema, handler) =>
+      setRequestHandler(
+        schema,
+        schema === GetPromptRequestSchema
+          ? (request, extra) => handler({ ...request, params: { ...request.params, arguments: request.params?.arguments ?? {} } }, extra)
+          : handler,
+      );
+  }
   for (const p of PLAYBOOKS) {
-    const argSchema = p.prompt ? { [p.prompt.arg]: z.string().max(64).optional().describe(p.prompt.describe) } : undefined;
+    // An X handle: 1 to 15 letters, digits or underscores, with an optional leading @.
+    const argSchema = p.prompt
+      ? { [p.prompt.arg]: z.string().regex(/^@?[A-Za-z0-9_]{1,15}$/, "an X handle: 1 to 15 letters, digits or underscores").optional().describe(p.prompt.describe) }
+      : undefined;
     server.registerPrompt(
       p.name,
       { title: p.title, description: p.description, ...(argSchema ? { argsSchema: argSchema } : {}) },
