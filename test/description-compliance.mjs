@@ -255,7 +255,9 @@ export async function listTools(opts) {
 // rules: every tool they name must exist, and no hidden characters).
 // Five playbooks plus the provenance template. A new resource raises this; a
 // drop to below it is the defect this floor exists to catch.
-export const EXPECTED_RESOURCE_DESCRIPTIONS = 6;
+// Prompts are listed too (prompts/list, shown as slash commands), one per playbook
+// plus their argument descriptions: 5 prompts and 3 arguments.
+export const EXPECTED_RESOURCE_DESCRIPTIONS = 14;
 
 export async function listResourceDescriptions(opts) {
   const { server } = createServer({ apiKey: "description-compliance", ...opts });
@@ -273,6 +275,15 @@ export async function listResourceDescriptions(opts) {
   do {
     const page = await client.listResourceTemplates(cursor ? { cursor } : {});
     for (const t of page.resourceTemplates) out.push({ id: t.uriTemplate, where: "template description", text: t.description || "" });
+    cursor = page.nextCursor;
+  } while (cursor);
+  cursor = undefined;
+  do {
+    const page = await client.listPrompts(cursor ? { cursor } : {});
+    for (const p of page.prompts) {
+      out.push({ id: `prompt:${p.name}`, where: "prompt description", text: p.description || "" });
+      for (const a of p.arguments || []) out.push({ id: `prompt:${p.name}.${a.name}`, where: "prompt argument description", text: a.description || "", short: true });
+    }
     cursor = page.nextCursor;
   } while (cursor);
   await client.close();
@@ -381,7 +392,7 @@ if (isMain) {
     }
     let findings = 0;
     for (const it of items) {
-      if (!it.text || it.text.length < 40) { total++; findings++; console.error(`  \x1b[31m✗ ${it.id} ${it.where}: missing or too short\x1b[0m`); continue; }
+      if (!it.text || it.text.length < (it.short ? 15 : 40)) { total++; findings++; console.error(`  \x1b[31m✗ ${it.id} ${it.where}: missing or too short\x1b[0m`); continue; }
       for (const f of findingsFor(it.id, it.text)) {
         total++; findings++;
         console.error(`  \x1b[31m✗ ${it.id} ${it.where}: ${f.kind} "${f.match}"\x1b[0m`);

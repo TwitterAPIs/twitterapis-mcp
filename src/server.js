@@ -12,6 +12,8 @@
 
 import { createRequire } from "node:module";
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { GetPromptRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
 import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "./tools.js";
 
 // COUNTS ARE DERIVED FROM THE CATALOG, NEVER TYPED. A review found the paywall
@@ -536,6 +538,54 @@ export function createServer({
       p.uri,
       { title: p.title, description: p.description, mimeType: PLAYBOOK_MIME },
       async (uri) => ({ contents: [{ uri: uri.href, mimeType: PLAYBOOK_MIME, text: p.text }] }),
+    );
+  }
+
+  // ── Prompts ────────────────────────────────────────────────────────────────
+  // One prompt per playbook (Tab sheet check 2026-10-19: a server with tools and
+  // resources but no prompts gives a client nothing to offer as a slash command).
+  // The prompt hands the playbook over as an embedded resource, so the recipe a
+  // user picks is byte-for-byte the one resources/read serves, never a copy that
+  // can drift. Its description is the playbook's, already held to the listed-text
+  // rules in test/description-compliance.mjs. A playbook with a `prompt.arg` takes
+  // that one optional argument; the rest take none.
+  // `arguments` is optional on prompts/get (MCP spec), but the SDK validates a prompt
+  // that declares arguments against a required object, so a client that leaves it out
+  // gets -32602 for an argument it was told is optional. The SDK installs its
+  // prompts/get handler through the low-level Server the first time a prompt is
+  // registered; wrapping setRequestHandler here, before that, defaults a missing
+  // `arguments` to {} and leaves every other request untouched.
+  {
+    const low = server.server;
+    const setRequestHandler = low.setRequestHandler.bind(low);
+    low.setRequestHandler = (schema, handler) =>
+      setRequestHandler(
+        schema,
+        schema === GetPromptRequestSchema
+          ? (request, extra) => handler({ ...request, params: { ...request.params, arguments: request.params?.arguments ?? {} } }, extra)
+          : handler,
+      );
+  }
+  for (const p of PLAYBOOKS) {
+    // An X handle: 1 to 15 letters, digits or underscores, with an optional leading @.
+    // Empty is allowed: a form that sends a blank optional field as "" gets the plain prompt.
+    const argSchema = p.prompt
+      ? { [p.prompt.arg]: z.string().regex(/^(@?[A-Za-z0-9_]{1,15})?$/, "an X handle: 1 to 15 letters, digits or underscores, or empty").optional().describe(p.prompt.describe) }
+      : undefined;
+    server.registerPrompt(
+      p.name,
+      { title: p.title, description: p.description, ...(argSchema ? { argsSchema: argSchema } : {}) },
+      async (args = {}) => {
+        const raw = p.prompt ? String(args[p.prompt.arg] ?? "").trim().replace(/^@/, "") : "";
+        const ask = p.prompt && raw ? p.prompt.ask(raw) : "Run this playbook.";
+        return {
+          description: p.description,
+          messages: [
+            { role: "user", content: { type: "resource", resource: { uri: p.uri, mimeType: PLAYBOOK_MIME, text: p.text } } },
+            { role: "user", content: { type: "text", text: ask } },
+          ],
+        };
+      },
     );
   }
 
