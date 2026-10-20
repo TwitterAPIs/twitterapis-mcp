@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.24.2 (2026-10-20)
+
+A wording-only patch: no tool, argument or schema changed.
+
+### Changed
+
+- **`twitter_list_timeline` now says `count` is a page-size hint, not a cap.** X's native List feed sets its own page size and can return more posts than asked for (a page of 113 for count=5 was observed). The server returns every post so `next_cursor` skips none; keep the first N yourself if you need fewer. Same wording as the API reference.
+
 ## 0.24.1 (2026-10-20)
 
 A wording-only patch: no tool, argument or schema changed.
