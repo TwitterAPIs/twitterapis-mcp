@@ -52,7 +52,7 @@ function walk(dir, exts, out) {
 
 export function targets(root = ROOT) {
   const files = [...walk(path.join(root, "src"), [".js", ".mjs"], [])];
-  for (const f of ["README.md", "manifest.json", "server.json", "scripts/tools.overrides.mjs"]) {
+  for (const f of ["README.md", "CHANGELOG.md", "manifest.json", "server.json", "scripts/tools.overrides.mjs"]) {
     const p = path.join(root, f);
     if (fs.existsSync(p)) files.push(p);
   }

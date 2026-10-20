@@ -26,9 +26,9 @@ import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "./t
 // to nine dollars and the whole suite stayed green, so a hand-typed number here
 // is a number nobody is checking. Deriving them is the fix that holds: the prose
 // cannot drift from the catalog because there is nothing left to drift.
-const POOLED = TOOLS.filter((t) => !t.headerArgs || t.headerArgs.length === 0);
-const POOLED_READS = POOLED.filter((t) => !t.write).length;
-const POOLED_FREE_WRITES = POOLED.filter((t) => t.write).length;
+const KEY_ONLY = TOOLS.filter((t) => !t.headerArgs || t.headerArgs.length === 0);
+const KEY_ONLY_READS = KEY_ONLY.filter((t) => !t.write).length;
+const KEY_ONLY_FREE_WRITES = KEY_ONLY.filter((t) => t.write).length;
 const SESSION_TOOLS = TOOLS.filter((t) => (t.headerArgs || []).includes("auth_token")).length;
 import { createFeedbackHandler } from "./feedback.js";
 import { annotationsFor } from "./annotations.js";
@@ -102,7 +102,7 @@ export function paywallFor(kind) {
         { step: 3, what: "set TWITTERAPIS_KEY in the MCP client config and restart the client" },
         { step: 4, what: "retry this call" },
       ],
-      unlocks: `the ${POOLED_READS} public reads (search, user lookups, followers, tweets, threads, trends, communities, spaces), plus ${POOLED_FREE_WRITES} free account, monitoring and feedback tools that need no X session. The ${SESSION_TOOLS} account tools additionally need a linked X session, and a priced read additionally needs credit.`,
+      unlocks: `the ${KEY_ONLY_READS} public reads (search, user lookups, followers, tweets, threads, trends, communities, spaces), plus ${KEY_ONLY_FREE_WRITES} free account, monitoring and feedback tools that need no X session. The ${SESSION_TOOLS} account tools additionally need a linked X session, and a priced read additionally needs credit.`,
       retry: "same call, after the key is set",
     };
   }
