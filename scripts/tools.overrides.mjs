@@ -634,7 +634,7 @@ export const TOOL_OVERRIDES = [
           "Numeric Twitter/X List id, found in the list URL: x.com/i/lists/<list_id>. Public Lists only." },
       { name: "count", type: "int", min: 1, max: 100,
         describe:
-          "Max posts to return for this page. Defaults to 20 and is clamped to 1-100, so a larger number returns at most 100 rather than erroring." },
+          "A page-size hint passed to X, defaulting to 20 and clamped to 1-100. It is not a cap: X's native List feed sets its own page size and can return more posts than requested; every post is returned, so next_cursor skips none." },
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Absent on the first page." },
