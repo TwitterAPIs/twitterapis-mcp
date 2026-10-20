@@ -272,7 +272,7 @@ Short recipes an agent runs with the tools above.
 
 ### Provenance
 
-`provenance://tool/{tool_name}` returns, as JSON, where a row you already hold came from: the REST endpoint and method behind it, read or write, whether the call ran as your linked X account or the service's shared account pool, the per-call price, and the docs URL.
+`provenance://tool/{tool_name}` returns, as JSON, where a row you already hold came from: the REST endpoint and method behind it, read or write, whether the call ran as your linked X account or on the API key alone, the per-call price, and the docs URL.
 
 ```
 provenance://tool/twitter_advanced_search
@@ -284,7 +284,7 @@ provenance://tool/twitter_advanced_search
   "endpoint": "GET /twitter/tweet/advanced_search",
   "kind": "read",
   "destructive": false,
-  "served_by": "the service's shared account pool",
+  "served_by": "the API key alone (a public read, no linked account)",
   "cost": "$0.0008 per call",
   "docs": "https://docs.twitterapis.com/docs/reference/search/tweet-advanced-search"
 }

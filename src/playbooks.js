@@ -182,7 +182,7 @@ const LINK_X_ACCOUNT = `# Link an X account
 
 Writes and account-only reads (likes, bookmarks, DMs, home timeline, follow, post)
 act as a real X account. Of the catalog's tools, 47 run as the caller's linked
-account and the rest run on the shared pool behind the API key. This is the
+account and the rest are public reads that need only the API key. This is the
 sequence that gets one linked, and the states it can end in.
 
 ## 1. Find out which state you are in
@@ -382,7 +382,7 @@ export const PLAYBOOKS = [
 //
 // WHAT IS AND IS NOT HERE. Everything below is derived from the committed catalog:
 // the endpoint and method the row came from, whether the call acted as the
-// caller's own linked X account or the service's shared pool, whether it was a
+// caller's own linked X account or ran on the API key alone, whether it was a
 // read or a write, what it cost, and where it is documented. Row-level upstream
 // facts (when the service fetched it from X, whether it was served from an
 // upstream cache, which account read it) are not in any response this package
@@ -402,7 +402,7 @@ const DOCS_RE = /\bDocs: (https:\/\/\S+)\s*$/;
 
 // Tools whose own REQUEST BODY is the X session credential, rather than taking
 // per-call credential headers. They establish the link, so headerArgs is empty
-// on them and the headerArgs test would file them under the shared pool, which
+// on them and the headerArgs test would file them as key-only public reads, which
 // is the opposite of what they do. Derived from the catalog: these are the only
 // jsonBody tools whose arguments are an X credential.
 const SESSION_ESTABLISHING = new Set(["twitter_customer_session", "twitter_user_login"]);
@@ -413,8 +413,8 @@ export function provenanceFor(toolName, tools) {
   const method = tool.method || "GET";
   // headerArgs are the per-call X session credentials (auth_token, ct0, ...). A
   // tool that accepts them is one the API serves with the caller's own linked X
-  // account; a tool that does not is served from the shared pool behind the key.
-  let servedBy = "the service's shared account pool";
+  // account; a tool that does not is a public read that needs only the key.
+  let servedBy = "the API key alone (a public read, no linked account)";
   if (SESSION_ESTABLISHING.has(tool.name)) servedBy = "the X credential supplied in this call, which it stores against the key";
   else if ((tool.headerArgs || []).length > 0) servedBy = "the caller's linked X account";
   const costMatch = COST_RE.exec(tool.description || "");

@@ -176,8 +176,8 @@ ok("every paywall URL is https on www.twitterapis.com");
   const u = paywallFor("no_key").unlocks;
 
   assert.ok(
-    u.includes(`the ${reads} pooled reads`),
-    `unlocks must state the derived pooled READ count (${reads}), not the tool count. Got: ${u}`,
+    u.includes(`the ${reads} public reads`),
+    `unlocks must state the derived public READ count (${reads}), not the tool count. Got: ${u}`,
   );
   assert.ok(
     u.includes(`${freeWrites} free account, monitoring and feedback tools`),

@@ -943,7 +943,7 @@ export const TOOLS = [
     name: "twitter_community_info",
     path: "/twitter/community/info",
     description:
-      "Returns the metadata for one X Community by its numeric id: name, description, member_count, moderator_count, join_policy, invites_policy, the join question, primary topic, search tags, the posted rules, both the custom and the default banner plus a resolved banner_url, the permalink, the admin and creator profiles, and the facepile member ids. The community id is the digits in a x.com/i/communities/<id> URL. role, can_join, is_pinned and viewer_relationship_type are null by design, not an error: they describe the account that made the call, and this is a pooled read served by a rotating account. rules[].description is also null: X sends only the rule id and name on this payload. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/communities/community-info",
+      "Returns the metadata for one X Community by its numeric id: name, description, member_count, moderator_count, join_policy, invites_policy, the join question, primary topic, search tags, the posted rules, both the custom and the default banner plus a resolved banner_url, the permalink, the admin and creator profiles, and the facepile member ids. The community id is the digits in a x.com/i/communities/<id> URL. role, can_join, is_pinned and viewer_relationship_type are null by design, not an error: they describe the account that made the call, and this public read does not run as your account. rules[].description is also null: X sends only the rule id and name on this payload. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/communities/community-info",
     shape: {
       community_id: z.string().describe(
         "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id.",
@@ -1052,7 +1052,7 @@ export const TOOLS = [
     name: "twitter_community_memberships",
     path: "/twitter/community/memberships",
     description:
-      "The INVERSE community lookup: given a numeric X USER id, lists the communities that account belongs to, cursor-paginated. Each row is the FULL community object (member counts, rules, topic, policies, admin and creator). Takes a numeric user id ONLY, not a @handle. An EMPTY communities array is a real, successful answer (the account is in no communities), not a not-found. role / can_join / is_pinned / viewer_relationship_type are null on every community returned, because this is a pooled read. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/communities/community-memberships",
+      "The INVERSE community lookup: given a numeric X USER id, lists the communities that account belongs to, cursor-paginated. Each row is the FULL community object (member counts, rules, topic, policies, admin and creator). Takes a numeric user id ONLY, not a @handle. An EMPTY communities array is a real, successful answer (the account is in no communities), not a not-found. role / can_join / is_pinned / viewer_relationship_type are null on every community returned, because this public read does not run as your account. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/communities/community-memberships",
     shape: {
       user_id: z.string().describe(
         "Numeric X user id, e.g. '1281109705495130113'. Not a @handle and not a community id.",
@@ -2733,7 +2733,7 @@ export const TOOLS = [
     jsonBody: true,
     pathParams: ["id"],
     description:
-      "Partially updates an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, change or clear its domain_filter, or any combination in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. All fields are optional; an omitted field stays unchanged. Cost: Free per call. Docs: https://docs.twitterapis.com/docs/reference/monitoring/monitor-id-post",
+      "Partially updates an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, change or clear its domain_filter, or any combination in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to monitoring capacity. All fields are optional; an omitted field stays unchanged. Cost: Free per call. Docs: https://docs.twitterapis.com/docs/reference/monitoring/monitor-id-post",
     shape: {
       id: z.string().describe(
         "The monitor's id, as returned when it was created or listed.",

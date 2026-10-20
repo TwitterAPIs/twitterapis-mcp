@@ -17,7 +17,7 @@ import { z } from "zod";
 import { TOOLS, buildQuery, resolvePathParams, MissingPathParamError } from "./tools.js";
 
 // COUNTS ARE DERIVED FROM THE CATALOG, NEVER TYPED. A review found the paywall
-// payload calling the pooled TOOL count a count of pooled READS: 65 pooled tools
+// payload calling the key-only TOOL count a count of public READS: 65 key-only tools
 // are 52 reads and 13 writes, and the sentence then listed those same 13 writes
 // again as "the free account, monitoring and feedback tools". The buyer-facing
 // number was overstated by 13 and its composition was wrong.
@@ -102,7 +102,7 @@ export function paywallFor(kind) {
         { step: 3, what: "set TWITTERAPIS_KEY in the MCP client config and restart the client" },
         { step: 4, what: "retry this call" },
       ],
-      unlocks: `the ${POOLED_READS} pooled reads (search, user lookups, followers, tweets, threads, trends, communities, spaces), plus ${POOLED_FREE_WRITES} free account, monitoring and feedback tools that need no X session. The ${SESSION_TOOLS} account tools additionally need a linked X session, and a priced read additionally needs credit.`,
+      unlocks: `the ${POOLED_READS} public reads (search, user lookups, followers, tweets, threads, trends, communities, spaces), plus ${POOLED_FREE_WRITES} free account, monitoring and feedback tools that need no X session. The ${SESSION_TOOLS} account tools additionally need a linked X session, and a priced read additionally needs credit.`,
       retry: "same call, after the key is set",
     };
   }
@@ -603,7 +603,7 @@ export function createServer({
       // SIBLING_PATTERNS). The fact is the same; the phrasing names a catalog
       // entry rather than gesturing at one.
       description:
-        "Provenance of a row this server returned, keyed by the catalog name that produced it: the REST endpoint and method behind it, whether it was a read or a write, whether the call acted as the caller's linked X account or the service's shared account pool, its per-call price, and its documentation URL.",
+        "Provenance of a row this server returned, keyed by the catalog name that produced it: the REST endpoint and method behind it, whether it was a read or a write, whether the call acted as the caller's linked X account or on the API key alone, its per-call price, and its documentation URL.",
       mimeType: "application/json",
     },
     async (uri, variables) => {

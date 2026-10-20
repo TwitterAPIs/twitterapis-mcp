@@ -662,11 +662,11 @@ export const TOOL_OVERRIDES = [
     ],
   },
   // ── Reads: communities ─────────────────────────────────────────────────────
-  // Five PUBLIC POOLED reads. They are served by our account pool rather than by
+  // Five PUBLIC reads. They do not run as
   // the caller's session, which is why every one of these descriptions states
   // that role / can_join / is_pinned / viewer_relationship_type come back null:
-  // those four describe the account that made the upstream call, and on a pooled
-  // read that is a rotating account the customer has never heard of. A model
+  // those four describe the account that made the upstream call, and on a public
+  // read that is an account the customer has never heard of. A model
   // that is not told this will report them to a user as a broken field.
   {
     name: "twitter_community_search",
@@ -687,7 +687,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_community_info",
     endpoint: "/community/info",
     description:
-      "Returns the metadata for one X Community by its numeric id: name, description, member_count, moderator_count, join_policy, invites_policy, the join question, primary topic, search tags, the posted rules, both the custom and the default banner plus a resolved banner_url, the permalink, the admin and creator profiles, and the facepile member ids. The community id is the digits in a x.com/i/communities/<id> URL. role, can_join, is_pinned and viewer_relationship_type are null by design, not an error: they describe the account that made the call, and this is a pooled read served by a rotating account. rules[].description is also null: X sends only the rule id and name on this payload.",
+      "Returns the metadata for one X Community by its numeric id: name, description, member_count, moderator_count, join_policy, invites_policy, the join question, primary topic, search tags, the posted rules, both the custom and the default banner plus a resolved banner_url, the permalink, the admin and creator profiles, and the facepile member ids. The community id is the digits in a x.com/i/communities/<id> URL. role, can_join, is_pinned and viewer_relationship_type are null by design, not an error: they describe the account that made the call, and this public read does not run as your account. rules[].description is also null: X sends only the rule id and name on this payload.",
     args: [
       { name: "community_id",
         describe:
@@ -769,7 +769,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_community_memberships",
     endpoint: "/community/memberships",
     description:
-      "The INVERSE community lookup: given a numeric X USER id, lists the communities that account belongs to, cursor-paginated. Each row is the FULL community object (member counts, rules, topic, policies, admin and creator). Takes a numeric user id ONLY, not a @handle. An EMPTY communities array is a real, successful answer (the account is in no communities), not a not-found. role / can_join / is_pinned / viewer_relationship_type are null on every community returned, because this is a pooled read.",
+      "The INVERSE community lookup: given a numeric X USER id, lists the communities that account belongs to, cursor-paginated. Each row is the FULL community object (member counts, rules, topic, policies, admin and creator). Takes a numeric user id ONLY, not a @handle. An EMPTY communities array is a real, successful answer (the account is in no communities), not a not-found. role / can_join / is_pinned / viewer_relationship_type are null on every community returned, because this public read does not run as your account.",
     args: [
       { name: "user_id",
         describe:
@@ -1433,7 +1433,7 @@ export const TOOL_OVERRIDES = [
     },
   },
   // ── Writes: Lists (create a List, curate its membership) ───────────────────
-  // These run on the CUSTOMER'S REGISTERED X SESSION, never on a pooled account,
+  // These run on the CUSTOMER'S REGISTERED X SESSION, never on another account,
   // because a List belongs to a specific account: a pooled write would mutate a
   // rotation account's Lists, which nobody asked for and nobody could read back.
   // Register once with twitter_customer_session, or pass auth_token and ct0 per
@@ -1834,7 +1834,7 @@ export const TOOL_OVERRIDES = [
     // Fixed 2026-08-16, same root cause as twitter_monitor_create above:
     // updateMonitorRoute also reads only c.req.json(), no query fallback.
     description:
-      "Partially updates an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, change or clear its domain_filter, or any combination in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. All fields are optional; an omitted field stays unchanged.",
+      "Partially updates an existing monitor: pause or resume it via status, change which webhooks receive its events via webhook_ids, change or clear its domain_filter, or any combination in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to monitoring capacity. All fields are optional; an omitted field stays unchanged.",
     args: [
       { name: "id",
         describe:

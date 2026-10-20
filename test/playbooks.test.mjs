@@ -224,7 +224,7 @@ const client = await connect();
   assert.equal(pooledRec.tool, "twitter_advanced_search");
   assert.equal(pooledRec.endpoint, "GET /twitter/tweet/advanced_search");
   assert.equal(pooledRec.kind, "read");
-  assert.equal(pooledRec.served_by, "the service's shared account pool");
+  assert.equal(pooledRec.served_by, "the API key alone (a public read, no linked account)");
 
   const session = await client.readResource({ uri: provenanceUri("twitter_home_timeline") });
   const sessionRec = JSON.parse(session.contents[0].text);

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.24.1 (2026-10-20)
+
+A wording-only patch: no tool, argument or schema changed.
+
+### Changed
+
+- **Tool descriptions, the provenance resource and the README no longer describe how reads are sourced.** Community, monitor and list descriptions now say what the caller gets ("a public read that needs no session", "acts as your own account", "monitoring capacity") instead of naming internal plumbing. The provenance `served_by` value for a key-only call is now "the API key alone (a public read, no linked account)", and the paywall answer counts "public reads".
+- **A new check, `test/sourcing-disclosure.mjs`, runs in `npm test`** over everything the package ships and fails on that class of wording, so it cannot come back.
+
 ## 0.24.0 (2026-10-19)
 
 Released to npm as 0.24.0: the README pricing fix below plus MCP prompts, a new capability, which makes this a minor release.

@@ -58,7 +58,7 @@
     },
     {
       "name": "Communities",
-      "description": "Read an X Community: its metadata and rules, its member and moderator rosters, its own post timeline including the pinned post, and the inverse relation, every community a given account belongs to. These are pooled reads served by our account pool, so the four fields that describe the CALLER's own relationship to a community (role, can_join, is_pinned, viewer_relationship_type) always come back null."
+      "description": "Read an X Community: its metadata and rules, its member and moderator rosters, its own post timeline including the pinned post, and the inverse relation, every community a given account belongs to. These are public reads that do not run as your account, so the four fields that describe the CALLER's own relationship to a community (role, can_join, is_pinned, viewer_relationship_type) always come back null."
     },
     {
       "name": "Write Actions",
@@ -3429,6 +3429,28 @@
                       "type": "integer",
                       "description": "How many of the returned tweets demonstrably quote the requested id, read off each tweet's embedded quoted_tweet. Equal to count means every row is a genuine quote. Zero on a non-empty page means X stopped honouring the search operator and the rows are junk that merely contain the number."
                     },
+                    "quote_count": {
+                      "type": "integer",
+                      "description": "The tweet's real quote total as X reports it, read from the embedded original on the returned rows, from a cached tweet lookup, or (first page only) one live tweet lookup. Null when it could not be read, or when X reported 0, because a missing count reads as 0.",
+                      "nullable": true
+                    },
+                    "coverage": {
+                      "type": "string",
+                      "description": "Whether this answer is the whole set: complete (the search ended on the first page with at least quote_count genuine quotes), partial (the search ended on the first page with fewer, so search withheld some), or unknown (anything that cannot be proven: more pages to walk, a later page, no total, or a page where no row demonstrably quotes the tweet)."
+                    },
+                    "coverage_hint": {
+                      "type": "string",
+                      "description": "Present only when coverage is partial: a one-line reason, that X search does not return every quote for some accounts."
+                    },
+                    "requested_count": {
+                      "type": "integer",
+                      "description": "The count you asked for, echoed as a number (20 when you sent none, null when it was not a number).",
+                      "nullable": true
+                    },
+                    "effective_count": {
+                      "type": "integer",
+                      "description": "The page size actually requested upstream, 1-20."
+                    },
                     "product_used": {
                       "type": "string",
                       "description": "Which ordering actually served this page: Top or Latest. Differs from the product you asked for only when top_fallback is true."
@@ -3492,7 +3514,11 @@
                   ],
                   "source": "search",
                   "search_query": "quoted_tweet_id:1759123456789012345",
-                  "quote_matched": 2
+                  "quote_matched": 2,
+                  "requested_count": 20,
+                  "effective_count": 20,
+                  "quote_count": 48,
+                  "coverage": "unknown"
                 }
               }
             }
@@ -3635,10 +3661,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Max items to request for this page. Defaults to 20 and is clamped to 1-100 by the underlying search, so a larger number returns at most 100 rather than erroring.",
+            "description": "Max items to request for this page, 1-20. Defaults to 20. X's search returns at most 20 per page, so a larger number is clamped to 20 rather than erroring, and the response echoes both requested_count and effective_count.",
             "schema": {
               "type": "integer",
-              "description": "Max items to request for this page. Defaults to 20 and is clamped to 1-100 by the underlying search, so a larger number returns at most 100 rather than erroring.",
+              "description": "Max items to request for this page, 1-20. Defaults to 20. X's search returns at most 20 per page, so a larger number is clamped to 20 rather than erroring, and the response echoes both requested_count and effective_count.",
               "example": "20"
             },
             "example": "20"
@@ -9020,7 +9046,7 @@
       "get": {
         "operationId": "user-tweets-complete",
         "summary": "Full Tweet History",
-        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` — pass it back as `cursor` to continue, and repeat until `next_cursor` is null. Uses the public account pool: no registered session required. Cost: $0.0024 per call.",
+        "description": "Collect a user's tweet history in bulk, auto-paginating server-side across upstream pages. Unlike GET /user/tweets (one upstream page per call), this drives pagination for you and returns a large batch in one request. Each call is bounded by both `max` and a server-side time budget, so it always returns inside a normal client timeout. When more history remains the response carries a `next_cursor` — pass it back as `cursor` to continue, and repeat until `next_cursor` is null. A public read: no registered session required. Cost: $0.0024 per call.",
         "tags": [
           "User Reads"
         ],
@@ -13916,7 +13942,7 @@
                     },
                     "tweets": {
                       "type": "array",
-                      "description": "The community's posts for this page, as full tweet objects. The pinned post is excluded, so a flat list is pinned followed by tweets with no duplicate. X attaches a caller-relative community moderation state to each tweet upstream; it is never extracted, because on a pooled read it would describe our rotating pool account rather than you.",
+                      "description": "The community's posts for this page, as full tweet objects. The pinned post is excluded, so a flat list is pinned followed by tweets with no duplicate. X attaches a caller-relative community moderation state to each tweet upstream; it is never extracted, because on a public read it would not describe you.",
                       "items": {
                         "$ref": "#/components/schemas/Tweet"
                       }
@@ -20909,7 +20935,7 @@
       "get": {
         "operationId": "article-get",
         "summary": "Get Article",
-        "description": "Read an article's full content. Two mutually exclusive forms: id or url (the announcement tweet id or status URL) for a public, pooled read that needs no session, works for Published articles only. Or article_id (the article's own entity id, from Article Create or Article List) for an owner-only read that requires a registered session and also works for your own Drafts. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "description": "Read an article's full content. Two mutually exclusive forms: id or url (the announcement tweet id or status URL) for a public read that needs no session, works for Published articles only. Or article_id (the article's own entity id, from Article Create or Article List) for an owner-only read that requires a registered session and also works for your own Drafts. Billed at $0.0008 per call. Cost: $0.0008 per call.",
         "tags": [
           "Articles"
         ],
@@ -21875,7 +21901,7 @@
       "get": {
         "operationId": "grok-config",
         "summary": "Grok Config",
-        "description": "Read the Grok settings for the account behind your session: whether X has enabled Grok for it, the reasons if not, and the model options it is allowed to choose between. Grok eligibility belongs to the X account rather than to us, so this runs as your session and not off our pool. Call it once before your first chat request. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "description": "Read the Grok settings for the account behind your session: whether X has enabled Grok for it, the reasons if not, and the model options it is allowed to choose between. Grok eligibility belongs to the X account rather than to us, so this runs as your own session. Call it once before your first chat request. Billed at $0.0008 per call. Cost: $0.0008 per call.",
         "tags": [
           "Grok"
         ],
@@ -22472,7 +22498,7 @@
       "post": {
         "operationId": "monitor-id-post",
         "summary": "Update Monitor",
-        "description": "Partial update of an existing monitor. Send status to pause or resume it, webhook_ids to change which webhooks receive its events, or both in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to the shared pool. Cost: Free per call.",
+        "description": "Partial update of an existing monitor. Send status to pause or resume it, webhook_ids to change which webhooks receive its events, or both in the same call (applied atomically). Resuming a paused monitor re-runs the same capacity and per-account cap checks as creating a new one, since it adds load back to monitoring capacity. Cost: Free per call.",
         "tags": [
           "Monitoring"
         ],
@@ -22525,7 +22551,7 @@
                     },
                     "degraded": {
                       "type": "boolean",
-                      "description": "Whether the shared pool is currently serving this monitor slower than the published interval."
+                      "description": "Whether monitoring is currently serving this monitor slower than the published interval."
                     },
                     "events_possibly_missed": {
                       "type": "integer",
@@ -22870,7 +22896,7 @@
                     },
                     "degraded": {
                       "type": "boolean",
-                      "description": "Whether the shared pool is currently serving this monitor slower than the published interval."
+                      "description": "Whether monitoring is currently serving this monitor slower than the published interval."
                     },
                     "poll_interval_ms": {
                       "type": "integer",
@@ -24675,7 +24701,7 @@
           "is_limited_reply": {
             "type": "boolean",
             "nullable": true,
-            "description": "Whether replying to this tweet is restricted. True when X names a reply limitation, false when X names a limitation that is not about replies, and null when X names no limitation at all. Null is what every tweet sampled so far returns. The flag is relative to the account that read the tweet, and these are pooled reads served by a rotating pool account, so a value here describes that account and not yours. It is a different question from the author's own who-can-reply setting, which this field does not report."
+            "description": "Whether replying to this tweet is restricted. True when X names a reply limitation, false when X names a limitation that is not about replies, and null when X names no limitation at all. Null is what every tweet sampled so far returns. The flag is relative to the account that read the tweet, and these public reads do not run as your account, so a value here would not describe you. It is a different question from the author's own who-can-reply setting, which this field does not report."
           },
           "entities": {
             "type": "object",
@@ -25790,7 +25816,7 @@
           "role": {
             "type": "string",
             "nullable": true,
-            "description": "ALWAYS NULL, on both endpoints. It is the role of the ACCOUNT THAT MADE THE CALL, and these are pooled reads served by a rotating pool account, so any value here would describe a stranger. The key is kept rather than removed so it stays visible that X sends this field and we decline to answer it. For a real per-member role, use Community Members, whose members[].role is about that member and not about the caller."
+            "description": "ALWAYS NULL, on both endpoints. It is the role of the ACCOUNT THAT MADE THE CALL, and these public reads do not run as your account, so any value here would describe a stranger. The key is kept rather than removed so it stays visible that X sends this field and we decline to answer it. For a real per-member role, use Community Members, whose members[].role is about that member and not about the caller."
           },
           "can_join": {
             "type": "boolean",
@@ -25805,7 +25831,7 @@
           "viewer_relationship_type": {
             "type": "string",
             "nullable": true,
-            "description": "ALWAYS NULL, on both endpoints, for the same caller-relative reason as role. It is the viewer relationship, and the viewer is the pool account."
+            "description": "ALWAYS NULL, on both endpoints, for the same caller-relative reason as role. It is the viewer relationship, and the viewer is not you."
           }
         }
       },
