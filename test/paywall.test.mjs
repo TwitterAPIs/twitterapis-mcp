@@ -47,6 +47,26 @@ const payloadOf = (r) => JSON.parse(r.content[0].text.split("\n\n").pop());
   ok("402 insufficient_credits: needs=credits, buy-credits page");
 }
 {
+  // S-4: the live 402 body now carries its own top_up_url (scraper/src/server/payment-required.ts).
+  // The result must hold exactly ONE buy-credits link, ours, with the API's amount prefill carried over.
+  const api = "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402";
+  const r = await call(402, JSON.stringify({ error: "insufficient_credits", message: "Not enough credits.", top_up_url: `${api}&amount=25` }));
+  const text = r.content[0].text;
+  assert.equal((text.match(/buy-credits/g) || []).length, 2, "one link, printed once in the payload's action_url and once in its steps");
+  assert.ok(!text.includes("utm_source=api"), "the API's own link is not echoed");
+  assert.equal(r.structuredContent.action_url, `${TOP_UP_URL}&amount=25`);
+  assert.equal(r.structuredContent.steps.find((st) => st.what === "top up").where, `${TOP_UP_URL}&amount=25`);
+  assert.match(text, /Not enough credits\./, "the API's message is still echoed");
+  // Without an amount, or with anything off the real page or outside the picker, the plain link is used.
+  for (const bad of [api, "https://evil.example/dashboard/buy-credits?amount=25", "http://www.twitterapis.com/dashboard/buy-credits?amount=25",
+                     `${api}&amount=9`, `${api}&amount=5001`, `${api}&amount=1e3`, "not a url"]) {
+    const r2 = await call(402, JSON.stringify({ error: "insufficient_credits", message: "x", top_up_url: bad }));
+    assert.equal(r2.structuredContent.action_url, TOP_UP_URL, bad);
+    assert.ok(!r2.content[0].text.includes("evil.example"), "a foreign host in the body never reaches the result");
+  }
+  ok("402 with the API's top_up_url: one link (ours), amount prefill carried, foreign or out-of-range links refused");
+}
+{
   const r = await call(409, '{"error":"session_required","message":"Log in first: POST /twitter/user/user_login"}');
   assert.equal(r.structuredContent.needs, "x_session");
   assert.equal(r.structuredContent.next_tool, "twitter_user_login");

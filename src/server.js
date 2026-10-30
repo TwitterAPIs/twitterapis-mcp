@@ -214,8 +214,47 @@ export function classifyPaywall(status, bodyText) {
   return null;
 }
 
-function paywallResult(kind, detail = "") {
+// ONE TOP-UP LINK PER RESULT (S-4 review LOW, 2026-10-29). Since the API's 402 body gained its own
+// top_up_url (utm_source=api), echoing that body beside this payload's action_url handed the agent
+// two different buy-credits links. The payload keeps ours (utm_source=mcp) and the echo drops theirs.
+// The only thing carried over is the API's whole-dollar ?amount= prefill, and only from a link on
+// the real buy-credits page, inside the page's own $10 to $5,000 picker: a host, path or URL from a
+// response body is never copied into a link we hand out.
+export function creditsTopUpUrl(bodyText) {
+  try {
+    const raw = JSON.parse(bodyText)?.top_up_url;
+    if (typeof raw !== "string") return TOP_UP_URL;
+    const u = new URL(raw);
+    if (u.protocol !== "https:" || u.hostname !== "www.twitterapis.com" || u.pathname !== "/dashboard/buy-credits") return TOP_UP_URL;
+    const amount = u.searchParams.get("amount");
+    if (!/^[0-9]{1,4}$/.test(amount || "")) return TOP_UP_URL;
+    const n = Number(amount);
+    return n >= 10 && n <= 5000 ? `${TOP_UP_URL}&amount=${n}` : TOP_UP_URL;
+  } catch {
+    return TOP_UP_URL;
+  }
+}
+
+// The error body as echoed in the result text, without the API's own top-up link.
+export function echoBody(bodyText) {
+  try {
+    const b = JSON.parse(bodyText);
+    if (b && typeof b === "object" && !Array.isArray(b) && "top_up_url" in b) {
+      const { top_up_url: _drop, ...rest } = b;
+      return JSON.stringify(rest);
+    }
+  } catch {
+    // not JSON: echoed as received
+  }
+  return bodyText;
+}
+
+function paywallResult(kind, detail = "", topUpUrl) {
   const p = paywallFor(kind);
+  if (kind === "credits" && topUpUrl && topUpUrl !== TOP_UP_URL) {
+    p.action_url = topUpUrl;
+    p.steps = p.steps.map((st) => (st.where === TOP_UP_URL ? { ...st, where: topUpUrl } : st));
+  }
   return {
     isError: true,
     content: [{ type: "text", text: `${p.message}${detail ? ` (${detail})` : ""}\n\n${JSON.stringify(p)}` }],
@@ -494,7 +533,7 @@ export function createServer({
             ? ""
             : " If this blocked the user's task and looks like a defect or a missing capability, draft a report with twitter_feedback_send (queued locally until the user reviews it).";
         const pw = classifyPaywall(res.status, body);
-        if (pw) return paywallResult(pw, `HTTP ${res.status}: ${body.slice(0, 1200)}`);
+        if (pw) return paywallResult(pw, `HTTP ${res.status}: ${echoBody(body).slice(0, 1200)}`, pw === "credits" ? creditsTopUpUrl(body) : undefined);
         return { isError: true, content: [{ type: "text", text: `HTTP ${res.status}${hint}: ${body.slice(0, 1200)}${feedbackHint}` }] };
       }
       // A success clears the record so a later draft never inherits an old
