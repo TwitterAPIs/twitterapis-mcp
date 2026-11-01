@@ -129,7 +129,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_tweet_detail` | Single tweet: text, author, metrics, media, quoted/reply context |
 | `twitter_tweet_replies` | Replies to a tweet |
 | `twitter_tweet_replies_complete` | Every reply under a tweet in one call, with an `is_complete` flag and a resume cursor |
-| `twitter_tweet_thread` | Full author thread (connected tweet chain by same author) |
+| `twitter_tweet_thread` | Full author thread (connected tweet chain by same author), read forward from the tweet you pass, so pass the thread's first tweet |
 | `twitter_tweet_retweeters` | Accounts that retweeted a tweet |
 | `twitter_tweet_quotes` | Tweets that quote a tweet, with their text. Search-backed, so `count` is what search returned, not the tweet's true `quote_count` |
 | `twitter_list_members` | Members of a Twitter/X List |
@@ -329,6 +329,8 @@ The agent calls `twitter_tweet_thread` with:
 ```
 url: "https://x.com/karpathy/status/1849....."
 ```
+
+The thread is read forward from the tweet you pass, so the URL should be the thread's first tweet. If you hold a later tweet, read its `conversation_id` with `twitter_tweet_detail` and pass that id instead; a later tweet returns only the tail.
 
 ### Paginate through followers
 

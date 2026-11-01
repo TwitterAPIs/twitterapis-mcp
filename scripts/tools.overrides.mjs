@@ -512,7 +512,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_tweet_thread",
     endpoint: "/tweet/thread",
     description:
-      "Returns all tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread). Any tweet id or url from the thread returns the full ordered sequence in a single call. Replies from other users are not included. Takes the tweet id or its full URL.",
+      "Returns the tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread), in order, in a single call. It reads FORWARD from the tweet you pass and does not walk backwards, so pass the thread's FIRST tweet: its id is the conversation_id carried on every tweet in the thread. Passing a later tweet returns only that tweet and the author's tweets after it, the tail of the thread. Replies from other users are not included. Takes the tweet id or its full URL.",
     args: [
       "@TWEET_REF",
       "@PROJECTION",
