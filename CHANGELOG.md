@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.25.1 (2026-11-01)
+
+A patch: no tool, argument or schema changed.
 
 ### Fixed
 
