@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- **`twitter_tweet_thread` no longer says any tweet in a thread returns the whole thread.** `/twitter/tweet/thread` reads forward from the tweet you pass and does not walk backwards, so a later tweet returns only the tail of the thread. The description now says to pass the thread's first tweet, whose id is the `conversation_id` every tweet in the thread carries, and the README says the same.
 - **One top-up link on an out-of-credits result.** The API's 402 body now carries its own `top_up_url`, and the result echoed it beside the payload's `action_url`, so an agent saw two different buy-credits links. The echo now drops the API's link and the payload keeps one, with the API's whole-dollar `amount` prefill carried over when it comes from the real buy-credits page and sits inside the page's $10 to $5,000 range. A host or URL from a response body is never copied into a link the result hands out. `test/paywall.test.mjs` covers it (fails on 0.25.0).
 
 ## 0.25.0 (2026-10-20)
