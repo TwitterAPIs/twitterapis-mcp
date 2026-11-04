@@ -95,7 +95,7 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-116 tools: 70 reads and 46 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Every data read (except `twitter_audience_summary`, which always returns its full summary) also takes `fields` (comma-separated dotted paths to keep, e.g. `id,text,author.username`; pagination and envelope keys always survive) and `compact` (`"1"` for a built-in preset of ids, text, counts and author basics), so a model paying per token can trim a page to what it will read. Four of the reads are free account lookups (`twitter_account_me`, `twitter_account_payments`, `twitter_feedback_get`, `twitter_feedback_list`); the 14 monitoring tools and `twitter_feedback_send` are also free (account administration, not metered reads).
+118 tools: 71 reads and 47 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Every data read (except `twitter_audience_summary`, which always returns its full summary) also takes `fields` (comma-separated dotted paths to keep, e.g. `id,text,author.username`; pagination and envelope keys always survive) and `compact` (`"1"` for a built-in preset of ids, text, counts and author basics), so a model paying per token can trim a page to what it will read. Four of the reads are free account lookups (`twitter_account_me`, `twitter_account_payments`, `twitter_feedback_get`, `twitter_feedback_list`); the 14 monitoring tools and `twitter_feedback_send` are also free (account administration, not metered reads).
 
 Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **most write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark, monitor/webhook delete) are annotated `destructiveHint: true` so MCP clients can prompt before running them. The **monitoring** and **feedback** tools (see below) are the exception: they administer your twitterapis.com account, not an X session, so they need only your API key, no linked session and no inline credentials.
 
@@ -155,6 +155,8 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_community_memberships` | The inverse lookup: every community a given numeric `user_id` belongs to |
 | `twitter_creator_commentary_video` | Who posts native video about a topic: one search page grouped by author and ranked by video posts, then median and total views, with up to three top post ids per creator |
 | `twitter_grok_chat` | Ask X's own Grok, grounded in live X data, and get the answer plus the sources it cited |
+| `twitter_grok_chat_submit` | Start the same Grok chat as a background job and get a job_id at once, for clients that stop waiting before a long answer |
+| `twitter_grok_chat_result` | Read a submitted Grok chat by job_id: pending, the finished answer, or the error |
 | `twitter_grok_config` | Whether the authenticated account can use Grok, and which models it may pick |
 | `twitter_trends` | Current top trends for a location (by `country` or `woeid`) an X Explore tab (by `category`), or only the trends X labels Business and finance (`category=business_and_finance`) |
 | `twitter_trends_locations` | Every location X has trends for, each with its WOEID |
@@ -393,7 +395,7 @@ Calls are billed to your twitterapis.com account, at the price each tool's descr
 | $0.004 per call | `twitter_tweet_thread`, `twitter_grok_chat` |
 | $0.01 per call | `twitter_user_login` (logging in with a username and password) |
 
-Deleting a draft or a scheduled post, and reading, listing or deleting an article, stay at the standard $0.0008 per call. Your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing).
+`twitter_grok_chat_submit` and `twitter_grok_chat_result` are free calls. The Grok chat price is charged once, on the poll that first delivers the finished answer, and a job that fails or is never collected costs nothing. Deleting a draft or a scheduled post, and reading, listing or deleting an article, stay at the standard $0.0008 per call. Your first $0.50 is free. See [twitterapis.com/pricing](https://www.twitterapis.com/pricing).
 
 ## Links
 
@@ -410,7 +412,7 @@ Deleting a draft or a scheduled post, and reading, listing or deleting an articl
 
 **Can my agent post or send DMs?** Yes, from an X account you link to your key. Undo actions such as delete and unfollow are marked destructive, so your client can ask before running them.
 
-**Is it read-only?** No. 70 read tools work with just your API key; 46 write actions (post, save or schedule a post, like, retweet, follow, DM, media upload, profile name/bio/avatar/banner updates, List create/add member/remove member, community join/leave, article create/edit/publish/delete, monitor/webhook create/update/delete, feedback send) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD and feedback, which are account administration and need only your API key.
+**Is it read-only?** No. 71 read tools work with just your API key; 47 write actions (post, save or schedule a post, like, retweet, follow, DM, media upload, profile name/bio/avatar/banner updates, List create/add member/remove member, community join/leave, article create/edit/publish/delete, monitor/webhook create/update/delete, feedback send) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD and feedback, which are account administration and need only your API key.
 
 **Which clients are supported?** Claude Desktop, Cursor, Windsurf, and VS Code (Copilot agent mode), or any Model Context Protocol client.
 

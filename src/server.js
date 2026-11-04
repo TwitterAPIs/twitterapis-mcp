@@ -56,6 +56,7 @@ export const DEFAULT_TIMEOUT_MS = 30000;
 const NOT_FOUND_HINTS = [
   [/^\/feedback/, " (not found. No feedback report with that id on this account, and an id from another account will not resolve here. Use the id returned by twitter_feedback_send action=send.)"],
   [/^\/account/, " (not found. That account resource does not exist for this key.)"],
+  [/^\/twitter\/grok\/chat\/result/, " (not found. No Grok job with this job_id for this API key; a finished answer is kept for 15 minutes.)"],
 ];
 const DEFAULT_NOT_FOUND_HINT =
   " (not found. The user, tweet, or list may have been deleted or the id is wrong)";
@@ -187,7 +188,7 @@ export function paywallFor(kind) {
       cannot_retry:
         "A locked, suspended or confirmation-pending account, or an emailed one-time code, has to be cleared on X itself; retrying here does not change those outcomes.",
       unlocks:
-        "the 47 tools that act as the account: posting and deleting, liking, reposting, bookmarking and following with their inverses, DMs, drafts, scheduled posts, articles, list creation and membership, profile, avatar and banner updates, media upload, the home timeline, the bookmark list, folders and bookmark search, the block and mute lists, Grok chat and config, and followers-you-know",
+        "the 48 tools that act as the account: posting and deleting, liking, reposting, bookmarking and following with their inverses, DMs, drafts, scheduled posts, articles, list creation and membership, profile, avatar and banner updates, media upload, the home timeline, the bookmark list, folders and bookmark search, the block and mute lists, Grok chat and config, and followers-you-know",
       playbook: "playbook://link-x-account",
       retry: "same call, after an X session is linked",
     };
@@ -286,11 +287,11 @@ export function hintFor(status, path) {
 // policy and the confirm-before-publishing rule therefore belong in this string,
 // which the directory permits a server to use for guiding the model.
 export const INSTRUCTIONS = [
-  "twitterapis.com MCP server. Read tools cost credits per call (each description states its cost); account, monitoring and feedback tools are free.",
+  "twitterapis.com MCP server. Read tools cost credits (see each description); account, monitoring and feedback tools are free.",
   // Feedback first: Claude Code keeps only the first 2048 chars of a server's instructions
   // (MAX_INSTRUCTIONS below), so the consent rule must sit well inside that window.
   "Feedback: if a twitterapis tool call fails with an error other than 401/402/409/429 and the user has to work around it, if the user asks for something no twitterapis tool covers, " +
-    "if a documented field comes back empty or wrong, or if the user is clearly frustrated with a result, draft a report with twitter_feedback_send (action \"draft\"). " +
+    "if a documented field comes back empty or wrong, or if the user is frustrated with a result, draft a report with twitter_feedback_send (action \"draft\"). " +
     "Drafting is local and silent: no confirmation, not announced mid-task, one draft per issue. Details: three bullets (What happened, Repro, Evidence), optionally after a one-line summary of the goal in your own words, never a quote; identifiers only, never payloads, keys or secrets. " +
     "Never send a draft unless the user names it after reviewing action \"list\"; send only the ids the user named.",
   "Before drafting a report that a parameter is IGNORED or a field is EMPTY, re-run the call with a distinctive value that could only match if the parameter was honoured, and with the phrase quoted; " +
@@ -300,8 +301,9 @@ export const INSTRUCTIONS = [
     "Confirm with the user before twitter_article_publish: its public announcement tweet survives twitter_article_unpublish, and only twitter_article_delete removes it. " +
     "twitter_scheduled_create publishes on its own; twitter_draft_create never posts. X keeps no avatar or banner history, so save the current image from twitter_user_info before replacing it.",
   // Routing and chaining; the descriptions state the facts, this only links tools.
-  "Routing: twitter_user_info gives the numeric user_id other tools need; twitter_user_status tells a ban from a typo; twitter_dm_list gives conversation_id; twitter_media_upload gives media_id; " +
-    "twitter_tweet_quotes counts are search-backed (true total: quote_count from twitter_tweet_detail); twitter_list_tweets filters, twitter_list_timeline is X's native feed.",
+  "Routing: twitter_user_info gives the numeric user_id; twitter_user_status tells a ban from a typo; twitter_dm_list gives conversation_id; twitter_media_upload gives media_id; " +
+    "twitter_tweet_quotes counts are search-backed (true total: quote_count from twitter_tweet_detail); twitter_list_tweets filters, twitter_list_timeline is X's native feed; " +
+    "long Grok: twitter_grok_chat_submit, then twitter_grok_chat_result.",
 ].join(" ");
 
 // Claude Code truncates server instructions past this many characters (2.1.287), so

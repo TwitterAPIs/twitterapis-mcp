@@ -1716,12 +1716,16 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "top_up_url": {
+                      "type": "string"
                     }
                   }
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -2055,7 +2059,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -2289,7 +2294,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -2644,7 +2650,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -2886,7 +2893,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -3104,7 +3112,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -3359,7 +3368,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -3604,7 +3614,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -3939,7 +3950,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -4197,7 +4209,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -4264,10 +4277,10 @@
             "name": "id",
             "in": "query",
             "required": false,
-            "description": "Numeric ID of any tweet in the thread. Provide either id or url.",
+            "description": "Numeric ID of the thread's first tweet (its conversation_id). The endpoint reads forward and does not walk backwards, so a later tweet's ID returns only the tail from that tweet onward. Provide either id or url.",
             "schema": {
               "type": "string",
-              "description": "Numeric ID of any tweet in the thread. Provide either id or url.",
+              "description": "Numeric ID of the thread's first tweet (its conversation_id). The endpoint reads forward and does not walk backwards, so a later tweet's ID returns only the tail from that tweet onward. Provide either id or url.",
               "example": "1759123456789012345"
             },
             "example": "1759123456789012345"
@@ -4276,10 +4289,10 @@
             "name": "url",
             "in": "query",
             "required": false,
-            "description": "Full status URL of any tweet in the thread. Provide either id or url.",
+            "description": "Full status URL of the thread's first tweet. The endpoint reads forward and does not walk backwards, so a later tweet's URL returns only the tail from that tweet onward. Provide either id or url.",
             "schema": {
               "type": "string",
-              "description": "Full status URL of any tweet in the thread. Provide either id or url.",
+              "description": "Full status URL of the thread's first tweet. The endpoint reads forward and does not walk backwards, so a later tweet's URL returns only the tail from that tweet onward. Provide either id or url.",
               "example": "https://x.com/naval/status/1759123456789012345"
             },
             "example": "https://x.com/naval/status/1759123456789012345"
@@ -4397,7 +4410,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -4579,7 +4593,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -4768,7 +4783,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -4973,7 +4989,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -5255,12 +5272,16 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "top_up_url": {
+                      "type": "string"
                     }
                   }
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Not enough credits for 3 items. Top up, or send a smaller batch."
+                  "message": "Not enough credits for 3 items. Top up, or send a smaller batch.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -5475,7 +5496,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -5726,7 +5748,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -5960,7 +5983,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -6207,7 +6231,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -6427,7 +6452,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -6657,7 +6683,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -6985,12 +7012,16 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "top_up_url": {
+                      "type": "string"
                     }
                   }
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Not enough credits for 3 items. Top up, or send a smaller batch."
+                  "message": "Not enough credits for 3 items. Top up, or send a smaller batch.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -7456,12 +7487,16 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "top_up_url": {
+                      "type": "string"
                     }
                   }
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Not enough credits for 53 items. Top up, or send a smaller batch."
+                  "message": "Not enough credits for 53 items. Top up, or send a smaller batch.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -7748,7 +7783,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -7977,7 +8013,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -8187,7 +8224,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -8398,7 +8436,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -8627,7 +8666,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -8874,7 +8914,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -9102,7 +9143,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -9327,7 +9369,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -9545,7 +9588,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -9766,7 +9810,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -9984,7 +10029,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -10176,7 +10222,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -10406,7 +10453,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -10637,7 +10685,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -10867,7 +10916,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -11098,7 +11148,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -11329,7 +11380,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -11559,7 +11611,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -11788,7 +11841,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -12005,7 +12059,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -12238,7 +12293,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -12509,7 +12565,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -12776,7 +12833,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -13027,7 +13085,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -13369,7 +13428,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -13623,7 +13683,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -13892,7 +13953,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -14153,7 +14215,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -14406,7 +14469,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -14691,7 +14755,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -14945,7 +15010,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -15172,7 +15238,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -15359,7 +15426,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -15550,7 +15618,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -15753,7 +15822,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -15962,7 +16032,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -16151,7 +16222,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -16387,12 +16459,16 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "top_up_url": {
+                      "type": "string"
                     }
                   }
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -16669,6 +16745,20 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "community_id",
+            "in": "query",
+            "required": false,
+            "description": "The same community id sent in the query string instead of the JSON body. Use one or the other; the body field is not required when this is present.",
+            "schema": {
+              "type": "string",
+              "description": "The same community id sent in the query string instead of the JSON body. Use one or the other; the body field is not required when this is present.",
+              "example": "1493446837214187523"
+            },
+            "example": "1493446837214187523"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -16833,12 +16923,16 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "top_up_url": {
+                      "type": "string"
                     }
                   }
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -17115,6 +17209,20 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "community_id",
+            "in": "query",
+            "required": false,
+            "description": "The same community id sent in the query string instead of the JSON body. Use one or the other; the body field is not required when this is present.",
+            "schema": {
+              "type": "string",
+              "description": "The same community id sent in the query string instead of the JSON body. Use one or the other; the body field is not required when this is present.",
+              "example": "1493446837214187523"
+            },
+            "example": "1493446837214187523"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -17225,7 +17333,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -17413,7 +17522,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -17601,7 +17711,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -17789,7 +17900,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -17977,7 +18089,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -18165,7 +18278,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -18353,7 +18467,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -18541,7 +18656,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -18741,7 +18857,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -18938,7 +19055,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -19124,7 +19242,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -19307,7 +19426,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -19479,7 +19599,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -19657,7 +19778,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -19849,7 +19971,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -20052,7 +20175,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -20258,7 +20382,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -20441,7 +20566,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -20644,7 +20770,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -20862,7 +20989,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -21063,7 +21191,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -21244,7 +21373,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -21459,7 +21589,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -21679,7 +21810,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -21894,7 +22026,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -22118,7 +22251,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -22328,7 +22462,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -22579,7 +22714,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -22783,7 +22919,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -23067,7 +23204,8 @@
                 },
                 "example": {
                   "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue."
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
                 }
               }
             }
@@ -25832,6 +25970,497 @@
           }
         ]
       }
+    },
+    "/grok/chat/submit": {
+      "post": {
+        "operationId": "grok-chat-submit",
+        "summary": "Grok Chat: Submit",
+        "description": "Start the same Grok chat as POST /twitter/grok/chat without holding the connection open. Send the same body and get a 202 with a job_id at once, then poll GET /twitter/grok/chat/result until the answer is ready. Built for clients that time out before a search-grounded answer arrives. A bad body, a missing key, a missing session and a short balance are answered on the spot, before any job exists, and at most 5 jobs per API key can be pending at once. Submitting is free: the $0.0040 grok/chat price is charged once, on the result poll that first delivers a finished answer, and a failed, timed-out, interrupted or never-collected job is not charged. Cost: Free per call.",
+        "tags": [
+          "Grok"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/grok/chat/submit\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"message\": \"https://x.com/i/status/1899999999999999999\", \"mode\": \"auto\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/grok/chat/submit\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"message\": \"https://x.com/i/status/1899999999999999999\", \"mode\": \"auto\"},\n)\nresp.raise_for_status()\njob = resp.json()\nprint(job[\"job_id\"], job[\"poll\"])"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/grok/chat/submit\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({\"message\": \"https://x.com/i/status/1899999999999999999\", \"mode\": \"auto\"}),\n});\nconst job = await resp.json();\nconsole.log(job.job_id, job.poll);"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "The prompt. A question, an instruction, or a bare post URL (https://x.com/<user>/status/<id>), which returns a summary of that post. Required unless you send messages[] whose last entry is a user turn. Maximum 20,000 characters; longer prompts are rejected with 400 before any Grok call is made, so an over-length prompt never costs you anything.",
+                    "example": "What are people on X saying about the WWDC keynote today?"
+                  },
+                  "messages": {
+                    "type": "string",
+                    "description": "JSON array of prior turns, oldest first, sent in the request body. Each entry takes either { role: \"user\" | \"assistant\", content } or X's own { sender: 1 | 2, message }, where 1 is you and 2 is Grok, plus the optional response_id and parent_response_id we returned on earlier replies. Anything not explicitly marked as Grok is treated as a user turn. If you omit message, the last entry must be a user turn and becomes the prompt. Maximum 100 prior turns.",
+                    "example": "[{\"role\":\"user\",\"content\":\"Who won the game?\"},{\"role\":\"assistant\",\"content\":\"The Celtics, 112-108.\"}]"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "auto, fast, or expert. auto lets X pick the model, fast is grok-3-latest, expert is grok-4 and thinks for longer. The raw model ids grok-3-latest and grok-4 are accepted as aliases. Anything unrecognised falls back to auto, which is also the default.",
+                    "example": "auto"
+                  },
+                  "conversation_id": {
+                    "type": "string",
+                    "description": "Continue an existing conversation, using the conversation_id from an earlier reply. Omit it and we open a fresh conversation for you and return its id.",
+                    "example": "2088999211077345534"
+                  },
+                  "image_count": {
+                    "type": "integer",
+                    "description": "How many images Grok may generate if the prompt calls for it. Clamped to 0 through 4; the default is 4, which is X's own. Set it to 0 for a text-only answer.",
+                    "example": "4"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The job was created and is running.",
+            "headers": {
+              "Location": {
+                "description": "The result path for this job, /twitter/grok/chat/result?job_id=<job_id>.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job_id": {
+                      "type": "string",
+                      "description": "The job's id, a UUID. Pass it to GET /twitter/grok/chat/result."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Always pending on a 202."
+                    },
+                    "poll": {
+                      "type": "string",
+                      "description": "The path to poll, with job_id already filled in."
+                    },
+                    "poll_after_seconds": {
+                      "type": "integer",
+                      "description": "How long to wait before the first poll, 3 seconds."
+                    },
+                    "result_ttl_seconds": {
+                      "type": "integer",
+                      "description": "How long a finished answer is kept for you to collect, 900 seconds."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "When the job was created, ISO 8601."
+                    }
+                  }
+                },
+                "example": {
+                  "job_id": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
+                  "status": "pending",
+                  "poll": "/twitter/grok/chat/result?job_id=5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
+                  "poll_after_seconds": 3,
+                  "result_ttl_seconds": 900,
+                  "created_at": "2026-11-04T18:02:11.482Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No session registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "session_required",
+                  "message": "Register your Twitter session first: POST /twitter/customer/session with { auth_token, ct0 }, or pass them per call."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many pending jobs for this API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "too_many_pending_jobs",
+                  "message": "This API key already has 5 Grok jobs running. Poll GET /twitter/grok/chat/result for one of them, then submit again.",
+                  "limit_pending": 5,
+                  "retry_after_seconds": 3
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/grok/chat/result": {
+      "get": {
+        "operationId": "grok-chat-result",
+        "summary": "Grok Chat: Result",
+        "description": "Poll a job POST /twitter/grok/chat/submit started. While it runs you get a 202 with status pending and poll_after_seconds. When it finishes you get a 200 with exactly the body POST /twitter/grok/chat returns plus job_id and status done, and the fields projection works on it. If the chat failed you get the status and typed error grok/chat would have answered, plus job_id and status failed; 504 job_timeout and 503 job_interrupted mean the job did not finish on our side. An unknown job_id, a finished answer older than 15 minutes, or another key's job all return 404. The $0.0040 grok/chat price is charged once, on the first poll that delivers the finished answer; polling it again is free. Cost: Free per call.",
+        "tags": [
+          "Grok"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/grok/chat/result?job_id=5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport time\nimport requests\n\nwhile True:\n    resp = requests.get(\n        \"https://api.twitterapis.com/twitter/grok/chat/result\",\n        headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n        params={\"job_id\": \"5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37\"},\n    )\n    if resp.status_code != 202:\n        break\n    time.sleep(resp.json()[\"poll_after_seconds\"])\nprint(resp.status_code, resp.json())"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "let resp;\nwhile (true) {\n  resp = await fetch(\"https://api.twitterapis.com/twitter/grok/chat/result?job_id=5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37\", {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  if (resp.status !== 202) break;\n  const { poll_after_seconds } = await resp.json();\n  await new Promise((r) => setTimeout(r, poll_after_seconds * 1000));\n}\nconsole.log(resp.status, await resp.json());"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "query",
+            "required": true,
+            "description": "The job_id POST /twitter/grok/chat/submit returned, a UUID.",
+            "schema": {
+              "type": "string",
+              "description": "The job_id POST /twitter/grok/chat/submit returned, a UUID.",
+              "example": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37"
+            },
+            "example": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The finished answer, the grok/chat body plus job_id and status done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when Grok returned answer text. A call that produced no readable answer does not reach you as ok: false, it returns 422 and is not billed."
+                    },
+                    "conversation_id": {
+                      "type": "string",
+                      "description": "The conversation this turn belongs to, whether you supplied it or we opened it. Pass it back on the next call to continue. Null only if X returned no id.",
+                      "nullable": true
+                    },
+                    "response_id": {
+                      "type": "string",
+                      "description": "The id of GROK's turn (X's agentChatItemId). Pass it back as response_id on that turn inside messages[] to thread the next request exactly."
+                    },
+                    "user_response_id": {
+                      "type": "string",
+                      "description": "The id of the turn YOU just sent (X's userChatItemId). Its counterpart to response_id when you replay history."
+                    },
+                    "answer": {
+                      "type": "string",
+                      "description": "Grok's answer as one complete string. Reasoning and tool chatter are stripped out; this is the reply a person would read."
+                    },
+                    "citations": {
+                      "type": "array",
+                      "description": "The pages Grok read while answering, each { url, domain, title, snippet }. domain is derived from url on our side; X does not send it. title is NOT always present and comes back null when X omits it, so do not filter on it. One answer can cite results from several searches: they are merged in the order they arrived and de-duplicated by url, so you get every distinct source once.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "citation_count": {
+                      "type": "integer",
+                      "description": "Length of citations, after de-duplication. Convenient for the common case of checking whether a domain appeared at all."
+                    },
+                    "tool_calls": {
+                      "type": "array",
+                      "description": "What Grok actually ran to answer, each { id, tool, args }. The observed tool is web_search, whose args carry the query string and the number of results asked for. This is the search Grok chose, not the prompt you sent.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "requested_model": {
+                      "type": "string",
+                      "description": "The model id we asked X for, derived from your mode: grok-4-auto, grok-3-latest, or grok-4."
+                    },
+                    "model": {
+                      "type": "string",
+                      "description": "The model that ACTUALLY answered. auto resolves on X's side, so asking for grok-4-auto commonly comes back as grok-4. Read this one when you care which model produced the text."
+                    },
+                    "mode": {
+                      "type": "string",
+                      "description": "The mode this call ran in: auto, fast, or expert. Echoed back so an unrecognised mode value is visible rather than silent."
+                    },
+                    "job_id": {
+                      "type": "string",
+                      "description": "The job you polled."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "done on a 200."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "conversation_id": "2088999211077345534",
+                  "response_id": "2089001859230978049",
+                  "user_response_id": "2089001859230978048",
+                  "answer": "Reaction on X is running positive on the on-device model work and negative on the pricing. The liveblog thread and several developer accounts flag the new background-execution API as the change most people expect to ship against first.",
+                  "citations": [
+                    {
+                      "url": "https://x.com/verge/status/2089000000000000001",
+                      "domain": "x.com",
+                      "title": "The Verge on X",
+                      "snippet": "Everything announced in the keynote, in order."
+                    },
+                    {
+                      "url": "https://www.theverge.com/wwdc-keynote-liveblog",
+                      "domain": "theverge.com",
+                      "title": "WWDC keynote liveblog",
+                      "snippet": "Live updates as the keynote runs."
+                    },
+                    {
+                      "url": "https://news.ycombinator.com/item?id=41234567",
+                      "domain": "news.ycombinator.com",
+                      "title": null,
+                      "snippet": "Developer discussion of the background-execution API."
+                    }
+                  ],
+                  "citation_count": 3,
+                  "tool_calls": [
+                    {
+                      "id": "5f2b8c1a-9d34-4c77-b0e2-6a1f7c3d8e90",
+                      "tool": "web_search",
+                      "args": {
+                        "query": "WWDC keynote reaction developers",
+                        "num_results": "15"
+                      }
+                    }
+                  ],
+                  "requested_model": "grok-4-auto",
+                  "model": "grok-4",
+                  "mode": "auto",
+                  "job_id": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
+                  "status": "done"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "The job is still running.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before polling again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job_id": {
+                      "type": "string",
+                      "description": "The job you polled."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "pending."
+                    },
+                    "poll_after_seconds": {
+                      "type": "integer",
+                      "description": "Wait this long before polling again, 3 seconds."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "When the job was created, ISO 8601."
+                    }
+                  }
+                },
+                "example": {
+                  "job_id": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
+                  "status": "pending",
+                  "poll_after_seconds": 3,
+                  "created_at": "2026-11-04T18:02:11.482Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "`job_id` is required: the id POST /twitter/grok/chat/submit returned."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such job for this key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "No Grok job with this job_id for this API key. Finished results are kept for 900 seconds; submit again if it has expired."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The service restarted while the job ran",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "job_interrupted",
+                  "message": "The service restarted while this Grok job was running. It was not charged. Submit it again."
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "The job did not finish in time",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "job_timeout",
+                  "message": "This Grok job did not finish in time and was not charged. Submit it again."
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -27122,6 +27751,12 @@
           "message": {
             "type": "string",
             "description": "Human-readable explanation of the failure."
+          },
+          "top_up_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Sent only with 402 insufficient_credits: the buy-credits page to send a person to, with an optional whole-dollar ?amount= prefill. Opening it never charges anything; the signed-in user still chooses and pays.",
+            "example": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
           }
         }
       }

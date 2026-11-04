@@ -26,6 +26,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { LEAD_PATHS } from "./openapi-lead.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT = resolve(HERE, "..", "test", "openapi.snapshot.json");
@@ -96,6 +97,18 @@ try {
 if (!next.openapi || !next.paths) die("payload has no openapi/paths keys, refusing to vendor it");
 
 redactExampleSecrets(next);
+
+// Paths this package knows better than the docs spec today (scripts/openapi-lead.mjs).
+// The vendored copy wins, so a refresh neither reports a live route as dropped nor
+// walks back a corrected price. A pin only ever replaces one path's entry.
+if (existsSync(SNAPSHOT)) {
+  const prevPaths = JSON.parse(readFileSync(SNAPSHOT, "utf8")).paths || {};
+  for (const p of LEAD_PATHS) {
+    if (!prevPaths[p]) die(`LEAD_PATHS names ${p}, which the snapshot does not carry`);
+    console.log(`  lead: keeping the vendored ${p}${next.paths[p] ? " over the docs spec's entry" : " (not in the docs spec yet)"}`);
+    next.paths[p] = prevPaths[p];
+  }
+}
 
 const nextRoutes = routeSet(next);
 if (nextRoutes.size === 0) die("payload declares zero GET/POST routes");

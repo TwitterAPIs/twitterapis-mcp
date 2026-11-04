@@ -253,7 +253,7 @@ without an error is weaker evidence than the stored state.
 
 ## What a linked session unlocks
 
-The 47 tools that act as the account: posting and deleting, liking, reposting,
+The 48 tools that act as the account: posting and deleting, liking, reposting,
 bookmarking and following with their inverses, DMs, drafts, scheduled posts,
 articles, list creation and membership, profile, avatar and banner updates,
 media upload, the home timeline, the bookmark list, folders and bookmark search,
@@ -287,17 +287,17 @@ already in the catalog.
 2. **At login.** \`twitter_user_login\` takes the same two, and the login itself
    is driven through the proxy, so the cookies are minted from the address they
    will later be used from.
-3. **Per call, together with cookies.** 44 of the 49 session tools take
+3. **Per call, together with cookies.** 43 of the 50 session tools take
    \`auth_token\`, \`ct0\`, \`proxy_url\` and \`user_agent\` directly and send them as
    request headers rather than in the URL. This route is all or nothing: the
    headers are attached only when BOTH \`auth_token\` and \`ct0\` are present in
    the same call. A \`proxy_url\` passed on its own is dropped, and the call
    leaves over whatever the stored session or the shared address would have used,
    with no error. So this route is for acting as a different account on one call,
-   not for changing the proxy of the account already linked. The five remaining
-   session tools (the profile, avatar and banner updates, media upload and the
-   article content update) send their arguments in the request body instead, so
-   they use the stored session's egress.
+   not for changing the proxy of the account already linked. The seven remaining
+   session tools (the profile, avatar and banner updates, media upload, the
+   article content update and the two Grok chat tools) send their arguments in
+   the request body instead.
 
 A hosted deployment can hide the per-call arguments, in which case routes 1 and 2
 are the only ones available.
