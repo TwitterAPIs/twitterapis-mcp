@@ -1143,7 +1143,7 @@ export const TOOLS = [
     path: "/twitter/grok/config",
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Reports whether the authenticated account can use Grok, and which models it may pick: eligibility, X's own reasons when it is NOT eligible (passed through verbatim, since X's policy is not visible to this API), whether free access is enabled, and the available model options. Eligibility is a property of the X ACCOUNT rather than of the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/grok/grok-config",
+      "Reports whether the authenticated account can use Grok, and which models it may pick: eligibility, X's own reasons when it is NOT eligible (passed through verbatim, since X's policy is not visible to this API), whether free access is enabled, and the available model options. Eligibility is a property of the X ACCOUNT rather than of the API key. Cost: Free per call. Docs: https://docs.twitterapis.com/docs/reference/grok/grok-config",
     shape: {
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
@@ -1364,8 +1364,8 @@ export const TOOLS = [
     description:
       "Lists the accounts the authenticated account has BLOCKED, as full user objects, cursor-paginated. Requires an authenticated X session behind the API key. There is no user_id argument: X provides no way to read another account's block list, so this reads the authenticated account's only. An empty users array is a real answer meaning the account blocks nobody, not a silent failure, because the endpoint returns an error status rather than an empty page when it cannot read the list. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-blocking",
     shape: {
-      count: z.number().int().min(1).max(200).optional().describe(
-        "Requested page size, capped at 200. Advisory on this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested, an upstream limit this API does not control. More results come from paging with next_cursor, not from a larger count.",
+      count: z.number().int().min(1).max(100).optional().describe(
+        "Accounts to request for this page. Defaults to 20, capped at 100. More accounts come from paging with next_cursor.",
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Absent, the first page is returned; with it, the next page.",
@@ -1397,8 +1397,8 @@ export const TOOLS = [
     description:
       "Lists the accounts the authenticated account has MUTED, as full user objects, cursor-paginated. Muting hides an account's posts from the timeline without blocking it, so the mute list is a different list from the block list and an account can appear in one and not the other. Requires an authenticated X session behind the API key. There is no user_id argument: X provides no way to read another account's mute list. An empty users array means the account mutes nobody, not a silent failure. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-muting",
     shape: {
-      count: z.number().int().min(1).max(200).optional().describe(
-        "Requested page size, capped at 200. Advisory on this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested, an upstream limit this API does not control. More results come from paging with next_cursor, not from a larger count.",
+      count: z.number().int().min(1).max(100).optional().describe(
+        "Accounts to request for this page. Defaults to 20, capped at 100. More accounts come from paging with next_cursor.",
       ),
       cursor: z.string().optional().describe(
         "Opaque pagination cursor from a previous response's next_cursor field. Absent, the first page is returned; with it, the next page.",
@@ -2471,7 +2471,7 @@ export const TOOLS = [
     path: "/twitter/media/status",
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Reports whether an uploaded media_id has finished processing on X. Video, GIF and large uploads are processed ASYNCHRONOUSLY: the upload returns a media_id immediately, but a tweet attaching it fails until X reports state 'succeeded'. Returns media_id, state ('pending', 'in_progress', 'succeeded' or 'failed'), check_after_secs (how long X asks to wait before the next status check), progress_percent, and an error object when state is 'failed'. Reads through the registered X session, the same one that performed the upload. Per-call auth_token and ct0 are also accepted. A READ: no daily write cap applies. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/media-status",
+      "Reports whether an uploaded media_id has finished processing on X. The media upload accepts base64-encoded images only, not video or GIF, and an image has no processing step on X: its media_id is usable in a tweet as soon as the upload returns, with no status check needed. The state fields matter only for media X processes asynchronously, where a tweet attaching the id fails until X reports state 'succeeded'. Returns media_id, state ('pending', 'in_progress', 'succeeded' or 'failed'), check_after_secs (how long X asks to wait before the next status check), progress_percent, and an error object when state is 'failed'. Reads through the registered X session, the same one that performed the upload. Per-call auth_token and ct0 are also accepted. A READ: no daily write cap applies. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/media-status",
     shape: {
       media_id: z.string().describe(
         "Numeric media id returned by the media upload, e.g. '1234567890123456789'.",
@@ -2526,7 +2526,7 @@ export const TOOLS = [
     write: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Attaches an ALREADY-UPLOADED image as the cover of a DRAFT or PUBLISHED article, as the authenticated account. This does not upload: media_id is the id a prior media upload returned. Takes the article's entity id. Requires an authenticated X session with write capability behind the API key. Returns the updated article object with cover_media populated. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/articles/article-update-cover-media",
+      "Attaches an ALREADY-UPLOADED image as the cover of a DRAFT article, as the authenticated account. This does not upload: media_id is the id a prior media upload returned. Takes the article's entity id. Edits are verified on drafts only. When X refuses an edit and the article is among the first 100 PUBLISHED articles X lists for the account, the call answers 422 article_published and is not billed; the detail names a path that avoids a published-article edit (unpublish, edit the draft, publish again). That round trip is not verified end to end, so it suits only an article that can stay unpublished if republishing fails. Requires an authenticated X session with write capability behind the API key. Returns the updated article object with cover_media populated. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/articles/article-update-cover-media",
     shape: {
       id: z.string().describe(
         "The article's entity id (e.g. 'ArticleEntity:1234567890123456789'), as returned when the article was created or listed.",
@@ -2558,7 +2558,7 @@ export const TOOLS = [
     write: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Sets or replaces the title of a DRAFT or PUBLISHED article as the authenticated account. Takes the article's entity id and the new title. Requires an authenticated X session with write capability behind the API key. Returns the updated article object. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/articles/article-update-title",
+      "Sets or replaces the title of a DRAFT article as the authenticated account. Takes the article's entity id and the new title. Edits are verified on drafts only. When X refuses an edit and the article is among the first 100 PUBLISHED articles X lists for the account, the call answers 422 article_published and is not billed; the detail names a path that avoids a published-article edit (unpublish, edit the draft, publish again). That round trip is not verified end to end, so it suits only an article that can stay unpublished if republishing fails. Requires an authenticated X session with write capability behind the API key. Returns the updated article object. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/articles/article-update-title",
     shape: {
       id: z.string().describe(
         "The article's entity id (e.g. 'ArticleEntity:1234567890123456789'), as returned when the article was created or listed.",
@@ -2588,7 +2588,7 @@ export const TOOLS = [
     jsonBody: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Replaces the body content of a DRAFT or PUBLISHED article as the authenticated account. Takes the article's entity id and content_state: Draft.js JSON ({ blocks: [...], entityMap: [...] }) built by the caller; blocks are forwarded with only the data, text, key, type, entityRanges and inlineStyleRanges fields (X rejects any other block field, depth included). Block types X accepts: unstyled, header-two, unordered-list-item, ordered-list-item, blockquote, atomic (a one-space block carrying an entity via entityRanges [{key, offset: 0, length: 1}]); inline styles Bold and Italic. Entity data is snake_case on INPUT and X returns it camelCase: TWEET (an embedded post) {tweet_id}; MEDIA (an inline image) {caption, entity_key, media_items: [{local_media_id, media_category: 'DraftTweetImage', media_id}]} with media_id from a prior media upload; DIVIDER {}; LINK {url} (a Mutable entity over a text range, not atomic); MARKDOWN {markdown} (tables). A wrong field is refused by X's schema and the call answers 422 with reason validation_failed and the offending path in detail. Requires an authenticated X session with write capability behind the API key. Returns the updated article object (content_state echoed camelCase, media_entities populated for MEDIA). Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/articles/article-update-content",
+      "Replaces the body content of a DRAFT article as the authenticated account. Edits are verified on drafts only. When X refuses an edit and the article is among the first 100 PUBLISHED articles X lists for the account, the call answers 422 article_published and is not billed; the detail names a path that avoids a published-article edit (unpublish, edit the draft, publish again). That round trip is not verified end to end, so it suits only an article that can stay unpublished if republishing fails. Takes the article's entity id and content_state: Draft.js JSON ({ blocks: [...], entityMap: [...] }) built by the caller; blocks are forwarded with only the data, text, key, type, entityRanges and inlineStyleRanges fields (X rejects any other block field, depth included). Block types X accepts: unstyled, header-two, unordered-list-item, ordered-list-item, blockquote, atomic (a one-space block carrying an entity via entityRanges [{key, offset: 0, length: 1}]); inline styles Bold and Italic. Entity data is snake_case on INPUT and X returns it camelCase: TWEET (an embedded post) {tweet_id}; MEDIA (an inline image) {caption, entity_key, media_items: [{local_media_id, media_category: 'DraftTweetImage', media_id}]} with media_id from a prior media upload; DIVIDER {}; LINK {url} (a Mutable entity over a text range, not atomic); MARKDOWN {markdown} (tables). A wrong field is refused by X's schema and the call answers 422 with reason validation_failed and the offending path in detail. Requires an authenticated X session with write capability behind the API key. Returns the updated article object (content_state echoed camelCase, media_entities populated for MEDIA). Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/articles/article-update-content",
     shape: {
       id: z.string().describe(
         "The article's entity id, as returned when the article was created or listed.",
