@@ -1007,7 +1007,13 @@ export const TOOL_OVERRIDES = [
     description:
       "Lists the accounts the authenticated account has BLOCKED, as full user objects, cursor-paginated. Requires an authenticated X session behind the API key. There is no user_id argument: X provides no way to read another account's block list, so this reads the authenticated account's only. An empty users array is a real answer meaning the account blocks nobody, not a silent failure, because the endpoint returns an error status rather than an empty page when it cannot read the list.",
     args: [
-      "@PAGINATION",
+      // A USER list, not a search: @PAGINATION's count text describes X's tweet
+      // search page size and is wrong here (feedback audit 2026-11-03). Docs
+      // user/blocking: count defaults to 20, capped at 100.
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Accounts to request for this page. Defaults to 20, capped at 100. More accounts come from paging with next_cursor." },
+      "@CURSOR",
       "@INLINE",
       "@PROJECTION",
     ],
@@ -1018,7 +1024,12 @@ export const TOOL_OVERRIDES = [
     description:
       "Lists the accounts the authenticated account has MUTED, as full user objects, cursor-paginated. Muting hides an account's posts from the timeline without blocking it, so the mute list is a different list from the block list and an account can appear in one and not the other. Requires an authenticated X session behind the API key. There is no user_id argument: X provides no way to read another account's mute list. An empty users array means the account mutes nobody, not a silent failure.",
     args: [
-      "@PAGINATION",
+      // A USER list, not a search (see twitter_blocking). Docs user/muting:
+      // count defaults to 20, capped at 100.
+      { name: "count", type: "int", min: 1, max: 100,
+        describe:
+          "Accounts to request for this page. Defaults to 20, capped at 100. More accounts come from paging with next_cursor." },
+      "@CURSOR",
       "@INLINE",
       "@PROJECTION",
     ],
@@ -1688,7 +1699,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_media_status",
     endpoint: "/media/status",
     description:
-      "Reports whether an uploaded media_id has finished processing on X. Video, GIF and large uploads are processed ASYNCHRONOUSLY: the upload returns a media_id immediately, but a tweet attaching it fails until X reports state 'succeeded'. Returns media_id, state ('pending', 'in_progress', 'succeeded' or 'failed'), check_after_secs (how long X asks to wait before the next status check), progress_percent, and an error object when state is 'failed'. Reads through the registered X session, the same one that performed the upload. Per-call auth_token and ct0 are also accepted. A READ: no daily write cap applies.",
+      "Reports whether an uploaded media_id has finished processing on X. The media upload accepts base64-encoded images only, not video or GIF, so the media_id checked here is an uploaded image's. A tweet attaching a media_id fails until X reports state 'succeeded'. Returns media_id, state ('pending', 'in_progress', 'succeeded' or 'failed'), check_after_secs (how long X asks to wait before the next status check), progress_percent, and an error object when state is 'failed'. Reads through the registered X session, the same one that performed the upload. Per-call auth_token and ct0 are also accepted. A READ: no daily write cap applies.",
     args: [
       { name: "media_id",
         describe:
@@ -1720,7 +1731,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/article/update_cover_media",
     write: true,
     description:
-      "Attaches an ALREADY-UPLOADED image as the cover of a DRAFT or PUBLISHED article, as the authenticated account. This does not upload: media_id is the id a prior media upload returned. Takes the article's entity id. Requires an authenticated X session with write capability behind the API key. Returns the updated article object with cover_media populated.",
+      "Attaches an ALREADY-UPLOADED image as the cover of a DRAFT article, as the authenticated account. This does not upload: media_id is the id a prior media upload returned. Takes the article's entity id. A PUBLISHED article answers 422 article_published and the call is not billed; to change one, unpublish it, edit the draft, then publish again. Requires an authenticated X session with write capability behind the API key. Returns the updated article object with cover_media populated.",
     args: [
       { name: "id",
         describe:
@@ -1739,7 +1750,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/article/update_title",
     write: true,
     description:
-      "Sets or replaces the title of a DRAFT or PUBLISHED article as the authenticated account. Takes the article's entity id and the new title. Requires an authenticated X session with write capability behind the API key. Returns the updated article object.",
+      "Sets or replaces the title of a DRAFT article as the authenticated account. Takes the article's entity id and the new title. A PUBLISHED article answers 422 article_published and the call is not billed; to change one, unpublish it, edit the draft, then publish again. Requires an authenticated X session with write capability behind the API key. Returns the updated article object.",
     args: [
       { name: "id",
         describe:

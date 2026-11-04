@@ -383,7 +383,7 @@ count: 50
 
 ## Pricing
 
-Calls are billed to your twitterapis.com account, at the price each tool's description states. The standard rate is $0.0008 per call: nearly every read (search, profiles, timelines, followers, likes, lists, bookmarks, articles) and the simple write actions (like, retweet, bookmark, follow, list membership and their undos, delete). At that rate 1,000 tweets cost about $0.04, since a call returns about 20 tweets. The account, feedback and monitoring tools are free, and so is registering, checking or revoking a session from your own cookies. Every tool priced differently from the standard rate:
+Calls are billed to your twitterapis.com account, at the price each tool's description states. The standard rate is $0.0008 per call: nearly every read (search, profiles, timelines, followers, likes, lists, bookmarks, articles) and the simple write actions (like, retweet, bookmark, follow, list membership and their undos, delete). At that rate 1,000 tweets cost about $0.04, since a call returns about 20 tweets. The account, feedback and monitoring tools are free, and so is registering, checking or revoking a session from your own cookies. Checking Grok eligibility with `twitter_grok_config` is free too. Every tool priced differently from the standard rate:
 
 | Price | Tools |
 |---|---|

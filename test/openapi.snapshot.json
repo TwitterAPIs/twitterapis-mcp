@@ -23172,7 +23172,7 @@
       "get": {
         "operationId": "grok-config",
         "summary": "Grok Config",
-        "description": "Read the Grok settings for the account behind your session: whether X has enabled Grok for it, the reasons if not, and the model options it is allowed to choose between. Grok eligibility belongs to the X account rather than to us, so this runs as your own session. Call it once before your first chat request. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "description": "Read the Grok settings for the account behind your session: whether X has enabled Grok for it, the reasons if not, and the model options it is allowed to choose between. Grok eligibility belongs to the X account rather than to us, so this runs as your own session. Call it once before your first chat request. This call is free and is not metered. Cost: Free per call.",
         "tags": [
           "Grok"
         ],
@@ -23181,7 +23181,7 @@
             "bearerAuth": []
           }
         ],
-        "x-cost-usd": 0.0008,
+        "x-cost-usd": 0,
         "x-codeSamples": [
           {
             "lang": "bash",

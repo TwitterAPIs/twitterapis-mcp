@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+Wording fixes, plus one schema bound: `count` on `twitter_blocking` and `twitter_muting` now tops out at 100, the API's own cap.
+
+### Fixed
+
+- **`twitter_article_update_title` and `twitter_article_update_cover_media` no longer say they work on a published article.** The API answers 422 `article_published` for a published article and does not bill the call. The descriptions now say draft only and give the path: unpublish, edit the draft, publish again.
+- **`twitter_grok_config` is priced free.** Billing has always charged $0 for it, but the description said $0.0008 per call. The vendored spec snapshot now carries `x-cost-usd` 0, the description says "Cost: Free per call." and the README names it among the free tools.
+- **`twitter_media_status` no longer promises video and GIF processing.** The media upload accepts base64 images only, and the description now says so.
+- **`count` on `twitter_blocking` and `twitter_muting` describes accounts, not tweets.** Both tools return users, and the old text described a tweet search page. It now says 20 by default, capped at 100, matching the API reference.
+
 ## 0.25.1 (2026-11-01)
 
 A patch: no tool, argument or schema changed.
