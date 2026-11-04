@@ -160,7 +160,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_trends_locations` | Every location X has trends for, each with its WOEID |
 | `twitter_account_me` | Your twitterapis.com account: credits, usage, email (free) |
 | `twitter_account_payments` | Your twitterapis.com payment history (free) |
-| `twitter_media_status` | Processing state of an uploaded `media_id`; poll until `succeeded` before attaching video or GIF _(session)_ |
+| `twitter_media_status` | Processing state of an uploaded `media_id`; an uploaded image has no processing step and is usable at once _(session)_ |
 | `twitter_article_get` | Read a **published** article's full content via its announcement tweet id/url (public, no session) |
 | `twitter_article_list` | List your own articles, filtered by `lifecycle` (`draft` or `published`) _(session)_ |
 
@@ -204,9 +204,9 @@ Both list tools can return `partial: true`, which means X's answer was read but 
 | Tool | What it does |
 |---|---|
 | `twitter_article_create` | Start a new draft article, returns its `id` |
-| `twitter_article_update_title` | Set a draft or published article's title |
-| `twitter_article_update_cover_media` | Attach an already-uploaded image as an article's cover (`media_id` from `twitter_media_upload`) |
-| `twitter_article_update_content` | Replace a draft or published article's body (Draft.js `content_state` you build) |
+| `twitter_article_update_title` | Set a draft article's title (a published article answers 422 `article_published`, not billed) |
+| `twitter_article_update_cover_media` | Attach an already-uploaded image as a draft article's cover (`media_id` from `twitter_media_upload`; a published article answers 422 `article_published`, not billed) |
+| `twitter_article_update_content` | Replace a draft article's body (Draft.js `content_state` you build; a published article answers 422 `article_published`, not billed) |
 | `twitter_article_publish` | Publish a draft, posting a **real public announcement tweet** (not fully reversible) |
 | `twitter_article_unpublish` | Revert a published article to draft (leaves the announcement tweet up) |
 | `twitter_article_delete` | Delete an article (draft: hard delete; published: unpublish + delete the announcement tweet), irreversible |

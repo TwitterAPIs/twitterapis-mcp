@@ -8,7 +8,7 @@ Wording fixes plus one BREAKING schema change: `count` on `twitter_blocking` and
 
 - **`twitter_article_update_title`, `twitter_article_update_cover_media` and `twitter_article_update_content` no longer say they work on a published article.** Edits are verified on drafts only. When X refuses an edit and the article is among the first 100 published articles X lists for the account, the API answers 422 `article_published` and does not bill the call. The descriptions say so, and say that the unpublish, edit, republish path the error names is not verified end to end.
 - **`twitter_grok_config` is priced free.** Billing has always charged $0 for it, but the description said $0.0008 per call. The vendored spec snapshot now carries `x-cost-usd` 0, the description says "Cost: Free per call." and the README names it among the free tools.
-- **`twitter_media_status` no longer promises video and GIF processing.** The media upload accepts base64 images only, and the description now says so.
+- **`twitter_media_status` no longer promises video and GIF processing.** The media upload accepts base64 images only, and an image has no processing step on X, so its media_id is usable as soon as the upload returns. The description and the README now say so, and no longer suggest polling before tweeting an image. The README article rows now say draft only, with the 422 `article_published` note.
 - **`count` on `twitter_blocking` and `twitter_muting` describes accounts, not tweets (BREAKING: max 200 to 100).** Both tools return users, and the old text described a tweet search page. It now says 20 by default, capped at 100, matching the API reference, and the schema maximum drops from 200 to 100.
 
 ## 0.25.1 (2026-11-01)
