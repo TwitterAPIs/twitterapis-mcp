@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.27.0 (2026-11-05)
+
+Tool text and listings only. 118 tools: 71 reads and 47 writes.
+
+### Changed
+
+- `compact` on the 59 tools that take it: named `fields` are added on top of the preset, which is what the API has always done.
+- `twitter_community_tweets` `count` is a page-size hint, not a cap.
+- `twitter_tweet_thread` documents `is_partial`.
+- `twitter_feedback_get` returns the report's details and evidence.
+- npm and MCP Registry descriptions now cover communities, Grok and monitoring.
+
 ## 0.26.0 (2026-11-04)
 
 Two new tools for the async Grok routes, so a minor release. 118 tools: 71 reads and 47 writes. It also carries two BREAKING schema changes: `count` on `twitter_blocking` and `twitter_muting` now tops out at 100, the API's own cap, so a call with a count from 101 to 200 that validated under 0.25.1 is now refused before it reaches the API; and `messages` on `twitter_grok_chat` is now an array of turn objects, so a string is refused at the schema.

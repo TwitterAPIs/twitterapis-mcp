@@ -80,7 +80,7 @@ export const ARG_GROUPS = {
         "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped." },
     { name: "compact", enum: ["1", "true"],
       describe:
-        "Optional. \"1\" applies the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. It trims only what it recognises and on its own does not reduce a body to {}. Combined with fields, only the named paths and the envelope keys remain." },
+        "Optional. \"1\" applies the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. It trims only what it recognises and on its own does not reduce a body to {}. Combined with fields, the named paths are added on top of the preset, so pass fields without compact for a narrow result." },
   ],
   // fields without compact, for an endpoint whose spec declares only fields
   // (grok/chat/result). Same text as PROJECTION's fields entry.
@@ -538,7 +538,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_tweet_thread",
     endpoint: "/tweet/thread",
     description:
-      "Returns the tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread), in order, in a single call. It reads FORWARD from the tweet you pass and does not walk backwards, so pass the thread's FIRST tweet: its id is the conversation_id carried on every tweet in the thread. Passing a later tweet returns only that tweet and the author's tweets after it, the tail of the thread. Replies from other users are not included. Takes the tweet id or its full URL.",
+      "Returns the tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread), in order, in a single call. It reads FORWARD from the tweet you pass and does not walk backwards, so pass the thread's FIRST tweet: its id is the conversation_id carried on every tweet in the thread. Passing a later tweet returns only that tweet and the author's tweets after it, the tail of the thread, and is_partial is true on that response. Replies from other users are not included. Takes the tweet id or its full URL.",
     args: [
       "@TWEET_REF",
       "@PROJECTION",
@@ -783,7 +783,7 @@ export const TOOL_OVERRIDES = [
           "Ordering, sent to X as a real request parameter. 'Recency' is the default and the only value confirmed against a live capture. 'Relevance' is accepted because X's own community tab offers exactly two orderings, but it is NOT confirmed live. Any other value is rejected with a 400." },
       { name: "count", type: "int", min: 1, max: 100,
         describe:
-          "Max posts to return for this page. Defaults to 20 and is clamped to 1-100." },
+          "A page-size hint, not a cap. Defaults to 20 and is clamped to 1-100, but X sets the real page size and the whole page is returned so paging skips nothing: keep the first N yourself." },
       { name: "cursor",
         describe:
           "Opaque pagination cursor from a previous response's next_cursor field. Absent on the first page." },
@@ -979,7 +979,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_feedback_get",
     endpoint: "/feedback/{id}",
     description:
-      "Returns the status of a feedback report this account sent earlier, by its server id: status new, triaged, shipped or declined, the team's response text if any, and updated_at, which moves only when the team acts on it. 404 if the id is not on this account.",
+      "Returns a feedback report this account sent earlier, by its server id: its details and evidence, status new, triaged, shipped or declined, the team's response text if any, and updated_at, which moves only when the team acts on it. 404 if the id is not on this account.",
     args: [
       { name: "id",
         describe:
