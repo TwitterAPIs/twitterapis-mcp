@@ -6,13 +6,13 @@ Two new write tools, so a minor release. 120 tools: 71 reads and 49 writes.
 
 ### Added
 
-- **`twitter_pin_tweet`** (POST /twitter/tweet/pin): pin one of your own tweets to the top of your profile, by `id` or `url`. A profile has one pinned tweet, so the tweet pinned before stops being pinned; its annotations mark it destructive and idempotent. $0.0008 per call.
+- **`twitter_pin_tweet`** (POST /twitter/tweet/pin): pin one of your own tweets to the top of your profile, by `id` or `url`. Pinning replaces any existing pinned post; its annotations mark it destructive and idempotent. $0.0008 per call.
 - **`twitter_unpin_tweet`** (POST /twitter/tweet/unpin): unpin it again; the tweet stays posted. Destructive and idempotent. $0.0008 per call.
 - Both take the per-call inline credentials and `proxy_url`, like the other tweet actions.
 
 ### Changed
 
-- **`twitter_article_publish` says `caption` is accepted but not used.** X has no caption field when publishing an article, so the API does not send it, and a publish that passed one answers `caption_applied: false` with a `caption_note`. The tool and argument descriptions and the README row used to describe it as the announcement tweet's caption.
+- **`twitter_article_publish` says what `caption` does.** The caption becomes the text of the announcement post that publishing creates. The tool and argument descriptions and the README row say so.
 - The residential egress playbook now counts 45 of the 52 session tools that take per-call credentials as headers.
 
 ### Changed (tests)

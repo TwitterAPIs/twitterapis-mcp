@@ -1417,7 +1417,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/tweet/pin",
     write: true,
     description:
-      "Pins one of the authenticated account's own tweets to the top of its profile. A profile has one pinned tweet, so a tweet pinned before stops being pinned. Takes the tweet id or url. Requires write capability behind the API key. Reversible.",
+      "Pins one of the authenticated account's own tweets to the top of its profile. Pinning replaces any existing pinned post, since a profile has one. Takes the tweet id or url. Requires write capability behind the API key. Reversible.",
     args: [
       "@TWEET_REF",
       "@INLINE",
@@ -1850,7 +1850,7 @@ export const TOOL_OVERRIDES = [
     endpoint: "/article/publish",
     write: true,
     description:
-      "Publishes a DRAFT article as the authenticated account, transitioning it to Published and posting a REAL, PUBLIC announcement tweet that followers and anyone with the link can see. A consequential, hard-to-fully-undo action, unlike saving a draft: unpublishing reverts the article to Draft but LEAVES the announcement tweet up, and only deleting a published article both unpublishes it and removes the announcement tweet, by which time the content was public for however long it stayed up. Takes the article's entity id; audience and reply_control default to 'Everyone' when omitted. caption is accepted but not used: X has no caption field when publishing an article, so it is not sent, and a publish that passed one answers caption_applied: false with a caption_note. Requires an authenticated X session with write capability behind the API key. Returns the updated (Published) article object.",
+      "Publishes a DRAFT article as the authenticated account, transitioning it to Published and posting a REAL, PUBLIC announcement tweet that followers and anyone with the link can see. A consequential, hard-to-fully-undo action, unlike saving a draft: unpublishing reverts the article to Draft but LEAVES the announcement tweet up, and only deleting a published article both unpublishes it and removes the announcement tweet, by which time the content was public for however long it stayed up. Takes the article's entity id; audience and reply_control default to 'Everyone' when omitted; caption is optional text (up to 256 characters) that becomes the announcement post's text. Requires an authenticated X session with write capability behind the API key. Returns the updated (Published) article object.",
     args: [
       { name: "id",
         describe:
@@ -1863,7 +1863,7 @@ export const TOOL_OVERRIDES = [
           "Optional. Who can reply to the announcement tweet, e.g. 'Everyone'. Defaults to 'Everyone' when omitted." },
       { name: "caption", required: false,
         describe:
-          "Optional. Accepted but not used: X has no caption field when publishing an article, so this text is not sent and does not appear on the announcement tweet. When passed, the result carries caption_applied: false." },
+          "Optional. Text of the announcement post that publishing creates, up to 256 characters." },
       "@INLINE",
     ],
   },

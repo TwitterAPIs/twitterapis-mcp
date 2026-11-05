@@ -173,7 +173,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_create_tweet` | Post a tweet; set `reply_to` to reply or `quote` to quote-tweet |
 | `twitter_delete_tweet` | Delete one of your tweets (irreversible) |
 | `twitter_favorite_tweet` / `twitter_unfavorite_tweet` | Like / unlike a tweet |
-| `twitter_pin_tweet` / `twitter_unpin_tweet` | Pin one of your own tweets to the top of your profile (replaces the tweet pinned before) / unpin it |
+| `twitter_pin_tweet` / `twitter_unpin_tweet` | Pin one of your own tweets to the top of your profile (replaces any existing pinned post) / unpin it |
 | `twitter_retweet` / `twitter_unretweet` | Retweet / undo retweet |
 | `twitter_bookmark_tweet` / `twitter_unbookmark_tweet` | Bookmark / remove bookmark |
 | `twitter_follow_user` / `twitter_unfollow_user` | Follow / unfollow a user by `user_id` or `username` (exactly one) |
@@ -210,7 +210,7 @@ Both list tools can return `partial: true`, which means X's answer was read but 
 | `twitter_article_update_title` | Set a draft article's title (a published article answers 422 `article_published`, not billed) |
 | `twitter_article_update_cover_media` | Attach an already-uploaded image as a draft article's cover (`media_id` from `twitter_media_upload`; a published article answers 422 `article_published`, not billed) |
 | `twitter_article_update_content` | Replace a draft article's body (Draft.js `content_state` you build; a published article answers 422 `article_published`, not billed) |
-| `twitter_article_publish` | Publish a draft, posting a **real public announcement tweet** (not fully reversible). `caption` is accepted but not used, since X has no caption field at publish |
+| `twitter_article_publish` | Publish a draft, posting a **real public announcement tweet** (not fully reversible). Optional `caption` becomes the announcement post's text |
 | `twitter_article_unpublish` | Revert a published article to draft (leaves the announcement tweet up) |
 | `twitter_article_delete` | Delete an article (draft: hard delete; published: unpublish + delete the announcement tweet), irreversible |
 
