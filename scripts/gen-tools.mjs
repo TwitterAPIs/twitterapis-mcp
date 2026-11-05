@@ -232,9 +232,9 @@ for (const t of TOOL_OVERRIDES) {
     if (!a.describe || a.describe.length < 10) {
       bad(`tool ${t.name} arg "${a.name}" has no usable description; a model reads this to decide how to call the tool`);
     }
-    if (type === "json" && !t.jsonBody) {
+    if ((type === "json" || type === "json_array") && !t.jsonBody) {
       bad(
-        `tool ${t.name} arg "${a.name}" is type:"json" but the tool is not jsonBody:true; a non-jsonBody ` +
+        `tool ${t.name} arg "${a.name}" is type:"${type}" but the tool is not jsonBody:true; a non-jsonBody ` +
           `tool sends args as query-string values, which cannot carry a real object.`,
       );
     }
@@ -358,6 +358,11 @@ function zodExpr(a) {
     // handler receives `typeof body.x === "string"` where it expects an
     // object and rejects the call. Only valid on a jsonBody:true tool.
     e = "z.record(z.string(), z.unknown())";
+  } else if (a.type === "json_array") {
+    // An array of JSON objects, for a param the handler requires to be a real
+    // array (grok/chat's messages: Array.isArray(body.messages)). Same reason as
+    // "json": a string here reaches the handler as a string and is dropped.
+    e = "z.array(z.record(z.string(), z.unknown()))";
   } else {
     e = "z.string()";
     if (a.minLength !== undefined) e += `.min(${a.minLength})`;

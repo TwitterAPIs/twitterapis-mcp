@@ -80,6 +80,8 @@ const ROWS = {
   // X's built-in AI assistant. A chat starts a conversation on the account, so
   // it is a non-idempotent write; the eligibility check is a plain read.
   twitter_grok_chat: ["Ask the X AI Assistant", false, false, false, true],
+  twitter_grok_chat_submit: ["Start an X AI Assistant Chat Job", false, false, false, true],
+  twitter_grok_chat_result: READ_X("Get an X AI Assistant Chat Job Result"),
   twitter_grok_config: READ_X("Check X AI Assistant Access"),
 
   // This service's own account, billing and feedback

@@ -50,6 +50,25 @@
 
 /** Reusable arg runs. A tool references one as the string "@NAME". */
 export const ARG_GROUPS = {
+  // One body, two routes: grok/chat and grok/chat/submit parse it with the same
+  // function (parseGrokChatRequest), so the two tools cannot drift apart.
+  GROK_CHAT: [
+    { name: "message", required: false,
+      describe:
+        "The prompt, for a single-turn question, up to 20,000 characters. A bare tweet or status URL is a first-class input and comes back as a summary of that post. Either this or messages[] is required." },
+    { name: "messages", type: "json_array", required: false,
+      describe:
+        "Prior turns for a multi-turn conversation, oldest first, as an array of { role: 'user' | 'assistant', content: '...' } objects, up to 100 (X's own { sender: 1 | 2, message } shape also works, 2 being Grok). The endpoint stores nothing, so this array is the whole history Grok sees. Either this or message is required; without message, the last entry is the prompt, and it needs to be a user turn." },
+    { name: "conversation_id", required: false,
+      describe:
+        "Conversation id returned by a previous call. Absent on the first turn, in which case a new conversation is opened and its id returned." },
+    { name: "mode", required: false,
+      describe:
+        "Which Grok answers: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports which model actually answered, which can differ from the mode requested." },
+    { name: "image_count", required: false,
+      describe:
+        "Forwarded to X as its image-generation count, clamped to 0 through 4 (default 4, the value X's own client sends); 0 asks for a text-only answer. The reply has no image field, so a generated image is not returned." },
+  ],
   // Response projection on every read (API 2026-09-23, docs components.parameters
   // fields/compact). Both are optional, GET-only, and never empty a body: the
   // envelope keys (ok, count, next_cursor, has_more) always survive. Exposed on
@@ -62,6 +81,13 @@ export const ARG_GROUPS = {
     { name: "compact", enum: ["1", "true"],
       describe:
         "Optional. \"1\" applies the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. It trims only what it recognises and on its own does not reduce a body to {}. Combined with fields, only the named paths and the envelope keys remain." },
+  ],
+  // fields without compact, for an endpoint whose spec declares only fields
+  // (grok/chat/result). Same text as PROJECTION's fields entry.
+  FIELDS_ONLY: [
+    { name: "fields",
+      describe:
+        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped." },
   ],
   // Paid partnership filter (API 2026-09-30, docs components.parameters
   // paid_promotion). Only on tools whose endpoint returns a top-level tweets
@@ -818,26 +844,38 @@ export const TOOL_OVERRIDES = [
   {
     name: "twitter_grok_chat",
     endpoint: "/grok/chat",
-    write: true,
+    // jsonBody: the handler reads messages only from a parsed JSON body
+    // (Array.isArray(body.messages)), and a 20,000 character prompt does not
+    // belong in a URL.
+    write: true, jsonBody: true,
     description:
-      "Asks X's own Grok a question as the authenticated account and returns ONE complete JSON reply: the answer text, citations (url, domain, title, snippet) merged and de-duplicated across every search Grok ran, the searches themselves (tool_calls), the conversation and turn ids, and both the requested model and which model ACTUALLY answered (they can differ). Grok reads X in real time, so it answers about what is being said right now, and a bare tweet or status URL as the message returns a structured summary of that post. The reply is text and JSON only: it has no image or media field. Buffered, not streamed. STATELESS: nothing is stored, so a multi-turn conversation carries its prior turns in messages[] along with conversation_id. Requires an authenticated X session for the acting account.",
+      "Asks X's own Grok a question as the authenticated account and returns ONE complete JSON reply: the answer text, citations (url, domain, title, snippet) merged and de-duplicated across every search Grok ran, the searches themselves (tool_calls), the conversation and turn ids, and both the requested model and which model ACTUALLY answered (they can differ). Grok reads X in real time, so it answers about what is being said right now, and a bare tweet or status URL as the message returns a structured summary of that post. The reply is text and JSON only: it has no image or media field. Buffered, not streamed: a search-grounded answer can take up to 90 seconds, and a submit-and-poll form of this call exists for clients that stop waiting sooner. STATELESS: nothing is stored, so a multi-turn conversation carries its prior turns in messages[] along with conversation_id. Requires an authenticated X session for the acting account.",
     args: [
-      { name: "message", required: false,
-        describe:
-          "The prompt, for a single-turn question, up to 20,000 characters. A bare tweet or status URL is a first-class input and comes back as a summary of that post. Either this or messages[] is required." },
-      { name: "messages", required: false,
-        describe:
-          "Prior turns for a multi-turn conversation, oldest first, each { role: 'user' | 'assistant', content: '...' } (X's own { sender: 1 | 2, message } shape also works, 2 being Grok). The endpoint stores nothing, so this array is the whole history Grok sees. Either this or message is required." },
-      { name: "conversation_id", required: false,
-        describe:
-          "Conversation id returned by a previous call. Absent on the first turn, in which case a new conversation is opened and its id returned." },
-      { name: "mode", required: false,
-        describe:
-          "Which Grok answers: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports which model actually answered, which can differ from the mode requested." },
-      { name: "image_count", required: false,
-        describe:
-          "Forwarded to X as its image-generation count, clamped to 0 through 4 (default 4, the value X's own client sends); 0 asks for a text-only answer. The reply has no image field, so a generated image is not returned." },
+      "@GROK_CHAT",
       "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_grok_chat_submit",
+    endpoint: "/grok/chat/submit",
+    write: true, jsonBody: true,
+    description:
+      "Starts the same Grok chat as the buffered Grok chat call without holding the connection open, for clients that stop waiting before a search-grounded answer arrives. Takes the same arguments and returns 202 at once with job_id, status 'pending', poll (the path to read the job at), poll_after_seconds (3), result_ttl_seconds (900) and created_at. A bad body, a bad API key, a missing X session and a short balance are answered on the spot, before any job exists. At most 5 jobs per API key can be pending at once; one more answers 429 too_many_pending_jobs. Submitting is free: the $0.004 Grok chat price is charged once, on the poll that first delivers the finished answer, and a failed, timed-out, interrupted or uncollected job is not charged. Requires an authenticated X session for the acting account, and the chat runs as that account.",
+    args: [
+      "@GROK_CHAT",
+      "@INLINE",
+    ],
+  },
+  {
+    name: "twitter_grok_chat_result",
+    endpoint: "/grok/chat/result",
+    description:
+      "Reads a Grok chat job by the job_id its submit call returned. While the job runs: 202 with status 'pending', poll_after_seconds and created_at. When it finishes: 200 with the full Grok chat reply (answer, citations, tool_calls, conversation and turn ids, requested and actual model) plus job_id and status 'done'. When the chat failed: the status and typed error the buffered call would have answered, plus job_id and status 'failed'; 504 job_timeout and 503 job_interrupted mean the job did not finish on this API's side. An unknown job_id, a finished answer older than 15 minutes and another API key's job all answer 404. The $0.004 Grok chat price is charged once, on the first poll that delivers the finished answer; polling it again is free. Needs only the API key that submitted the job, no X session.",
+    args: [
+      { name: "job_id",
+        describe:
+          "The job_id the submit call returned, a UUID." },
+      "@FIELDS_ONLY",
     ],
   },
   {

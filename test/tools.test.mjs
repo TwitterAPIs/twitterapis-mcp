@@ -78,9 +78,9 @@ const writes = TOOLS.filter((t) => t.write);
 // 2026-10-15: twitter_tweet_replies_complete, one read. 113, 69, 44.
 // 2026-10-20 (#206, backend #667): twitter_creator_commentary_video, a read, and
 // twitter_community_join / twitter_community_leave, two writes. 116, 70, 46.
-const EXPECTED_TOOLS = 116;
-const EXPECTED_READS = 70;
-const EXPECTED_WRITES = 46;
+const EXPECTED_TOOLS = 118;
+const EXPECTED_READS = 71;
+const EXPECTED_WRITES = 47;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);
 check(`${EXPECTED_WRITES} writes (got ${writes.length})`, writes.length === EXPECTED_WRITES);
@@ -155,6 +155,10 @@ const JSON_BODY_WRITES = [
   // rather than merely safe.
   "twitter_update_avatar",
   "twitter_update_banner",
+  // parseGrokChatRequest reads messages only from a parsed body
+  // (Array.isArray(body.messages)), so the query string drops it silently.
+  "twitter_grok_chat",
+  "twitter_grok_chat_submit",
 ];
 check("json-body writes present: POST + write + jsonBody", JSON_BODY_WRITES.every((n) => {
   const t = TOOLS.find((x) => x.name === n);
@@ -331,6 +335,44 @@ check("no tool promises a full history in one call", !TOOLS.some((t) => /full ba
 const { INSTRUCTIONS: INDEX_SRC } = await import("../src/server.js");
 check("instructions ask for a distinctive-value control before an ignored-parameter report", /re-run the call with a distinctive value that could only match if the parameter was honoured/.test(INDEX_SRC));
 check("instructions say to retitle the report by what the control showed", /title it that way and say what the control showed/.test(INDEX_SRC));
+
+// Async Grok (live 2026-11-04). submit takes the body grok/chat takes, because the
+// API parses both with one function; result is a key-scoped read with no session.
+const GROK = TOOLS.find((t) => t.name === "twitter_grok_chat");
+const GROK_SUBMIT = TOOLS.find((t) => t.name === "twitter_grok_chat_submit");
+const GROK_RESULT = TOOLS.find((t) => t.name === "twitter_grok_chat_result");
+check("grok submit is POST /twitter/grok/chat/submit", GROK_SUBMIT?.path === "/twitter/grok/chat/submit" && GROK_SUBMIT?.method === "POST");
+check("grok submit takes exactly the grok chat arguments", JSON.stringify(Object.keys(GROK_SUBMIT?.shape || {})) === JSON.stringify(Object.keys(GROK?.shape || {})));
+check("grok result is a GET read taking job_id and fields only", GROK_RESULT?.path === "/twitter/grok/chat/result" && !GROK_RESULT?.write && !GROK_RESULT?.method
+  && JSON.stringify(Object.keys(GROK_RESULT?.shape || {})) === JSON.stringify(["job_id", "fields"]));
+check("grok result requires job_id", GROK_RESULT?.shape?.job_id?.isOptional?.() === false);
+check("both grok job calls are free and name the single delivery charge", [GROK_SUBMIT, GROK_RESULT].every((t) => /Cost: Free per call\./.test(t?.description || "") && /\$0\.004 Grok chat price is charged once/.test(t?.description || "")));
+for (const t of [GROK, GROK_SUBMIT]) {
+  check(`${t?.name} messages is a real array of turns`, t?.shape?.messages?.safeParse?.([{ role: "user", content: "hi" }]).success === true);
+  check(`${t?.name} messages refuses a JSON-encoded string`, t?.shape?.messages?.safeParse?.("[]").success === false);
+}
+{
+  const { createServer, hintFor } = await import("../src/server.js");
+  const sent = [];
+  const fetchImpl = async (url, init) => { sent.push({ url: String(url), init }); return new Response('{"job_id":"j","status":"pending"}', { status: 202 }); };
+  const tools = createServer({ apiKey: "k", fetchImpl, retryDelaysMs: [] }).server._registeredTools;
+  const turns = [{ role: "user", content: "first" }, { role: "assistant", content: "second" }, { role: "user", content: "third" }];
+  const res = await tools.twitter_grok_chat_submit.handler({ messages: turns, mode: "fast" }, {});
+  const body = JSON.parse(sent[0]?.init?.body || "{}");
+  check("grok submit sends messages as an array in the JSON body, not the URL", sent.length === 1 && !sent[0].url.includes("?") && JSON.stringify(body.messages) === JSON.stringify(turns));
+  check("a 202 pending job comes back as a result, not an error", !res?.isError && /pending/.test(res?.content?.[0]?.text || ""));
+  check("an unknown grok job gets its own 404 hint", /job_id/.test(hintFor(404, "/twitter/grok/chat/result")));
+}
+
+// Every pinned spec path has to exist in the snapshot, or a refresh or a parity
+// run dies on it; the pin is what keeps grok/config's corrected free price.
+{
+  const { LEAD_PATHS } = await import("../scripts/openapi-lead.mjs");
+  const { readFileSync } = await import("node:fs");
+  const snap = JSON.parse(readFileSync(new URL("./openapi.snapshot.json", import.meta.url), "utf8"));
+  check("every LEAD_PATHS entry is in the snapshot", LEAD_PATHS.length > 0 && LEAD_PATHS.every((p) => snap.paths[p]));
+  check("the snapshot keeps grok/config free", snap.paths["/grok/config"]?.get?.["x-cost-usd"] === 0);
+}
 
 console.log(`tools.test: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

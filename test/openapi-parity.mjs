@@ -19,6 +19,7 @@
 
 import { TOOLS } from "../src/tools.js";
 import { resolveParam } from "../scripts/gen-tools-endpoints.mjs";
+import { LEAD_PATHS } from "../scripts/openapi-lead.mjs";
 import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
@@ -89,6 +90,18 @@ function openapiIndex(oa) {
 
 async function main() {
   const oa = await loadOpenapi();
+  // A route the docs spec has not published yet is read from the vendored snapshot,
+  // and only a path named in LEAD_PATHS (scripts/openapi-lead.mjs). Any other gap
+  // between the docs spec and the catalog stays a failure.
+  const vendored = JSON.parse(readFileSync(SNAPSHOT, "utf8"));
+  const borrowed = [];
+  for (const p of LEAD_PATHS) {
+    if (oa.paths[p]) continue;
+    if (!vendored.paths[p]) throw new Error(`LEAD_PATHS names ${p}, which the snapshot does not carry`);
+    oa.paths[p] = vendored.paths[p];
+    borrowed.push(p);
+  }
+  if (borrowed.length) console.log(`  openapi-parity: ${borrowed.length} lead path(s) read from the snapshot: ${borrowed.join(", ")}`);
   const oaIdx = openapiIndex(oa);
   const oaKeys = new Set(Object.keys(oaIdx));
   const problems = [];
