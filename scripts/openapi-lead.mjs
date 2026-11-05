@@ -16,4 +16,6 @@ export const LEAD_PATHS = [
   "/grok/chat/result",
   // The docs spec still says $0.0008; billing charges $0 and the website spec says free.
   "/grok/config",
+  // The docs spec types messages as a string; the API reads only a real array of turns.
+  "/grok/chat",
 ];

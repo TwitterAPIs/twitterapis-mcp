@@ -23280,9 +23280,34 @@
                     "example": "What are people on X saying about the WWDC keynote today?"
                   },
                   "messages": {
-                    "type": "string",
-                    "description": "JSON array of prior turns, oldest first, sent in the request body. Each entry takes either { role: \"user\" | \"assistant\", content } or X's own { sender: 1 | 2, message }, where 1 is you and 2 is Grok, plus the optional response_id and parent_response_id we returned on earlier replies. Anything not explicitly marked as Grok is treated as a user turn. If you omit message, the last entry must be a user turn and becomes the prompt. Maximum 100 prior turns.",
-                    "example": "[{\"role\":\"user\",\"content\":\"Who won the game?\"},{\"role\":\"assistant\",\"content\":\"The Celtics, 112-108.\"}]"
+                    "type": "array",
+                    "description": "Array of prior turns, oldest first, sent in the request body. Each entry takes either { role: \"user\" | \"assistant\", content } or X's own { sender: 1 | 2, message }, where 1 is you and 2 is Grok, plus the optional response_id and parent_response_id we returned on earlier replies. Anything not explicitly marked as Grok is treated as a user turn. If you omit message, the last entry must be a user turn and becomes the prompt. Maximum 100 prior turns.",
+                    "example": [
+                      {
+                        "role": "user",
+                        "content": "Who won the game?"
+                      },
+                      {
+                        "role": "assistant",
+                        "content": "The Celtics, 112-108."
+                      }
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "assistant"
+                          ]
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": true
+                    }
                   },
                   "mode": {
                     "type": "string",
@@ -26015,9 +26040,34 @@
                     "example": "What are people on X saying about the WWDC keynote today?"
                   },
                   "messages": {
-                    "type": "string",
-                    "description": "JSON array of prior turns, oldest first, sent in the request body. Each entry takes either { role: \"user\" | \"assistant\", content } or X's own { sender: 1 | 2, message }, where 1 is you and 2 is Grok, plus the optional response_id and parent_response_id we returned on earlier replies. Anything not explicitly marked as Grok is treated as a user turn. If you omit message, the last entry must be a user turn and becomes the prompt. Maximum 100 prior turns.",
-                    "example": "[{\"role\":\"user\",\"content\":\"Who won the game?\"},{\"role\":\"assistant\",\"content\":\"The Celtics, 112-108.\"}]"
+                    "type": "array",
+                    "description": "Array of prior turns, oldest first, sent in the request body. Each entry takes either { role: \"user\" | \"assistant\", content } or X's own { sender: 1 | 2, message }, where 1 is you and 2 is Grok, plus the optional response_id and parent_response_id we returned on earlier replies. Anything not explicitly marked as Grok is treated as a user turn. If you omit message, the last entry must be a user turn and becomes the prompt. Maximum 100 prior turns.",
+                    "example": [
+                      {
+                        "role": "user",
+                        "content": "Who won the game?"
+                      },
+                      {
+                        "role": "assistant",
+                        "content": "The Celtics, 112-108."
+                      }
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "assistant"
+                          ]
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": true
+                    }
                   },
                   "mode": {
                     "type": "string",

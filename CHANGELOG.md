@@ -2,7 +2,7 @@
 
 ## 0.26.0 (2026-11-04)
 
-Two new tools for the async Grok routes, so a minor release. 118 tools: 71 reads and 47 writes. It also carries one BREAKING schema change: `count` on `twitter_blocking` and `twitter_muting` now tops out at 100, the API's own cap, so a call with a count from 101 to 200 that validated under 0.25.1 is now refused before it reaches the API.
+Two new tools for the async Grok routes, so a minor release. 118 tools: 71 reads and 47 writes. It also carries two BREAKING schema changes: `count` on `twitter_blocking` and `twitter_muting` now tops out at 100, the API's own cap, so a call with a count from 101 to 200 that validated under 0.25.1 is now refused before it reaches the API; and `messages` on `twitter_grok_chat` is now an array of turn objects, so a string is refused at the schema.
 
 ### Added
 
@@ -12,7 +12,7 @@ Two new tools for the async Grok routes, so a minor release. 118 tools: 71 reads
 
 ### Fixed
 
-- **`twitter_grok_chat` now delivers `messages`.** The API reads prior turns only from a JSON body, as a real array, and the tool sent every argument in the query string, so a multi-turn call lost its history without an error. The tool now sends a JSON body, and `messages` is an array of turn objects rather than a string.
+- **`twitter_grok_chat` now delivers `messages` (BREAKING: string to array).** The API reads prior turns only from a JSON body, as a real array, and the tool sent every argument in the query string, so a multi-turn call lost its history without an error. The tool now sends a JSON body, and `messages` is an array of turn objects; a string is refused at the schema. A string never reached the API as history under 0.25.1 either, so no call that used to work stops working.
 - **`twitter_article_update_title`, `twitter_article_update_cover_media` and `twitter_article_update_content` no longer say they work on a published article.** Edits are verified on drafts only. When X refuses an edit and the article is among the first 100 published articles X lists for the account, the API answers 422 `article_published` and does not bill the call. The descriptions say so, and say that the unpublish, edit, republish path the error names is not verified end to end.
 - **`twitter_grok_config` is priced free.** Billing has always charged $0 for it, but the description said $0.0008 per call. The vendored spec snapshot now carries `x-cost-usd` 0, the description says "Cost: Free per call." and the README names it among the free tools.
 - **`twitter_media_status` no longer promises video and GIF processing.** The media upload accepts base64 images only, and an image has no processing step on X, so its media_id is usable as soon as the upload returns. The description and the README now say so, and no longer suggest polling before tweeting an image. The README article rows now say draft only, with the 422 `article_published` note.
@@ -21,7 +21,7 @@ Two new tools for the async Grok routes, so a minor release. 118 tools: 71 reads
 ### Changed (tests)
 
 - `test/tools.test.mjs` counts move to 118 / 71 / 47 and gain checks on the Grok pair: the shared body, `messages` as a real array sent in the JSON body, the result tool's two arguments, and the 404 hint.
-- New `scripts/openapi-lead.mjs` lists the spec paths this package carries ahead of the docs spec (the Grok pair, and `/grok/config` with its free price). `openapi:refresh` keeps those vendored entries, and `test/openapi-parity.mjs` reads a listed path from the snapshot while the docs spec lacks it. Any unlisted gap still fails. The rest of the snapshot is refreshed from the docs spec.
+- New `scripts/openapi-lead.mjs` lists the spec paths this package carries ahead of the docs spec (the Grok pair, `/grok/config` with its free price, and `/grok/chat`, whose `messages` the snapshot types as an array of { role, content } turns, as on the submit route). `openapi:refresh` keeps those vendored entries, and `test/openapi-parity.mjs` reads a listed path from the snapshot while the docs spec lacks it. Any unlisted gap still fails. The rest of the snapshot is refreshed from the docs spec.
 
 ## 0.25.1 (2026-11-01)
 

@@ -99,18 +99,6 @@ export const ARG_GROUPS = {
   ],
   // Opaque forward-only pagination cursor.
   CURSOR: [
-    { name: "cursor" },
-  ],
-  // Paid partnership filter (API 2026-09-30, docs components.parameters
-  // paid_promotion). Only on tools whose endpoint returns a top-level tweets
-  // list: the spec attaches it to exactly those operations.
-  PAID_PROMOTION: [
-    { name: "paid_promotion", enum: ["only", "exclude"],
-      describe:
-        "Optional. Filters this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and fetches no more, so a page can hold fewer tweets than requested, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it." },
-  ],
-  // Opaque forward-only pagination cursor.
-  CURSOR: [
     { name: "cursor",
       describe:
         "Opaque pagination cursor from a previous response's next_cursor field. Absent, the first page is returned; with it, the next page." },
