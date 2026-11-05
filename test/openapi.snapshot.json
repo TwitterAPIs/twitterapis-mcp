@@ -17623,6 +17623,394 @@
         ]
       }
     },
+    "/tweet/pin": {
+      "post": {
+        "operationId": "tweet-pin",
+        "summary": "Pin Tweet",
+        "description": "Pin one of the authenticated account's own tweets to the top of its profile. Requires a logged-in session for the acting account. Billed at $0.0008 per call, the same as a standard read. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/tweet/pin?id=1759123456789012345\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\"\n# Add &proxy=http://user:pass@host:port to route through your own clean IP."
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/tweet/pin\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={ \"id\": \"1759123456789012345\" },  # add \"proxy\": \"http://user:pass@host:port\" to use your own IP\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/tweet/pin\");\nurl.search = new URLSearchParams({ \"id\": \"1759123456789012345\" }).toString();\n// Add proxy: \"http://user:pass@host:port\" above to route through your own clean IP.\nconst resp = await fetch(url, {\n  method: \"POST\",\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pin a tweet to the authenticated account's profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the tweet is pinned."
+                    },
+                    "changed": {
+                      "type": "boolean",
+                      "description": "True when this call changed the profile; false when the requested state already held."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "changed": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the tweet to pin. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the tweet to pin. Provide either id or url.",
+              "example": "1759123456789012345"
+            },
+            "example": "1759123456789012345"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "description": "Full status URL of the tweet to pin. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Full status URL of the tweet to pin. Provide either id or url.",
+              "example": "https://x.com/naval/status/1759123456789012345"
+            },
+            "example": "https://x.com/naval/status/1759123456789012345"
+          },
+          {
+            "name": "proxy",
+            "in": "query",
+            "required": false,
+            "description": "Optional. Pass your own proxy (http(s)/socks URL) to egress the write through your clean IP for best success; if omitted, we use the session's proxy / our default.",
+            "schema": {
+              "type": "string",
+              "description": "Optional. Pass your own proxy (http(s)/socks URL) to egress the write through your clean IP for best success; if omitted, we use the session's proxy / our default."
+            }
+          }
+        ]
+      }
+    },
+    "/tweet/unpin": {
+      "post": {
+        "operationId": "tweet-unpin",
+        "summary": "Unpin Tweet",
+        "description": "Remove a pinned tweet from the top of the authenticated account's profile. Requires a logged-in session. Billed at $0.0008 per call, the same as a standard read. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/tweet/unpin?id=1759123456789012345\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\"\n# Add &proxy=http://user:pass@host:port to route through your own clean IP."
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/tweet/unpin\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={ \"id\": \"1759123456789012345\" },  # add \"proxy\": \"http://user:pass@host:port\" to use your own IP\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/tweet/unpin\");\nurl.search = new URLSearchParams({ \"id\": \"1759123456789012345\" }).toString();\n// Add proxy: \"http://user:pass@host:port\" above to route through your own clean IP.\nconst resp = await fetch(url, {\n  method: \"POST\",\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unpin a tweet from the authenticated account's profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when the tweet is no longer pinned."
+                    },
+                    "changed": {
+                      "type": "boolean",
+                      "description": "True when this call changed the profile; false when the requested state already held."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "changed": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the pinned tweet to unpin. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the pinned tweet to unpin. Provide either id or url.",
+              "example": "1759123456789012345"
+            },
+            "example": "1759123456789012345"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "description": "Full status URL of the pinned tweet to unpin. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Full status URL of the pinned tweet to unpin. Provide either id or url.",
+              "example": "https://x.com/naval/status/1759123456789012345"
+            },
+            "example": "https://x.com/naval/status/1759123456789012345"
+          },
+          {
+            "name": "proxy",
+            "in": "query",
+            "required": false,
+            "description": "Optional. Pass your own proxy (http(s)/socks URL) to egress the write through your clean IP for best success; if omitted, we use the session's proxy / our default.",
+            "schema": {
+              "type": "string",
+              "description": "Optional. Pass your own proxy (http(s)/socks URL) to egress the write through your clean IP for best success; if omitted, we use the session's proxy / our default."
+            }
+          }
+        ]
+      }
+    },
     "/tweet/retweet": {
       "post": {
         "operationId": "tweet-retweet",

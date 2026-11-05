@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.28.0 (2026-11-05)
+
+Two new write tools, so a minor release. 120 tools: 71 reads and 49 writes.
+
+### Added
+
+- **`twitter_pin_tweet`** (POST /twitter/tweet/pin): pin one of your own tweets to the top of your profile, by `id` or `url`. A profile has one pinned tweet, so the tweet pinned before stops being pinned; its annotations mark it destructive and idempotent. $0.0008 per call.
+- **`twitter_unpin_tweet`** (POST /twitter/tweet/unpin): unpin it again; the tweet stays posted. Destructive and idempotent. $0.0008 per call.
+- Both take the per-call inline credentials and `proxy_url`, like the other tweet actions.
+
+### Changed
+
+- **`twitter_article_publish` says `caption` is accepted but not used.** X has no caption field when publishing an article, so the API does not send it, and a publish that passed one answers `caption_applied: false` with a `caption_note`. The tool and argument descriptions and the README row used to describe it as the announcement tweet's caption.
+- The residential egress playbook now counts 45 of the 52 session tools that take per-call credentials as headers.
+
+### Changed (tests)
+
+- `test/tools.test.mjs` counts move to 120 / 71 / 49.
+- `test/annotations.test.mjs` classes `unpin` and `_pin_` tool names as destructive.
+- `scripts/openapi-lead.mjs` lists `/tweet/pin` and `/tweet/unpin`, carried in the vendored snapshot ahead of the docs spec.
+
 ## 0.27.0 (2026-11-05)
 
 Tool text and listings only. 118 tools: 71 reads and 47 writes.

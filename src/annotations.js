@@ -121,6 +121,11 @@ const ROWS = {
   twitter_scheduled_list: READ_X("List Scheduled Tweets"),
   twitter_favorite_tweet: ["Like Tweet", false, false, true, true],
   twitter_unfavorite_tweet: ["Unlike Tweet", false, true, true, true],
+  // Pin replaces whatever tweet the profile had pinned (one pin per profile), so it
+  // overwrites existing state: destructive, unlike a like. Repeating either call
+  // leaves the same end state, so both are idempotent.
+  twitter_pin_tweet: ["Pin Tweet", false, true, true, true],
+  twitter_unpin_tweet: ["Unpin Tweet", false, true, true, true],
   twitter_retweet: ["Retweet", false, false, true, true],
   twitter_unretweet: ["Undo Retweet", false, true, true, true],
   twitter_bookmark_tweet: ["Bookmark Tweet", false, false, true, true],
