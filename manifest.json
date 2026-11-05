@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "twitterapis-mcp",
   "display_name": "TwitterAPIs",
-  "version": "0.26.0",
+  "version": "0.27.0",
   "icon": "icon.png",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
   "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
@@ -149,7 +149,7 @@
     },
     {
       "name": "twitter_tweet_thread",
-      "description": "Returns the tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread), in order, in a single call. It reads FORWARD from the tweet you pass and does not walk backwards, so pass the thread's FIRST tweet: its id is the conversation_id carried on every tweet in the thread. Passing a later tweet returns only that tweet and the author's tweets after it, the tail of the thread. Replies from other users are not included. Takes the tweet id or its full URL. Cost: $0.0040 per call. Docs: https://docs.twitterapis.com/docs/reference/tweet-details/tweet-thread"
+      "description": "Returns the tweets in a thread: the connected chain of tweets posted by the SAME author in sequence (a tweetstorm or numbered thread), in order, in a single call. It reads FORWARD from the tweet you pass and does not walk backwards, so pass the thread's FIRST tweet: its id is the conversation_id carried on every tweet in the thread. Passing a later tweet returns only that tweet and the author's tweets after it, the tail of the thread, and is_partial is true on that response. Replies from other users are not included. Takes the tweet id or its full URL. Cost: $0.0040 per call. Docs: https://docs.twitterapis.com/docs/reference/tweet-details/tweet-thread"
     },
     {
       "name": "twitter_tweet_retweeters",
@@ -249,7 +249,7 @@
     },
     {
       "name": "twitter_feedback_get",
-      "description": "Returns the status of a feedback report this account sent earlier, by its server id: status new, triaged, shipped or declined, the team's response text if any, and updated_at, which moves only when the team acts on it. 404 if the id is not on this account. Cost: Free per call. Docs: https://docs.twitterapis.com/docs/reference/account/feedback-id"
+      "description": "Returns a feedback report this account sent earlier, by its server id: its details and evidence, status new, triaged, shipped or declined, the team's response text if any, and updated_at, which moves only when the team acts on it. 404 if the id is not on this account. Cost: Free per call. Docs: https://docs.twitterapis.com/docs/reference/account/feedback-id"
     },
     {
       "name": "twitter_feedback_list",
