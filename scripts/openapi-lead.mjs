@@ -22,4 +22,7 @@ export const LEAD_PATHS = [
   // $0.0008 per call) before either spec publishes them. Modeled on /tweet/favorite.
   "/tweet/pin",
   "/tweet/unpin",
+  // The docs spec says caption is capped at 256 characters (no cap is established) and
+  // does not say audience and reply_control accept only Everyone (anything else is a 400).
+  "/article/publish",
 ];

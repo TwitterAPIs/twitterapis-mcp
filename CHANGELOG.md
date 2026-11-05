@@ -12,7 +12,7 @@ Two new write tools, so a minor release. 120 tools: 71 reads and 49 writes.
 
 ### Changed
 
-- **`twitter_article_publish` says what `caption` does.** The caption becomes the text of the announcement post that publishing creates. The tool and argument descriptions and the README row say so.
+- **`twitter_article_publish` says what `caption` does.** The caption becomes the text of the announcement post that publishing creates, with no stated length limit (the 256-character claim is gone). `audience` accepts only `Everyone` (or `Public`) and `reply_control` only `Everyone`; any other value is refused with a 400. The tool and argument descriptions, the README row and the vendored spec say so, and `/article/publish` joins the lead paths until the docs spec carries the same facts.
 - The residential egress playbook now counts 45 of the 52 session tools that take per-call credentials as headers.
 
 ### Changed (tests)

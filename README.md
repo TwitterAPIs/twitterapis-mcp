@@ -210,7 +210,7 @@ Both list tools can return `partial: true`, which means X's answer was read but 
 | `twitter_article_update_title` | Set a draft article's title (a published article answers 422 `article_published`, not billed) |
 | `twitter_article_update_cover_media` | Attach an already-uploaded image as a draft article's cover (`media_id` from `twitter_media_upload`; a published article answers 422 `article_published`, not billed) |
 | `twitter_article_update_content` | Replace a draft article's body (Draft.js `content_state` you build; a published article answers 422 `article_published`, not billed) |
-| `twitter_article_publish` | Publish a draft, posting a **real public announcement tweet** (not fully reversible). Optional `caption` becomes the announcement post's text |
+| `twitter_article_publish` | Publish a draft, posting a **real public announcement tweet** (not fully reversible). Optional `caption` becomes the announcement post's text; `audience` and `reply_control` accept only `Everyone` |
 | `twitter_article_unpublish` | Revert a published article to draft (leaves the announcement tweet up) |
 | `twitter_article_delete` | Delete an article (draft: hard delete; published: unpublish + delete the announcement tweet), irreversible |
 

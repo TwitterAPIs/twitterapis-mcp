@@ -22491,17 +22491,17 @@
                   },
                   "audience": {
                     "type": "string",
-                    "description": "Who can read the published article. Defaults to \"Everyone\" (X's own dialog default) when omitted.",
+                    "description": "Who can read the published article. Only \"Everyone\" (or its alias \"Public\") is accepted; any other value is refused with a 400. Defaults to \"Everyone\" when omitted.",
                     "example": "Everyone"
                   },
                   "reply_control": {
                     "type": "string",
-                    "description": "Who can reply to the announcement tweet. Defaults to \"Everyone\" (X's own dialog default) when omitted.",
+                    "description": "Who can reply to the announcement post. Only \"Everyone\" is accepted; any other value is refused with a 400. Defaults to \"Everyone\" when omitted.",
                     "example": "Everyone"
                   },
                   "caption": {
                     "type": "string",
-                    "description": "Optional caption text for the announcement tweet, up to 256 characters.",
+                    "description": "Optional text of the announcement post that publishing creates.",
                     "example": "New post: why we rebuilt our onboarding from scratch."
                   }
                 },
