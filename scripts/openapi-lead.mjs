@@ -18,11 +18,4 @@ export const LEAD_PATHS = [
   "/grok/config",
   // The docs spec types messages as a string; the API reads only a real array of turns.
   "/grok/chat",
-  // Pin and unpin, written by hand from the API's route contract (POST, id or url,
-  // $0.0008 per call) before either spec publishes them. Modeled on /tweet/favorite.
-  "/tweet/pin",
-  "/tweet/unpin",
-  // The docs spec says caption is capped at 256 characters (no cap is established) and
-  // does not say audience and reply_control accept only Everyone (anything else is a 400).
-  "/article/publish",
 ];
