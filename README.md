@@ -95,7 +95,7 @@ Restart Claude Desktop. The `twitter_*` tools appear in the tool picker.
 
 ## Tools
 
-118 tools: 71 reads and 47 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Every data read (except `twitter_audience_summary`, which always returns its full summary) also takes `fields` (comma-separated dotted paths to keep, e.g. `id,text,author.username`; pagination and envelope keys always survive) and `compact` (`"1"` for a built-in preset of ids, text, counts and author basics), so a model paying per token can trim a page to what it will read. Four of the reads are free account lookups (`twitter_account_me`, `twitter_account_payments`, `twitter_feedback_get`, `twitter_feedback_list`); the 14 monitoring tools and `twitter_feedback_send` are also free (account administration, not metered reads).
+120 tools: 71 reads and 49 write actions. Most user endpoints accept `username` (handle without @) **or** `user_id` (`twitter_user_likes` and `twitter_user_tweets_complete` require `user_id`); tweet endpoints accept `id` **or** `url`; paginated endpoints return a `cursor` you pass back to get the next page. Every data read (except `twitter_audience_summary`, which always returns its full summary) also takes `fields` (comma-separated dotted paths to keep, e.g. `id,text,author.username`; pagination and envelope keys always survive) and `compact` (`"1"` for a built-in preset of ids, text, counts and author basics), so a model paying per token can trim a page to what it will read. Four of the reads are free account lookups (`twitter_account_me`, `twitter_account_payments`, `twitter_feedback_get`, `twitter_feedback_list`); the 14 monitoring tools and `twitter_feedback_send` are also free (account administration, not metered reads).
 
 Public reads (search, profiles, tweets, followers, likes) work with just your API key. The **account-only** reads (bookmarks, DMs, home timeline, followers-you-know) and **most write actions** act AS an authenticated X account, so they need a session linked to your key first (returns HTTP 409 until then). Link a session either by registering your x.com cookies (`twitter_customer_session`) or by logging in with a username/password (`twitter_user_login`). Alternatively, pass **per-call inline credentials** on any of those tools (`auth_token` + `ct0`, with optional `proxy_url` / `user_agent`) to act AS that account for a single call without pre-registering a session, so one API key can act as many accounts. For write actions, set `proxy_url` to a residential proxy, since X soft-blocks writes that egress from datacenter IPs. Each write tool is annotated `readOnlyHint: false`; reversing actions (delete, unfollow, unlike, unretweet, unbookmark, monitor/webhook delete) are annotated `destructiveHint: true` so MCP clients can prompt before running them. The **monitoring** and **feedback** tools (see below) are the exception: they administer your twitterapis.com account, not an X session, so they need only your API key, no linked session and no inline credentials.
 
@@ -173,6 +173,7 @@ Public reads (search, profiles, tweets, followers, likes) work with just your AP
 | `twitter_create_tweet` | Post a tweet; set `reply_to` to reply or `quote` to quote-tweet |
 | `twitter_delete_tweet` | Delete one of your tweets (irreversible) |
 | `twitter_favorite_tweet` / `twitter_unfavorite_tweet` | Like / unlike a tweet |
+| `twitter_pin_tweet` / `twitter_unpin_tweet` | Pin one of your own tweets to the top of your profile (replaces any existing pinned post) / unpin it |
 | `twitter_retweet` / `twitter_unretweet` | Retweet / undo retweet |
 | `twitter_bookmark_tweet` / `twitter_unbookmark_tweet` | Bookmark / remove bookmark |
 | `twitter_follow_user` / `twitter_unfollow_user` | Follow / unfollow a user by `user_id` or `username` (exactly one) |
@@ -209,7 +210,7 @@ Both list tools can return `partial: true`, which means X's answer was read but 
 | `twitter_article_update_title` | Set a draft article's title (a published article answers 422 `article_published`, not billed) |
 | `twitter_article_update_cover_media` | Attach an already-uploaded image as a draft article's cover (`media_id` from `twitter_media_upload`; a published article answers 422 `article_published`, not billed) |
 | `twitter_article_update_content` | Replace a draft article's body (Draft.js `content_state` you build; a published article answers 422 `article_published`, not billed) |
-| `twitter_article_publish` | Publish a draft, posting a **real public announcement tweet** (not fully reversible) |
+| `twitter_article_publish` | Publish a draft, posting a **real public announcement tweet** (not fully reversible). Optional `caption` becomes the announcement post's text; `audience` and `reply_control` accept only `Everyone` |
 | `twitter_article_unpublish` | Revert a published article to draft (leaves the announcement tweet up) |
 | `twitter_article_delete` | Delete an article (draft: hard delete; published: unpublish + delete the announcement tweet), irreversible |
 
@@ -385,7 +386,7 @@ count: 50
 
 ## Pricing
 
-Calls are billed to your twitterapis.com account, at the price each tool's description states. The standard rate is $0.0008 per call: nearly every read (search, profiles, timelines, followers, likes, lists, bookmarks, articles) and the simple write actions (like, retweet, bookmark, follow, list membership and their undos, delete). At that rate 1,000 tweets cost about $0.04, since a call returns about 20 tweets. The account, feedback and monitoring tools are free, and so is registering, checking or revoking a session from your own cookies. Checking Grok eligibility with `twitter_grok_config` is free too. Every tool priced differently from the standard rate:
+Calls are billed to your twitterapis.com account, at the price each tool's description states. The standard rate is $0.0008 per call: nearly every read (search, profiles, timelines, followers, likes, lists, bookmarks, articles) and the simple write actions (like, pin, retweet, bookmark, follow, list membership and their undos, delete). At that rate 1,000 tweets cost about $0.04, since a call returns about 20 tweets. The account, feedback and monitoring tools are free, and so is registering, checking or revoking a session from your own cookies. Checking Grok eligibility with `twitter_grok_config` is free too. Every tool priced differently from the standard rate:
 
 | Price | Tools |
 |---|---|
@@ -412,7 +413,7 @@ Calls are billed to your twitterapis.com account, at the price each tool's descr
 
 **Can my agent post or send DMs?** Yes, from an X account you link to your key. Undo actions such as delete and unfollow are marked destructive, so your client can ask before running them.
 
-**Is it read-only?** No. 71 read tools work with just your API key; 47 write actions (post, save or schedule a post, like, retweet, follow, DM, media upload, profile name/bio/avatar/banner updates, List create/add member/remove member, community join/leave, article create/edit/publish/delete, monitor/webhook create/update/delete, feedback send) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD and feedback, which are account administration and need only your API key.
+**Is it read-only?** No. 71 read tools work with just your API key; 49 write actions (post, save or schedule a post, like, pin, retweet, follow, DM, media upload, profile name/bio/avatar/banner updates, List create/add member/remove member, community join/leave, article create/edit/publish/delete, monitor/webhook create/update/delete, feedback send) act as a linked X account or per-call inline credentials, except monitor/webhook CRUD and feedback, which are account administration and need only your API key.
 
 **Which clients are supported?** Claude Desktop, Cursor, Windsurf, and VS Code (Copilot agent mode), or any Model Context Protocol client.
 

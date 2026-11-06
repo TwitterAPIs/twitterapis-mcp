@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 118 tools (71 reads, 47 writes).
+// Catalog: 120 tools (71 reads, 49 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -2108,6 +2108,65 @@ export const TOOLS = [
     },
   },
   {
+    name: "twitter_pin_tweet",
+    path: "/twitter/tweet/pin",
+    method: "POST",
+    write: true,
+    headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
+    description:
+      "Pins one of the authenticated account's own tweets to the top of its profile. Pinning replaces any existing pinned post, since a profile has one. Takes the tweet id or url. Requires write capability behind the API key. Reversible. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-pin",
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
+      ),
+    },
+  },
+  {
+    name: "twitter_unpin_tweet",
+    path: "/twitter/tweet/unpin",
+    method: "POST",
+    write: true,
+    destructive: true,
+    headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
+    description:
+      "Unpins the tweet pinned to the top of the authenticated account's profile, leaving the profile with no pinned tweet. The tweet itself stays posted. Takes the tweet id or url. Requires write capability behind the API key. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/write-actions/tweet-unpin",
+    shape: {
+      id: z.string().optional().describe(
+        "Tweet/post numeric id (e.g. \"1789012345678901234\"). Exactly one of id or url is required.",
+      ),
+      url: z.string().optional().describe(
+        "Full tweet URL, e.g. \"https://x.com/elonmusk/status/1789012345678901234\". Exactly one of id or url is required.",
+      ),
+      auth_token: z.string().optional().describe(
+        "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",
+      ),
+      ct0: z.string().optional().describe(
+        "Optional. The account's ct0 cookie, paired with auth_token. Same transport as auth_token: the x-ct0 request header, or the JSON body on a body-taking endpoint. It is not sent as a query parameter.",
+      ),
+      proxy_url: z.string().optional().describe(
+        "Optional. Residential proxy URL this call egresses through. X soft-blocks writes from datacenter IPs as automated. Honoured on write endpoints on its own; on a read endpoint it is honoured only when auth_token and ct0 are sent with it, otherwise the read leaves through the session's own egress. Sent as the x-proxy-url request header, or in the JSON body on a body-taking endpoint.",
+      ),
+      user_agent: z.string().optional().describe(
+        "Optional. User-Agent string sent for this session. Sent as the x-user-agent request header, or in the JSON body on a body-taking endpoint.",
+      ),
+    },
+  },
+  {
     name: "twitter_retweet",
     path: "/twitter/tweet/retweet",
     method: "POST",
@@ -2671,19 +2730,19 @@ export const TOOLS = [
     write: true,
     headerArgs: ["auth_token","ct0","proxy_url","user_agent"],
     description:
-      "Publishes a DRAFT article as the authenticated account, transitioning it to Published and posting a REAL, PUBLIC announcement tweet that followers and anyone with the link can see. A consequential, hard-to-fully-undo action, unlike saving a draft: unpublishing reverts the article to Draft but LEAVES the announcement tweet up, and only deleting a published article both unpublishes it and removes the announcement tweet, by which time the content was public for however long it stayed up. Takes the article's entity id; audience and reply_control default to 'Everyone' when omitted; caption is an optional short (up to 256 characters) caption for the announcement tweet. Requires an authenticated X session with write capability behind the API key. Returns the updated (Published) article object. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/articles/article-publish",
+      "Publishes a DRAFT article as the authenticated account, transitioning it to Published and posting a REAL, PUBLIC announcement tweet that followers and anyone with the link can see. A consequential, hard-to-fully-undo action, unlike saving a draft: unpublishing reverts the article to Draft but LEAVES the announcement tweet up, and only deleting a published article both unpublishes it and removes the announcement tweet, by which time the content was public for however long it stayed up. Takes the article's entity id; audience accepts only 'Everyone' (or 'Public') and reply_control only 'Everyone', both the default when omitted, and any other value is refused with a 400; caption is optional text that becomes the announcement post's text. Requires an authenticated X session with write capability behind the API key. Returns the updated (Published) article object. Cost: $0.0016 per call. Docs: https://docs.twitterapis.com/docs/reference/articles/article-publish",
     shape: {
       id: z.string().describe(
         "The article's entity id, of an article currently in Draft.",
       ),
       audience: z.string().optional().describe(
-        "Optional. Who can see the published article, e.g. 'Everyone'. Defaults to 'Everyone' when omitted.",
+        "Optional. Who can see the published article. Only 'Everyone' (or its alias 'Public') is accepted; any other value is refused with a 400. Defaults to 'Everyone' when omitted.",
       ),
       reply_control: z.string().optional().describe(
-        "Optional. Who can reply to the announcement tweet, e.g. 'Everyone'. Defaults to 'Everyone' when omitted.",
+        "Optional. Who can reply to the announcement post. Only 'Everyone' is accepted; any other value is refused with a 400. Defaults to 'Everyone' when omitted.",
       ),
       caption: z.string().optional().describe(
-        "Optional. Short caption text for the announcement tweet, up to 256 characters.",
+        "Optional. Text of the announcement post that publishing creates.",
       ),
       auth_token: z.string().optional().describe(
         "Optional. The account's auth_token cookie; together with ct0, this call acts as that account. Sent out of band: as the x-auth-token request header on most endpoints, or inside the JSON request body on endpoints that take one. It is not sent as a query parameter, so it does not reach a URL or an access log.",

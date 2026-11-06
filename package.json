@@ -1,7 +1,7 @@
 {
   "name": "@twitterapis/mcp",
   "mcpName": "io.github.TwitterAPIs/twitterapis-mcp",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "description": "Official MCP server for twitterapis.com, the Twitter/X API: search, users, followers, tweets, threads, lists, communities, DMs, Grok and account monitoring with webhooks, plus write actions, as native tools for Claude, Cursor and any MCP client.",
   "repository": {
     "type": "git",

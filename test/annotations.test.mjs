@@ -72,7 +72,7 @@ check("hints agree with the catalog's write and destructive flags", disagree.len
 // that replaces the linked one) and a write that creates something new on every
 // call (create, send, upload, publish, chat, test) need their own rules.
 const NON_IDEMPOTENT = /(_create|_send|_upload|_publish|_chat|_login|_redrive|_test|_add_user)$|^twitter_create_tweet$/;
-const DESTRUCTIVE = /update|edit|delete|remove|unfollow|unfavorite|unretweet|unbookmark|unpublish/;
+const DESTRUCTIVE = /update|edit|delete|remove|unfollow|unfavorite|unretweet|unbookmark|unpublish|unpin|_pin_/;
 const DESTRUCTIVE_EXACT = new Set(["twitter_customer_session", "twitter_user_login"]);
 function classViolations(lookup) {
   const out = [];

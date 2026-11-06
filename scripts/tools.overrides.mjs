@@ -1413,6 +1413,36 @@ export const TOOL_OVERRIDES = [
     },
   },
   {
+    name: "twitter_pin_tweet",
+    endpoint: "/tweet/pin",
+    write: true,
+    description:
+      "Pins one of the authenticated account's own tweets to the top of its profile. Pinning replaces any existing pinned post, since a profile has one. Takes the tweet id or url. Requires write capability behind the API key. Reversible.",
+    args: [
+      "@TWEET_REF",
+      "@INLINE",
+    ],
+    omit: {
+      proxy:
+        "Deliberately not a tool arg. The catalog routes a caller-supplied proxy through the x-proxy-url REQUEST HEADER instead (see the proxy_url arg in @INLINE), because a proxy URL routinely embeds user:pass credentials and a query-string param would write those into every URL and access log along the path.",
+    },
+  },
+  {
+    name: "twitter_unpin_tweet",
+    endpoint: "/tweet/unpin",
+    write: true, destructive: true,
+    description:
+      "Unpins the tweet pinned to the top of the authenticated account's profile, leaving the profile with no pinned tweet. The tweet itself stays posted. Takes the tweet id or url. Requires write capability behind the API key.",
+    args: [
+      "@TWEET_REF",
+      "@INLINE",
+    ],
+    omit: {
+      proxy:
+        "Deliberately not a tool arg. The catalog routes a caller-supplied proxy through the x-proxy-url REQUEST HEADER instead (see the proxy_url arg in @INLINE), because a proxy URL routinely embeds user:pass credentials and a query-string param would write those into every URL and access log along the path.",
+    },
+  },
+  {
     name: "twitter_retweet",
     endpoint: "/tweet/retweet",
     write: true,
@@ -1820,20 +1850,20 @@ export const TOOL_OVERRIDES = [
     endpoint: "/article/publish",
     write: true,
     description:
-      "Publishes a DRAFT article as the authenticated account, transitioning it to Published and posting a REAL, PUBLIC announcement tweet that followers and anyone with the link can see. A consequential, hard-to-fully-undo action, unlike saving a draft: unpublishing reverts the article to Draft but LEAVES the announcement tweet up, and only deleting a published article both unpublishes it and removes the announcement tweet, by which time the content was public for however long it stayed up. Takes the article's entity id; audience and reply_control default to 'Everyone' when omitted; caption is an optional short (up to 256 characters) caption for the announcement tweet. Requires an authenticated X session with write capability behind the API key. Returns the updated (Published) article object.",
+      "Publishes a DRAFT article as the authenticated account, transitioning it to Published and posting a REAL, PUBLIC announcement tweet that followers and anyone with the link can see. A consequential, hard-to-fully-undo action, unlike saving a draft: unpublishing reverts the article to Draft but LEAVES the announcement tweet up, and only deleting a published article both unpublishes it and removes the announcement tweet, by which time the content was public for however long it stayed up. Takes the article's entity id; audience accepts only 'Everyone' (or 'Public') and reply_control only 'Everyone', both the default when omitted, and any other value is refused with a 400; caption is optional text that becomes the announcement post's text. Requires an authenticated X session with write capability behind the API key. Returns the updated (Published) article object.",
     args: [
       { name: "id",
         describe:
           "The article's entity id, of an article currently in Draft." },
       { name: "audience", required: false,
         describe:
-          "Optional. Who can see the published article, e.g. 'Everyone'. Defaults to 'Everyone' when omitted." },
+          "Optional. Who can see the published article. Only 'Everyone' (or its alias 'Public') is accepted; any other value is refused with a 400. Defaults to 'Everyone' when omitted." },
       { name: "reply_control", required: false,
         describe:
-          "Optional. Who can reply to the announcement tweet, e.g. 'Everyone'. Defaults to 'Everyone' when omitted." },
+          "Optional. Who can reply to the announcement post. Only 'Everyone' is accepted; any other value is refused with a 400. Defaults to 'Everyone' when omitted." },
       { name: "caption", required: false,
         describe:
-          "Optional. Short caption text for the announcement tweet, up to 256 characters." },
+          "Optional. Text of the announcement post that publishing creates." },
       "@INLINE",
     ],
   },

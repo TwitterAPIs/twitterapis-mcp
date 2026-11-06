@@ -62,7 +62,7 @@
     },
     {
       "name": "Write Actions",
-      "description": "Act on behalf of an authenticated account: post, delete, like, retweet, bookmark and follow, each with its undo, plus the compose surface (private drafts and scheduled posts). MOST of these bill at $0.0008 per call, the same as a standard read, but not all: tweet/create, draft/create, draft/edit, draft/list, scheduled/create and scheduled/list are $0.0016. Read the price on the endpoint, never off this line."
+      "description": "Act on behalf of an authenticated account: post, delete, like, retweet, bookmark, follow and pin, each with its undo, plus the compose surface (private drafts and scheduled posts). MOST of these bill at $0.0008 per call, the same as a standard read, but not all: tweet/create, draft/create, draft/edit, draft/list, scheduled/create and scheduled/list are $0.0016. Read the price on the endpoint, never off this line."
     },
     {
       "name": "Articles",
@@ -883,7 +883,7 @@
       "get": {
         "operationId": "feedback-id",
         "summary": "Feedback Status",
-        "description": "Returns one feedback report filed from your account, by id: what was sent (type, title, area), its status (new, triaged, shipped or declined), the team's response text or null, and timestamps. updated_at moves only when status or response changes, so an agent can tell a report that has been looked at from one that has not. Free, never metered. Any id that is not on your account answers 404, including ids that are not UUIDs. Cost: Free per call.",
+        "description": "Returns one feedback report filed from your account, by id: what was sent (type, title, area, details, evidence), its status (new, triaged, shipped or declined), the team's response text or null, and timestamps. updated_at moves only when status or response changes, so an agent can tell a report that has been looked at from one that has not. Free, never metered. Any id that is not on your account answers 404, including ids that are not UUIDs. Cost: Free per call.",
         "tags": [
           "Account"
         ],
@@ -912,7 +912,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Read one feedback report you filed: its current status and the team's response, if any.",
+            "description": "Read one feedback report you filed in full: what you sent, its current status and the team's response, if any.",
             "content": {
               "application/json": {
                 "schema": {
@@ -951,6 +951,15 @@
                     "updated_at": {
                       "type": "string",
                       "description": "ISO 8601. Equals created_at until the status or the response changes, and moves only then."
+                    },
+                    "details": {
+                      "type": "string",
+                      "description": "The report's body, as filed."
+                    },
+                    "evidence": {
+                      "type": "object",
+                      "description": "The evidence object sent at filing, or an empty object if none was sent.",
+                      "additionalProperties": true
                     }
                   }
                 },
@@ -962,7 +971,16 @@
                   "status": "triaged",
                   "response": "Reproduced. The quoted post was deleted mid-thread; a fix is in review.",
                   "created_at": "2026-09-04T10:15:00.000Z",
-                  "updated_at": "2026-09-04T14:02:11.000Z"
+                  "updated_at": "2026-09-04T14:02:11.000Z",
+                  "details": "what happened: tweet/thread?id=1899999999999999999 answered 500 server_error, expected the 4-post thread.\nrepro: GET tweet/thread with that id.\nevidence: status 500, request id req_01J9K2, twitter_tweet_thread via claude-code/2.1.259.",
+                  "evidence": {
+                    "tool": "twitter_tweet_thread",
+                    "endpoint": "tweet/thread",
+                    "status": 500,
+                    "request_id": "req_01J9K2",
+                    "client": "claude-code/2.1.259",
+                    "mcp_version": "0.9.6"
+                  }
                 }
               }
             }
@@ -2107,6 +2125,36 @@
               }
             }
           },
+          "503": {
+            "description": "X did not return a usable answer (upstream_unavailable), or no capacity was free to serve the read right now (no_capacity). Not billed. upstream_unavailable carries retry_after_seconds and a Retry-After header; no_capacity carries neither, so wait a few seconds. Search-backed reads try a second account only when the request's time budget leaves room.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "This read could not be served right now because X did not return a usable answer. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "X did not answer in time. Not billed. Retry after the Retry-After header's seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_timeout",
+                  "message": "X did not answer in time for this request. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
+                }
+              }
+            }
+          },
           "5XX": {
             "description": "Server error",
             "content": {
@@ -2694,6 +2742,36 @@
                 "example": {
                   "error": "rate_limited",
                   "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "X did not return a usable answer (upstream_unavailable), or no capacity was free to serve the read right now (no_capacity). Not billed. upstream_unavailable carries retry_after_seconds and a Retry-After header; no_capacity carries neither, so wait a few seconds. Search-backed reads try a second account only when the request's time budget leaves room.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "This read could not be served right now because X did not return a usable answer. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "X did not answer in time. Not billed. Retry after the Retry-After header's seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_timeout",
+                  "message": "X did not answer in time for this request. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
                 }
               }
             }
@@ -3998,6 +4076,36 @@
               }
             }
           },
+          "503": {
+            "description": "X did not return a usable answer (upstream_unavailable), or no capacity was free to serve the read right now (no_capacity). Not billed. upstream_unavailable carries retry_after_seconds and a Retry-After header; no_capacity carries neither, so wait a few seconds. Search-backed reads try a second account only when the request's time budget leaves room.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "This read could not be served right now because X did not return a usable answer. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "X did not answer in time. Not billed. Retry after the Retry-After header's seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_timeout",
+                  "message": "X did not answer in time for this request. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
+                }
+              }
+            }
+          },
           "5XX": {
             "description": "Server error",
             "content": {
@@ -4145,6 +4253,10 @@
                     "count": {
                       "type": "integer",
                       "description": "Number of tweets in the thread. The whole thread is returned in one call, so there is no cursor and no second page."
+                    },
+                    "is_partial": {
+                      "type": "boolean",
+                      "description": "True when the tweet you passed is not the conversation's root, so the tweets above it are missing. Omitted when X sends no conversation id, because neither answer is known then."
                     }
                   }
                 },
@@ -4167,7 +4279,8 @@
                       }
                     }
                   ],
-                  "count": 2
+                  "count": 2,
+                  "is_partial": false
                 }
               }
             }
@@ -6275,6 +6388,36 @@
                 "example": {
                   "error": "rate_limited",
                   "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "X did not return a usable answer (upstream_unavailable), or no capacity was free to serve the read right now (no_capacity). Not billed. upstream_unavailable carries retry_after_seconds and a Retry-After header; no_capacity carries neither, so wait a few seconds. Search-backed reads try a second account only when the request's time budget leaves room.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "This read could not be served right now because X did not return a usable answer. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "X did not answer in time. Not billed. Retry after the Retry-After header's seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_timeout",
+                  "message": "X did not answer in time for this request. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
                 }
               }
             }
@@ -12341,6 +12484,36 @@
               }
             }
           },
+          "503": {
+            "description": "X did not return a usable answer (upstream_unavailable), or no capacity was free to serve the read right now (no_capacity). Not billed. upstream_unavailable carries retry_after_seconds and a Retry-After header; no_capacity carries neither, so wait a few seconds. Search-backed reads try a second account only when the request's time budget leaves room.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "This read could not be served right now because X did not return a usable answer. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "X did not answer in time. Not billed. Retry after the Retry-After header's seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_timeout",
+                  "message": "X did not answer in time for this request. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
+                }
+              }
+            }
+          },
           "5XX": {
             "description": "Server error",
             "content": {
@@ -12609,6 +12782,36 @@
                 "example": {
                   "error": "rate_limited",
                   "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "X did not return a usable answer (upstream_unavailable), or no capacity was free to serve the read right now (no_capacity). Not billed. upstream_unavailable carries retry_after_seconds and a Retry-After header; no_capacity carries neither, so wait a few seconds. Search-backed reads try a second account only when the request's time budget leaves room.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_unavailable",
+                  "message": "This read could not be served right now because X did not return a usable answer. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "X did not answer in time. Not billed. Retry after the Retry-After header's seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "upstream_timeout",
+                  "message": "X did not answer in time for this request. It was not billed. Retry shortly.",
+                  "retry_after_seconds": 2
                 }
               }
             }
@@ -15515,7 +15718,7 @@
       "get": {
         "operationId": "media-status",
         "summary": "Media Status",
-        "description": "Return the async processing state of a media_id from Upload Media, so a caller can verify readiness before attaching a video, GIF, or large-media id to a tweet. Runs as your own logged-in account. Billed at $0.0008 per call. Cost: $0.0008 per call.",
+        "description": "Return the processing state X reports for a media_id from Upload Media, so a caller can check it before attaching the id to a tweet. Uploads are image only, and X usually reports no state for an image, so state is usually null. Runs as your own logged-in account. Billed at $0.0008 per call. Cost: $0.0008 per call.",
         "tags": [
           "Write Actions"
         ],
@@ -15556,27 +15759,31 @@
                     },
                     "state": {
                       "type": "string",
-                      "description": "Processing state: pending, in_progress, succeeded, or failed."
+                      "description": "Processing state: pending, in_progress, succeeded, or failed. Null when X reports no processing state, the usual answer for an image, which is ready as soon as the upload returns.",
+                      "nullable": true
                     },
                     "check_after_secs": {
                       "type": "integer",
-                      "description": "Seconds to wait before polling again while the state is pending or in_progress; 0 once processing has finished."
+                      "description": "Seconds to wait before polling again while the state is pending or in_progress. Null when X sends none.",
+                      "nullable": true
                     },
                     "progress_percent": {
                       "type": "integer",
-                      "description": "Percentage of processing completed, from 0 to 100."
+                      "description": "Percentage of processing completed, from 0 to 100. Null when X sends none.",
+                      "nullable": true
                     },
                     "error": {
-                      "type": "string",
-                      "description": "Failure reason, present only when state is failed; omitted otherwise."
+                      "type": "object",
+                      "description": "X's failure detail (code, name and message, each when X sends it). Present only when X reports one; omitted otherwise.",
+                      "additionalProperties": true
                     }
                   }
                 },
                 "example": {
                   "media_id": "1899999999999999999",
-                  "state": "succeeded",
-                  "check_after_secs": 0,
-                  "progress_percent": 100
+                  "state": null,
+                  "check_after_secs": null,
+                  "progress_percent": null
                 }
               }
             }
@@ -17368,15 +17575,20 @@
             }
           },
           "429": {
-            "description": "Rate limited",
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
                 }
               }
             }
@@ -17557,15 +17769,20 @@
             }
           },
           "429": {
-            "description": "Rate limited",
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
                 }
               }
             }
@@ -17606,6 +17823,534 @@
             "schema": {
               "type": "string",
               "description": "Full status URL of the tweet to unlike. Provide either id or url.",
+              "example": "https://x.com/naval/status/1759123456789012345"
+            },
+            "example": "https://x.com/naval/status/1759123456789012345"
+          },
+          {
+            "name": "proxy",
+            "in": "query",
+            "required": false,
+            "description": "Optional. Pass your own proxy (http(s)/socks URL) to egress the write through your clean IP for best success; if omitted, we use the session's proxy / our default.",
+            "schema": {
+              "type": "string",
+              "description": "Optional. Pass your own proxy (http(s)/socks URL) to egress the write through your clean IP for best success; if omitted, we use the session's proxy / our default."
+            }
+          }
+        ]
+      }
+    },
+    "/tweet/pin": {
+      "post": {
+        "operationId": "tweet-pin",
+        "summary": "Pin Tweet",
+        "description": "Pin a tweet to the top of the authenticated account's profile. Requires a logged-in session for the acting account. Billed at $0.0008 per call, the same as a standard read. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/tweet/pin?id=1759123456789012345\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\"\n# Add &proxy=http://user:pass@host:port to route through your own clean IP."
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/tweet/pin\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={ \"id\": \"1759123456789012345\" },  # add \"proxy\": \"http://user:pass@host:port\" to use your own IP\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/tweet/pin\");\nurl.search = new URLSearchParams({ \"id\": \"1759123456789012345\" }).toString();\n// Add proxy: \"http://user:pass@host:port\" above to route through your own clean IP.\nconst resp = await fetch(url, {\n  method: \"POST\",\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pin a tweet to the top of the authenticated account's profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when X confirmed the pin."
+                    },
+                    "changed": {
+                      "type": "boolean",
+                      "description": "True when X confirmed the change."
+                    },
+                    "action": {
+                      "type": "string",
+                      "description": "The action performed: pin."
+                    },
+                    "target_id": {
+                      "type": "string",
+                      "description": "The tweet id the action ran on."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "changed": true,
+                  "action": "pin",
+                  "target_id": "1759123456789012345"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The pin change did not apply, and the call is not billed. reason names the cause. no_op_declined: X answered without an error but did not confirm the change; detail carries X's body. retryable is false for no_op_declined. A different X refusal carries its own reason, read from X's errors[].",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "changed",
+                    "reason",
+                    "retryable",
+                    "detail",
+                    "action",
+                    "target_id"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "changed": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    },
+                    "detail": {
+                      "type": "object"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "target_id": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "changed": false,
+                  "reason": "no_op_declined",
+                  "retryable": false,
+                  "detail": {
+                    "data": {
+                      "pin_tweet": {}
+                    }
+                  },
+                  "action": "pin",
+                  "target_id": "1759123456789012345"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the tweet to pin. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the tweet to pin. Provide either id or url.",
+              "example": "1759123456789012345"
+            },
+            "example": "1759123456789012345"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "description": "Full status URL of the tweet to pin. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Full status URL of the tweet to pin. Provide either id or url.",
+              "example": "https://x.com/naval/status/1759123456789012345"
+            },
+            "example": "https://x.com/naval/status/1759123456789012345"
+          },
+          {
+            "name": "proxy",
+            "in": "query",
+            "required": false,
+            "description": "Optional. Pass your own proxy (http(s)/socks URL) to egress the write through your clean IP for best success; if omitted, we use the session's proxy / our default.",
+            "schema": {
+              "type": "string",
+              "description": "Optional. Pass your own proxy (http(s)/socks URL) to egress the write through your clean IP for best success; if omitted, we use the session's proxy / our default."
+            }
+          }
+        ]
+      }
+    },
+    "/tweet/unpin": {
+      "post": {
+        "operationId": "tweet-unpin",
+        "summary": "Unpin Tweet",
+        "description": "Remove a pinned tweet from the authenticated account's profile. Requires a logged-in session for the acting account. Billed at $0.0008 per call, the same as a standard read. Cost: $0.0008 per call.",
+        "tags": [
+          "Write Actions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/tweet/unpin?id=1759123456789012345\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\"\n# Add &proxy=http://user:pass@host:port to route through your own clean IP."
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/tweet/unpin\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={ \"id\": \"1759123456789012345\" },  # add \"proxy\": \"http://user:pass@host:port\" to use your own IP\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/tweet/unpin\");\nurl.search = new URLSearchParams({ \"id\": \"1759123456789012345\" }).toString();\n// Add proxy: \"http://user:pass@host:port\" above to route through your own clean IP.\nconst resp = await fetch(url, {\n  method: \"POST\",\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove the pinned tweet from the authenticated account's profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when X confirmed the unpin."
+                    },
+                    "changed": {
+                      "type": "boolean",
+                      "description": "True when X confirmed the change."
+                    },
+                    "action": {
+                      "type": "string",
+                      "description": "The action performed: unpin."
+                    },
+                    "target_id": {
+                      "type": "string",
+                      "description": "The tweet id the action ran on."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "changed": true,
+                  "action": "unpin",
+                  "target_id": "1759123456789012345"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The pin change did not apply, and the call is not billed. reason names the cause. no_op_declined: X answered without an error but did not confirm the change; detail carries X's body. retryable is false for no_op_declined. A different X refusal carries its own reason, read from X's errors[].",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "changed",
+                    "reason",
+                    "retryable",
+                    "detail",
+                    "action",
+                    "target_id"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "changed": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "retryable": {
+                      "type": "boolean"
+                    },
+                    "detail": {
+                      "type": "object"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "target_id": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "changed": false,
+                  "reason": "no_op_declined",
+                  "retryable": false,
+                  "detail": {
+                    "data": {
+                      "pin_tweet": {}
+                    }
+                  },
+                  "action": "pin",
+                  "target_id": "1759123456789012345"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Numeric ID of the tweet to unpin. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Numeric ID of the tweet to unpin. Provide either id or url.",
+              "example": "1759123456789012345"
+            },
+            "example": "1759123456789012345"
+          },
+          {
+            "name": "url",
+            "in": "query",
+            "required": false,
+            "description": "Full status URL of the tweet to unpin. Provide either id or url.",
+            "schema": {
+              "type": "string",
+              "description": "Full status URL of the tweet to unpin. Provide either id or url.",
               "example": "https://x.com/naval/status/1759123456789012345"
             },
             "example": "https://x.com/naval/status/1759123456789012345"
@@ -17746,15 +18491,20 @@
             }
           },
           "429": {
-            "description": "Rate limited",
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
                 }
               }
             }
@@ -17935,15 +18685,20 @@
             }
           },
           "429": {
-            "description": "Rate limited",
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
                 }
               }
             }
@@ -18124,15 +18879,20 @@
             }
           },
           "429": {
-            "description": "Rate limited",
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
                 }
               }
             }
@@ -18313,15 +19073,20 @@
             }
           },
           "429": {
-            "description": "Rate limited",
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
                 }
               }
             }
@@ -18502,15 +19267,20 @@
             }
           },
           "429": {
-            "description": "Rate limited",
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
                 }
               }
             }
@@ -18691,15 +19461,20 @@
             }
           },
           "429": {
-            "description": "Rate limited",
+            "description": "rate_limited: X throttled the account, back off and retry. write_cap_reached: the account reached its daily write limit, nothing was sent to X, the call is not billed, and Retry-After gives the seconds to the next 00:00 UTC.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
                 },
                 "example": {
-                  "error": "rate_limited",
-                  "message": "Too many requests. Back off and retry with exponential backoff."
+                  "error": "write_cap_reached",
+                  "reason": "write_cap_reached",
+                  "message": "This session has reached its daily write limit of 50 writes. The limit counts each stored or per-call session on your API key separately and resets at 00:00 UTC (see Retry-After). Nothing was sent to X and this call is not charged.",
+                  "daily_write_limit": 50,
+                  "retry_after_seconds": 43200,
+                  "action": "favorite",
+                  "target_id": "1759123456789012345"
                 }
               }
             }
@@ -21225,6 +22000,47 @@
               }
             }
           },
+          "422": {
+            "description": "The write did not apply, and the call is not billed. reason names the cause. validation_failed: X rejected the request shape, error is also validation_failed and detail names the variable path. Any other X refusal answers error not_applied with its own reason, for example invalid_lifecycle when the article is not in the state this call needs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "article",
+                    "error",
+                    "detail",
+                    "reason"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "article": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "article": null,
+                  "error": "validation_failed",
+                  "detail": "X rejected the request shape (GRAPHQL_VALIDATION_FAILED) at: articleEntityId",
+                  "reason": "validation_failed"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Rate limited",
             "content": {
@@ -21260,7 +22076,7 @@
       "post": {
         "operationId": "article-update-title",
         "summary": "Update Article Title",
-        "description": "Set the title of an article you own, identified by its entity id. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "description": "Set the title of an article you own, identified by its entity id. Works on a draft. If X refuses an edit to a published article, the API answers 422 article_published and does not bill the call; this is detected for articles among your first 100 published ones. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
         "tags": [
           "Articles"
         ],
@@ -21289,7 +22105,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Set the title on a draft or published article.",
+            "description": "Set the title on a draft article.",
             "content": {
               "application/json": {
                 "schema": {
@@ -21407,6 +22223,47 @@
               }
             }
           },
+          "422": {
+            "description": "The edit did not apply, and the call is not billed. reason names the cause. article_published: the article is published and X refused the edit, detected for articles among the account's first 100 published ones; unpublish, edit the draft and republish avoids a published-article edit, but that round trip has not been verified end to end. validation_failed: X rejected the request shape, error is also validation_failed and detail names the variable path. invalid_title (article/update_title only): X's title validator refused the title, error is not_applied and detail carries X's text.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "article",
+                    "error",
+                    "detail",
+                    "reason"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "article": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "article": null,
+                  "error": "article_published",
+                  "detail": "This article is published, and X refused the edit. Edits through this API are verified on drafts only; X's own way of editing a published article in place has not been captured. The path that avoids editing a published article: (1) POST /twitter/article/unpublish, which returns it to Draft; its announcement tweet stays up. (2) Apply article/update_title, article/update_content or article/update_cover_media. (3) POST /twitter/article/publish, which returns the announcement tweet_id. This round trip has not been verified end to end, so unpublish only an article you can afford to leave unpublished if republishing fails. If the new tweet_id differs from the old one, remove the old announcement with POST /twitter/tweet/delete if you do not want both. X said: code=214 BadRequest: Bad request. (214)",
+                  "reason": "article_published"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Rate limited",
             "content": {
@@ -21468,7 +22325,7 @@
       "post": {
         "operationId": "article-update-cover-media",
         "summary": "Update Article Cover Image",
-        "description": "Set the cover image on an article you own, identified by its entity id. This attaches media you have already uploaded; it does not upload anything itself, so call media/upload first and pass the media_id it returns. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "description": "Set the cover image on an article you own, identified by its entity id. This attaches media you have already uploaded; it does not upload anything itself, so call media/upload first and pass the media_id it returns. Works on a draft. If X refuses an edit to a published article, the API answers 422 article_published and does not bill the call; this is detected for articles among your first 100 published ones. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
         "tags": [
           "Articles"
         ],
@@ -21497,7 +22354,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Attach an uploaded image as an article's cover.",
+            "description": "Attach an uploaded image as a draft article's cover.",
             "content": {
               "application/json": {
                 "schema": {
@@ -21623,6 +22480,47 @@
               }
             }
           },
+          "422": {
+            "description": "The edit did not apply, and the call is not billed. reason names the cause. article_published: the article is published and X refused the edit, detected for articles among the account's first 100 published ones; unpublish, edit the draft and republish avoids a published-article edit, but that round trip has not been verified end to end. validation_failed: X rejected the request shape, error is also validation_failed and detail names the variable path. invalid_title (article/update_title only): X's title validator refused the title, error is not_applied and detail carries X's text.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "article",
+                    "error",
+                    "detail",
+                    "reason"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "article": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "article": null,
+                  "error": "article_published",
+                  "detail": "This article is published, and X refused the edit. Edits through this API are verified on drafts only; X's own way of editing a published article in place has not been captured. The path that avoids editing a published article: (1) POST /twitter/article/unpublish, which returns it to Draft; its announcement tweet stays up. (2) Apply article/update_title, article/update_content or article/update_cover_media. (3) POST /twitter/article/publish, which returns the announcement tweet_id. This round trip has not been verified end to end, so unpublish only an article you can afford to leave unpublished if republishing fails. If the new tweet_id differs from the old one, remove the old announcement with POST /twitter/tweet/delete if you do not want both. X said: code=214 BadRequest: Bad request. (214)",
+                  "reason": "article_published"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Rate limited",
             "content": {
@@ -21689,7 +22587,7 @@
       "post": {
         "operationId": "article-update-content",
         "summary": "Update Article Content",
-        "description": "Replace the body of an article you own with a new content_state, identified by its entity id. content_state is Draft.js editor-state JSON ({ blocks: [...], entityMap: [...] }) that you build client-side; in the shape the X Article editor produces. Blocks are forwarded with only key, text, type, data, entityRanges and inlineStyleRanges; X's schema rejects any other block field (depth included). Block types: unstyled, header-two, unordered-list-item, ordered-list-item, blockquote and atomic (a one-space block that carries an entity through entityRanges). entityMap is an ARRAY of { key, value: { type, mutability, data } }; entity data is snake_case on input and comes back camelCase: TWEET (an embedded post) { tweet_id }, MEDIA (an inline image) { caption, entity_key, media_items: [{ local_media_id, media_category: \"DraftTweetImage\", media_id }] } with media_id from media/upload, DIVIDER {}, LINK { url } over a text range, MARKDOWN { markdown } for tables. A field X does not know is refused with 422, reason validation_failed and the offending path in detail. Measured live 2026-09-18. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
+        "description": "Replace the body of an article you own with a new content_state, identified by its entity id. content_state is Draft.js editor-state JSON ({ blocks: [...], entityMap: [...] }) that you build client-side; in the shape the X Article editor produces. Blocks are forwarded with only key, text, type, data, entityRanges and inlineStyleRanges; X's schema rejects any other block field (depth included). Block types: unstyled, header-two, unordered-list-item, ordered-list-item, blockquote and atomic (a one-space block that carries an entity through entityRanges). entityMap is an ARRAY of { key, value: { type, mutability, data } }; entity data is snake_case on input and comes back camelCase: TWEET (an embedded post) { tweet_id }, MEDIA (an inline image) { caption, entity_key, media_items: [{ local_media_id, media_category: \"DraftTweetImage\", media_id }] } with media_id from media/upload, DIVIDER {}, LINK { url } over a text range, MARKDOWN { markdown } for tables. A field X does not know is refused with 422, reason validation_failed and the offending path in detail. Measured live 2026-09-18. Works on a draft. If X refuses an edit to a published article, the API answers 422 article_published and does not bill the call; this is detected for articles among your first 100 published ones. Requires a registered session. Billed at $0.0016 per call. Cost: $0.0016 per call.",
         "tags": [
           "Articles"
         ],
@@ -21840,6 +22738,47 @@
                 "example": {
                   "error": "not_found",
                   "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The edit did not apply, and the call is not billed. reason names the cause. article_published: the article is published and X refused the edit, detected for articles among the account's first 100 published ones; unpublish, edit the draft and republish avoids a published-article edit, but that round trip has not been verified end to end. validation_failed: X rejected the request shape, error is also validation_failed and detail names the variable path. invalid_title (article/update_title only): X's title validator refused the title, error is not_applied and detail carries X's text.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "article",
+                    "error",
+                    "detail",
+                    "reason"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "article": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "article": null,
+                  "error": "article_published",
+                  "detail": "This article is published, and X refused the edit. Edits through this API are verified on drafts only; X's own way of editing a published article in place has not been captured. The path that avoids editing a published article: (1) POST /twitter/article/unpublish, which returns it to Draft; its announcement tweet stays up. (2) Apply article/update_title, article/update_content or article/update_cover_media. (3) POST /twitter/article/publish, which returns the announcement tweet_id. This round trip has not been verified end to end, so unpublish only an article you can afford to leave unpublished if republishing fails. If the new tweet_id differs from the old one, remove the old announcement with POST /twitter/tweet/delete if you do not want both. X said: code=214 BadRequest: Bad request. (214)",
+                  "reason": "article_published"
                 }
               }
             }
@@ -22060,6 +22999,47 @@
               }
             }
           },
+          "422": {
+            "description": "The write did not apply, and the call is not billed. reason names the cause. validation_failed: X rejected the request shape, error is also validation_failed and detail names the variable path. Any other X refusal answers error not_applied with its own reason, for example invalid_lifecycle when the article is not in the state this call needs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "article",
+                    "error",
+                    "detail",
+                    "reason"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "article": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "article": null,
+                  "error": "validation_failed",
+                  "detail": "X rejected the request shape (GRAPHQL_VALIDATION_FAILED) at: articleEntityId",
+                  "reason": "validation_failed"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Rate limited",
             "content": {
@@ -22103,17 +23083,17 @@
                   },
                   "audience": {
                     "type": "string",
-                    "description": "Who can read the published article. Defaults to \"Everyone\" (X's own dialog default) when omitted.",
+                    "description": "Who can read the published article. Only \"Everyone\" (or \"Public\") is accepted, and it is the default when omitted. Any other value returns 400 before X is called and is not billed.",
                     "example": "Everyone"
                   },
                   "reply_control": {
                     "type": "string",
-                    "description": "Who can reply to the announcement tweet. Defaults to \"Everyone\" (X's own dialog default) when omitted.",
+                    "description": "Who can reply to the announcement tweet. Only \"Everyone\" is accepted, and it is the default when omitted. Any other value returns 400 before X is called and is not billed.",
                     "example": "Everyone"
                   },
                   "caption": {
                     "type": "string",
-                    "description": "Optional caption text for the announcement tweet, up to 256 characters.",
+                    "description": "Optional text for the announcement post. It becomes the text of the post that publishing creates.",
                     "example": "New post: why we rebuilt our onboarding from scratch."
                   }
                 },
@@ -22281,6 +23261,47 @@
                 "example": {
                   "error": "not_found",
                   "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The write did not apply, and the call is not billed. reason names the cause. validation_failed: X rejected the request shape, error is also validation_failed and detail names the variable path. Any other X refusal answers error not_applied with its own reason, for example invalid_lifecycle when the article is not in the state this call needs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "article",
+                    "error",
+                    "detail",
+                    "reason"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "article": {
+                      "type": "null"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "ok": false,
+                  "article": null,
+                  "error": "validation_failed",
+                  "detail": "X rejected the request shape (GRAPHQL_VALIDATION_FAILED) at: articleEntityId",
+                  "reason": "validation_failed"
                 }
               }
             }
@@ -23565,6 +24586,522 @@
             "$ref": "#/components/parameters/compact"
           }
         ]
+      }
+    },
+    "/grok/chat/submit": {
+      "post": {
+        "operationId": "grok-chat-submit",
+        "summary": "Grok Chat: Submit",
+        "description": "Start the same Grok chat as POST /twitter/grok/chat without holding the connection open. Send the same body and get a 202 with a job_id at once, then poll GET /twitter/grok/chat/result until the answer is ready. Built for clients that time out before a search-grounded answer arrives. A bad body, a missing key, a missing session and a short balance are answered on the spot, before any job exists, and at most 5 jobs per API key can be pending at once. Submitting is free: the $0.0040 grok/chat price is charged once, on the result poll that first delivers a finished answer, and a failed, timed-out, interrupted or never-collected job is not charged. Cost: Free per call.",
+        "tags": [
+          "Grok"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl -X POST \"https://api.twitterapis.com/twitter/grok/chat/submit\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"message\": \"https://x.com/i/status/1899999999999999999\", \"mode\": \"auto\"}'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/grok/chat/submit\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"message\": \"https://x.com/i/status/1899999999999999999\", \"mode\": \"auto\"},\n)\nresp.raise_for_status()\njob = resp.json()\nprint(job[\"job_id\"], job[\"poll\"])"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/grok/chat/submit\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({\"message\": \"https://x.com/i/status/1899999999999999999\", \"mode\": \"auto\"}),\n});\nconst job = await resp.json();\nconsole.log(job.job_id, job.poll);"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "description": "The prompt. A question, an instruction, or a bare post URL (https://x.com/<user>/status/<id>), which returns a summary of that post. Required unless you send messages[] whose last entry is a user turn. Maximum 20,000 characters; longer prompts are rejected with 400 before any Grok call is made, so an over-length prompt never costs you anything.",
+                    "example": "What are people on X saying about the WWDC keynote today?"
+                  },
+                  "messages": {
+                    "type": "array",
+                    "description": "Array of prior turns, oldest first, sent in the request body. Each entry takes either { role: \"user\" | \"assistant\", content } or X's own { sender: 1 | 2, message }, where 1 is you and 2 is Grok, plus the optional response_id and parent_response_id we returned on earlier replies. Anything not explicitly marked as Grok is treated as a user turn. If you omit message, the last entry must be a user turn and becomes the prompt. Maximum 100 prior turns.",
+                    "example": [
+                      {
+                        "role": "user",
+                        "content": "Who won the game?"
+                      },
+                      {
+                        "role": "assistant",
+                        "content": "The Celtics, 112-108."
+                      }
+                    ],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "assistant"
+                          ]
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "auto, fast, or expert. auto lets X pick the model, fast is grok-3-latest, expert is grok-4 and thinks for longer. The raw model ids grok-3-latest and grok-4 are accepted as aliases. Anything unrecognised falls back to auto, which is also the default.",
+                    "example": "auto"
+                  },
+                  "conversation_id": {
+                    "type": "string",
+                    "description": "Continue an existing conversation, using the conversation_id from an earlier reply. Omit it and we open a fresh conversation for you and return its id.",
+                    "example": "2088999211077345534"
+                  },
+                  "image_count": {
+                    "type": "integer",
+                    "description": "How many images Grok may generate if the prompt calls for it. Clamped to 0 through 4; the default is 4, which is X's own. Set it to 0 for a text-only answer.",
+                    "example": "4"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The job was created and is running.",
+            "headers": {
+              "Location": {
+                "description": "The result path for this job, /twitter/grok/chat/result?job_id=<job_id>.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job_id": {
+                      "type": "string",
+                      "description": "The job's id, a UUID. Pass it to GET /twitter/grok/chat/result."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Always pending on a 202."
+                    },
+                    "poll": {
+                      "type": "string",
+                      "description": "The path to poll, with job_id already filled in."
+                    },
+                    "poll_after_seconds": {
+                      "type": "integer",
+                      "description": "How long to wait before the first poll, 3 seconds."
+                    },
+                    "result_ttl_seconds": {
+                      "type": "integer",
+                      "description": "How long a finished answer is kept for you to collect, 900 seconds."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "When the job was created, ISO 8601."
+                    }
+                  }
+                },
+                "example": {
+                  "job_id": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
+                  "status": "pending",
+                  "poll": "/twitter/grok/chat/result?job_id=5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
+                  "poll_after_seconds": 3,
+                  "result_ttl_seconds": 900,
+                  "created_at": "2026-11-04T18:02:11.482Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "No session registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "session_required",
+                  "message": "Register your Twitter session first: POST /twitter/customer/session with { auth_token, ct0 }, or pass them per call."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many pending jobs for this API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "too_many_pending_jobs",
+                  "message": "This API key already has 5 Grok jobs running. Poll GET /twitter/grok/chat/result for one of them, then submit again.",
+                  "limit_pending": 5,
+                  "retry_after_seconds": 3
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/grok/chat/result": {
+      "get": {
+        "operationId": "grok-chat-result",
+        "summary": "Grok Chat: Result",
+        "description": "Poll a job POST /twitter/grok/chat/submit started. While it runs you get a 202 with status pending and poll_after_seconds. When it finishes you get a 200 with exactly the body POST /twitter/grok/chat returns plus job_id and status done, and the fields projection works on it. If the chat failed you get the status and typed error grok/chat would have answered, plus job_id and status failed; 504 job_timeout and 503 job_interrupted mean the job did not finish on our side. An unknown job_id, a finished answer older than 15 minutes, or another key's job all return 404. The $0.0040 grok/chat price is charged once, on the first poll that delivers the finished answer; polling it again is free. Cost: Free per call.",
+        "tags": [
+          "Grok"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/grok/chat/result?job_id=5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport time\nimport requests\n\nwhile True:\n    resp = requests.get(\n        \"https://api.twitterapis.com/twitter/grok/chat/result\",\n        headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n        params={\"job_id\": \"5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37\"},\n    )\n    if resp.status_code != 202:\n        break\n    time.sleep(resp.json()[\"poll_after_seconds\"])\nprint(resp.status_code, resp.json())"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "let resp;\nwhile (true) {\n  resp = await fetch(\"https://api.twitterapis.com/twitter/grok/chat/result?job_id=5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37\", {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  if (resp.status !== 202) break;\n  const { poll_after_seconds } = await resp.json();\n  await new Promise((r) => setTimeout(r, poll_after_seconds * 1000));\n}\nconsole.log(resp.status, await resp.json());"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "query",
+            "required": true,
+            "description": "The job_id POST /twitter/grok/chat/submit returned, a UUID.",
+            "schema": {
+              "type": "string",
+              "description": "The job_id POST /twitter/grok/chat/submit returned, a UUID.",
+              "example": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37"
+            },
+            "example": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The finished answer, the grok/chat body plus job_id and status done.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "description": "True when Grok returned answer text. A call that produced no readable answer does not reach you as ok: false, it returns 422 and is not billed."
+                    },
+                    "conversation_id": {
+                      "type": "string",
+                      "description": "The conversation this turn belongs to, whether you supplied it or we opened it. Pass it back on the next call to continue. Null only if X returned no id.",
+                      "nullable": true
+                    },
+                    "response_id": {
+                      "type": "string",
+                      "description": "The id of GROK's turn (X's agentChatItemId). Pass it back as response_id on that turn inside messages[] to thread the next request exactly."
+                    },
+                    "user_response_id": {
+                      "type": "string",
+                      "description": "The id of the turn YOU just sent (X's userChatItemId). Its counterpart to response_id when you replay history."
+                    },
+                    "answer": {
+                      "type": "string",
+                      "description": "Grok's answer as one complete string. Reasoning and tool chatter are stripped out; this is the reply a person would read."
+                    },
+                    "citations": {
+                      "type": "array",
+                      "description": "The pages Grok read while answering, each { url, domain, title, snippet }. domain is derived from url on our side; X does not send it. title is NOT always present and comes back null when X omits it, so do not filter on it. One answer can cite results from several searches: they are merged in the order they arrived and de-duplicated by url, so you get every distinct source once.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "citation_count": {
+                      "type": "integer",
+                      "description": "Length of citations, after de-duplication. Convenient for the common case of checking whether a domain appeared at all."
+                    },
+                    "tool_calls": {
+                      "type": "array",
+                      "description": "What Grok actually ran to answer, each { id, tool, args }. The observed tool is web_search, whose args carry the query string and the number of results asked for. This is the search Grok chose, not the prompt you sent.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "requested_model": {
+                      "type": "string",
+                      "description": "The model id we asked X for, derived from your mode: grok-4-auto, grok-3-latest, or grok-4."
+                    },
+                    "model": {
+                      "type": "string",
+                      "description": "The model that ACTUALLY answered. auto resolves on X's side, so asking for grok-4-auto commonly comes back as grok-4. Read this one when you care which model produced the text."
+                    },
+                    "mode": {
+                      "type": "string",
+                      "description": "The mode this call ran in: auto, fast, or expert. Echoed back so an unrecognised mode value is visible rather than silent."
+                    },
+                    "job_id": {
+                      "type": "string",
+                      "description": "The job you polled."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "done on a 200."
+                    }
+                  }
+                },
+                "example": {
+                  "ok": true,
+                  "conversation_id": "2088999211077345534",
+                  "response_id": "2089001859230978049",
+                  "user_response_id": "2089001859230978048",
+                  "answer": "Reaction on X is running positive on the on-device model work and negative on the pricing. The liveblog thread and several developer accounts flag the new background-execution API as the change most people expect to ship against first.",
+                  "citations": [
+                    {
+                      "url": "https://x.com/verge/status/2089000000000000001",
+                      "domain": "x.com",
+                      "title": "The Verge on X",
+                      "snippet": "Everything announced in the keynote, in order."
+                    },
+                    {
+                      "url": "https://www.theverge.com/wwdc-keynote-liveblog",
+                      "domain": "theverge.com",
+                      "title": "WWDC keynote liveblog",
+                      "snippet": "Live updates as the keynote runs."
+                    },
+                    {
+                      "url": "https://news.ycombinator.com/item?id=41234567",
+                      "domain": "news.ycombinator.com",
+                      "title": null,
+                      "snippet": "Developer discussion of the background-execution API."
+                    }
+                  ],
+                  "citation_count": 3,
+                  "tool_calls": [
+                    {
+                      "id": "5f2b8c1a-9d34-4c77-b0e2-6a1f7c3d8e90",
+                      "tool": "web_search",
+                      "args": {
+                        "query": "WWDC keynote reaction developers",
+                        "num_results": "15"
+                      }
+                    }
+                  ],
+                  "requested_model": "grok-4-auto",
+                  "model": "grok-4",
+                  "mode": "auto",
+                  "job_id": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
+                  "status": "done"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "The job is still running.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before polling again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job_id": {
+                      "type": "string",
+                      "description": "The job you polled."
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "pending."
+                    },
+                    "poll_after_seconds": {
+                      "type": "integer",
+                      "description": "Wait this long before polling again, 3 seconds."
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "When the job was created, ISO 8601."
+                    }
+                  }
+                },
+                "example": {
+                  "job_id": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
+                  "status": "pending",
+                  "poll_after_seconds": 3,
+                  "created_at": "2026-11-04T18:02:11.482Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "`job_id` is required: the id POST /twitter/grok/chat/submit returned."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such job for this key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "No Grok job with this job_id for this API key. Finished results are kept for 900 seconds; submit again if it has expired."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The service restarted while the job ran",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "job_interrupted",
+                  "message": "The service restarted while this Grok job was running. It was not charged. Submit it again."
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "The job did not finish in time",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "job_timeout",
+                  "message": "This Grok job did not finish in time and was not charged. Submit it again."
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/monitor": {
@@ -25995,522 +27532,6 @@
           }
         ]
       }
-    },
-    "/grok/chat/submit": {
-      "post": {
-        "operationId": "grok-chat-submit",
-        "summary": "Grok Chat: Submit",
-        "description": "Start the same Grok chat as POST /twitter/grok/chat without holding the connection open. Send the same body and get a 202 with a job_id at once, then poll GET /twitter/grok/chat/result until the answer is ready. Built for clients that time out before a search-grounded answer arrives. A bad body, a missing key, a missing session and a short balance are answered on the spot, before any job exists, and at most 5 jobs per API key can be pending at once. Submitting is free: the $0.0040 grok/chat price is charged once, on the result poll that first delivers a finished answer, and a failed, timed-out, interrupted or never-collected job is not charged. Cost: Free per call.",
-        "tags": [
-          "Grok"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-cost-usd": 0,
-        "x-codeSamples": [
-          {
-            "lang": "bash",
-            "label": "cURL",
-            "source": "curl -X POST \"https://api.twitterapis.com/twitter/grok/chat/submit\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"message\": \"https://x.com/i/status/1899999999999999999\", \"mode\": \"auto\"}'"
-          },
-          {
-            "lang": "python",
-            "label": "Python",
-            "source": "import os\nimport requests\n\nresp = requests.post(\n    \"https://api.twitterapis.com/twitter/grok/chat/submit\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    json={\"message\": \"https://x.com/i/status/1899999999999999999\", \"mode\": \"auto\"},\n)\nresp.raise_for_status()\njob = resp.json()\nprint(job[\"job_id\"], job[\"poll\"])"
-          },
-          {
-            "lang": "js",
-            "label": "JavaScript",
-            "source": "const resp = await fetch(\"https://api.twitterapis.com/twitter/grok/chat/submit\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}`,\n    \"Content-Type\": \"application/json\",\n  },\n  body: JSON.stringify({\"message\": \"https://x.com/i/status/1899999999999999999\", \"mode\": \"auto\"}),\n});\nconst job = await resp.json();\nconsole.log(job.job_id, job.poll);"
-          }
-        ],
-        "requestBody": {
-          "required": false,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string",
-                    "description": "The prompt. A question, an instruction, or a bare post URL (https://x.com/<user>/status/<id>), which returns a summary of that post. Required unless you send messages[] whose last entry is a user turn. Maximum 20,000 characters; longer prompts are rejected with 400 before any Grok call is made, so an over-length prompt never costs you anything.",
-                    "example": "What are people on X saying about the WWDC keynote today?"
-                  },
-                  "messages": {
-                    "type": "array",
-                    "description": "Array of prior turns, oldest first, sent in the request body. Each entry takes either { role: \"user\" | \"assistant\", content } or X's own { sender: 1 | 2, message }, where 1 is you and 2 is Grok, plus the optional response_id and parent_response_id we returned on earlier replies. Anything not explicitly marked as Grok is treated as a user turn. If you omit message, the last entry must be a user turn and becomes the prompt. Maximum 100 prior turns.",
-                    "example": [
-                      {
-                        "role": "user",
-                        "content": "Who won the game?"
-                      },
-                      {
-                        "role": "assistant",
-                        "content": "The Celtics, 112-108."
-                      }
-                    ],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "role": {
-                          "type": "string",
-                          "enum": [
-                            "user",
-                            "assistant"
-                          ]
-                        },
-                        "content": {
-                          "type": "string"
-                        }
-                      },
-                      "additionalProperties": true
-                    }
-                  },
-                  "mode": {
-                    "type": "string",
-                    "description": "auto, fast, or expert. auto lets X pick the model, fast is grok-3-latest, expert is grok-4 and thinks for longer. The raw model ids grok-3-latest and grok-4 are accepted as aliases. Anything unrecognised falls back to auto, which is also the default.",
-                    "example": "auto"
-                  },
-                  "conversation_id": {
-                    "type": "string",
-                    "description": "Continue an existing conversation, using the conversation_id from an earlier reply. Omit it and we open a fresh conversation for you and return its id.",
-                    "example": "2088999211077345534"
-                  },
-                  "image_count": {
-                    "type": "integer",
-                    "description": "How many images Grok may generate if the prompt calls for it. Clamped to 0 through 4; the default is 4, which is X's own. Set it to 0 for a text-only answer.",
-                    "example": "4"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "The job was created and is running.",
-            "headers": {
-              "Location": {
-                "description": "The result path for this job, /twitter/grok/chat/result?job_id=<job_id>.",
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "job_id": {
-                      "type": "string",
-                      "description": "The job's id, a UUID. Pass it to GET /twitter/grok/chat/result."
-                    },
-                    "status": {
-                      "type": "string",
-                      "description": "Always pending on a 202."
-                    },
-                    "poll": {
-                      "type": "string",
-                      "description": "The path to poll, with job_id already filled in."
-                    },
-                    "poll_after_seconds": {
-                      "type": "integer",
-                      "description": "How long to wait before the first poll, 3 seconds."
-                    },
-                    "result_ttl_seconds": {
-                      "type": "integer",
-                      "description": "How long a finished answer is kept for you to collect, 900 seconds."
-                    },
-                    "created_at": {
-                      "type": "string",
-                      "description": "When the job was created, ISO 8601."
-                    }
-                  }
-                },
-                "example": {
-                  "job_id": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
-                  "status": "pending",
-                  "poll": "/twitter/grok/chat/result?job_id=5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
-                  "poll_after_seconds": 3,
-                  "result_ttl_seconds": 900,
-                  "created_at": "2026-11-04T18:02:11.482Z"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "bad_request",
-                  "message": "Missing or malformed parameter. Fix the request before retrying."
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "unauthorized",
-                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Insufficient credits",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "insufficient_credits",
-                  "message": "Your balance is exhausted. Top up your credits to continue.",
-                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "No session registered",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "session_required",
-                  "message": "Register your Twitter session first: POST /twitter/customer/session with { auth_token, ct0 }, or pass them per call."
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too many pending jobs for this API key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "too_many_pending_jobs",
-                  "message": "This API key already has 5 Grok jobs running. Poll GET /twitter/grok/chat/result for one of them, then submit again.",
-                  "limit_pending": 5,
-                  "retry_after_seconds": 3
-                }
-              }
-            }
-          },
-          "5XX": {
-            "description": "Server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "server_error",
-                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/grok/chat/result": {
-      "get": {
-        "operationId": "grok-chat-result",
-        "summary": "Grok Chat: Result",
-        "description": "Poll a job POST /twitter/grok/chat/submit started. While it runs you get a 202 with status pending and poll_after_seconds. When it finishes you get a 200 with exactly the body POST /twitter/grok/chat returns plus job_id and status done, and the fields projection works on it. If the chat failed you get the status and typed error grok/chat would have answered, plus job_id and status failed; 504 job_timeout and 503 job_interrupted mean the job did not finish on our side. An unknown job_id, a finished answer older than 15 minutes, or another key's job all return 404. The $0.0040 grok/chat price is charged once, on the first poll that delivers the finished answer; polling it again is free. Cost: Free per call.",
-        "tags": [
-          "Grok"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-cost-usd": 0,
-        "x-codeSamples": [
-          {
-            "lang": "bash",
-            "label": "cURL",
-            "source": "curl \"https://api.twitterapis.com/twitter/grok/chat/result?job_id=5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
-          },
-          {
-            "lang": "python",
-            "label": "Python",
-            "source": "import os\nimport time\nimport requests\n\nwhile True:\n    resp = requests.get(\n        \"https://api.twitterapis.com/twitter/grok/chat/result\",\n        headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n        params={\"job_id\": \"5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37\"},\n    )\n    if resp.status_code != 202:\n        break\n    time.sleep(resp.json()[\"poll_after_seconds\"])\nprint(resp.status_code, resp.json())"
-          },
-          {
-            "lang": "js",
-            "label": "JavaScript",
-            "source": "let resp;\nwhile (true) {\n  resp = await fetch(\"https://api.twitterapis.com/twitter/grok/chat/result?job_id=5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37\", {\n    headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n  });\n  if (resp.status !== 202) break;\n  const { poll_after_seconds } = await resp.json();\n  await new Promise((r) => setTimeout(r, poll_after_seconds * 1000));\n}\nconsole.log(resp.status, await resp.json());"
-          }
-        ],
-        "parameters": [
-          {
-            "name": "job_id",
-            "in": "query",
-            "required": true,
-            "description": "The job_id POST /twitter/grok/chat/submit returned, a UUID.",
-            "schema": {
-              "type": "string",
-              "description": "The job_id POST /twitter/grok/chat/submit returned, a UUID.",
-              "example": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37"
-            },
-            "example": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37"
-          },
-          {
-            "$ref": "#/components/parameters/fields"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The finished answer, the grok/chat body plus job_id and status done.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "description": "True when Grok returned answer text. A call that produced no readable answer does not reach you as ok: false, it returns 422 and is not billed."
-                    },
-                    "conversation_id": {
-                      "type": "string",
-                      "description": "The conversation this turn belongs to, whether you supplied it or we opened it. Pass it back on the next call to continue. Null only if X returned no id.",
-                      "nullable": true
-                    },
-                    "response_id": {
-                      "type": "string",
-                      "description": "The id of GROK's turn (X's agentChatItemId). Pass it back as response_id on that turn inside messages[] to thread the next request exactly."
-                    },
-                    "user_response_id": {
-                      "type": "string",
-                      "description": "The id of the turn YOU just sent (X's userChatItemId). Its counterpart to response_id when you replay history."
-                    },
-                    "answer": {
-                      "type": "string",
-                      "description": "Grok's answer as one complete string. Reasoning and tool chatter are stripped out; this is the reply a person would read."
-                    },
-                    "citations": {
-                      "type": "array",
-                      "description": "The pages Grok read while answering, each { url, domain, title, snippet }. domain is derived from url on our side; X does not send it. title is NOT always present and comes back null when X omits it, so do not filter on it. One answer can cite results from several searches: they are merged in the order they arrived and de-duplicated by url, so you get every distinct source once.",
-                      "items": {
-                        "type": "object",
-                        "additionalProperties": true
-                      }
-                    },
-                    "citation_count": {
-                      "type": "integer",
-                      "description": "Length of citations, after de-duplication. Convenient for the common case of checking whether a domain appeared at all."
-                    },
-                    "tool_calls": {
-                      "type": "array",
-                      "description": "What Grok actually ran to answer, each { id, tool, args }. The observed tool is web_search, whose args carry the query string and the number of results asked for. This is the search Grok chose, not the prompt you sent.",
-                      "items": {
-                        "type": "object",
-                        "additionalProperties": true
-                      }
-                    },
-                    "requested_model": {
-                      "type": "string",
-                      "description": "The model id we asked X for, derived from your mode: grok-4-auto, grok-3-latest, or grok-4."
-                    },
-                    "model": {
-                      "type": "string",
-                      "description": "The model that ACTUALLY answered. auto resolves on X's side, so asking for grok-4-auto commonly comes back as grok-4. Read this one when you care which model produced the text."
-                    },
-                    "mode": {
-                      "type": "string",
-                      "description": "The mode this call ran in: auto, fast, or expert. Echoed back so an unrecognised mode value is visible rather than silent."
-                    },
-                    "job_id": {
-                      "type": "string",
-                      "description": "The job you polled."
-                    },
-                    "status": {
-                      "type": "string",
-                      "description": "done on a 200."
-                    }
-                  }
-                },
-                "example": {
-                  "ok": true,
-                  "conversation_id": "2088999211077345534",
-                  "response_id": "2089001859230978049",
-                  "user_response_id": "2089001859230978048",
-                  "answer": "Reaction on X is running positive on the on-device model work and negative on the pricing. The liveblog thread and several developer accounts flag the new background-execution API as the change most people expect to ship against first.",
-                  "citations": [
-                    {
-                      "url": "https://x.com/verge/status/2089000000000000001",
-                      "domain": "x.com",
-                      "title": "The Verge on X",
-                      "snippet": "Everything announced in the keynote, in order."
-                    },
-                    {
-                      "url": "https://www.theverge.com/wwdc-keynote-liveblog",
-                      "domain": "theverge.com",
-                      "title": "WWDC keynote liveblog",
-                      "snippet": "Live updates as the keynote runs."
-                    },
-                    {
-                      "url": "https://news.ycombinator.com/item?id=41234567",
-                      "domain": "news.ycombinator.com",
-                      "title": null,
-                      "snippet": "Developer discussion of the background-execution API."
-                    }
-                  ],
-                  "citation_count": 3,
-                  "tool_calls": [
-                    {
-                      "id": "5f2b8c1a-9d34-4c77-b0e2-6a1f7c3d8e90",
-                      "tool": "web_search",
-                      "args": {
-                        "query": "WWDC keynote reaction developers",
-                        "num_results": "15"
-                      }
-                    }
-                  ],
-                  "requested_model": "grok-4-auto",
-                  "model": "grok-4",
-                  "mode": "auto",
-                  "job_id": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
-                  "status": "done"
-                }
-              }
-            }
-          },
-          "202": {
-            "description": "The job is still running.",
-            "headers": {
-              "Retry-After": {
-                "description": "Seconds to wait before polling again.",
-                "schema": {
-                  "type": "integer"
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "job_id": {
-                      "type": "string",
-                      "description": "The job you polled."
-                    },
-                    "status": {
-                      "type": "string",
-                      "description": "pending."
-                    },
-                    "poll_after_seconds": {
-                      "type": "integer",
-                      "description": "Wait this long before polling again, 3 seconds."
-                    },
-                    "created_at": {
-                      "type": "string",
-                      "description": "When the job was created, ISO 8601."
-                    }
-                  }
-                },
-                "example": {
-                  "job_id": "5b0f6a52-3c7e-4f1a-9d2b-8e4c6a1f0b37",
-                  "status": "pending",
-                  "poll_after_seconds": 3,
-                  "created_at": "2026-11-04T18:02:11.482Z"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "bad_request",
-                  "message": "`job_id` is required: the id POST /twitter/grok/chat/submit returned."
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "unauthorized",
-                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "No such job for this key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "not_found",
-                  "message": "No Grok job with this job_id for this API key. Finished results are kept for 900 seconds; submit again if it has expired."
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "The service restarted while the job ran",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "job_interrupted",
-                  "message": "The service restarted while this Grok job was running. It was not charged. Submit it again."
-                }
-              }
-            }
-          },
-          "504": {
-            "description": "The job did not finish in time",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                },
-                "example": {
-                  "error": "job_timeout",
-                  "message": "This Grok job did not finish in time and was not charged. Submit it again."
-                }
-              }
-            }
-          }
-        }
-      }
     }
   },
   "components": {
@@ -27807,6 +28828,11 @@
             "format": "uri",
             "description": "Sent only with 402 insufficient_credits: the buy-credits page to send a person to, with an optional whole-dollar ?amount= prefill. Opening it never charges anything; the signed-in user still chooses and pays.",
             "example": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
+          },
+          "retry_after_seconds": {
+            "type": "integer",
+            "description": "Sent on some retryable failures, for example 429 write_cap_reached and 503 upstream_unavailable: the seconds to wait, the same value as the Retry-After header.",
+            "example": 2
           }
         }
       }
