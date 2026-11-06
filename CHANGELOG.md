@@ -12,14 +12,14 @@ Two new write tools, so a minor release. 120 tools: 71 reads and 49 writes.
 
 ### Changed
 
-- **`twitter_article_publish` says what `caption` does.** The caption becomes the text of the announcement post that publishing creates, with no stated length limit (the 256-character claim is gone). `audience` accepts only `Everyone` (or `Public`) and `reply_control` only `Everyone`; any other value is refused with a 400. The tool and argument descriptions, the README row and the vendored spec say so, and `/article/publish` joins the lead paths until the docs spec carries the same facts.
+- **`twitter_article_publish` says what `caption` does.** The caption becomes the text of the announcement post that publishing creates, with no stated length limit (the 256-character claim is gone). `audience` accepts only `Everyone` (or `Public`) and `reply_control` only `Everyone`; any other value is refused with a 400. The tool and argument descriptions, the README row and the vendored spec say so; the spec now comes from the docs, which publish the same facts.
 - The residential egress playbook now counts 45 of the 52 session tools that take per-call credentials as headers.
 
 ### Changed (tests)
 
 - `test/tools.test.mjs` counts move to 120 / 71 / 49.
 - `test/annotations.test.mjs` classes `unpin` and `_pin_` tool names as destructive.
-- `scripts/openapi-lead.mjs` lists `/tweet/pin` and `/tweet/unpin`, carried in the vendored snapshot ahead of the docs spec.
+- The vendored snapshot is refreshed from the docs spec, which now publishes `/tweet/pin`, `/tweet/unpin` and the corrected `/article/publish`.
 
 ## 0.27.0 (2026-11-05)
 
