@@ -176,14 +176,14 @@ export const TOOL_OVERRIDES = [
     name: "twitter_advanced_search",
     endpoint: "/tweet/advanced_search",
     description:
-      "Searches recent tweets with X's advanced-search operators: from:, to:, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, -filter:replies, lang:en, and free text. Returns tweet text, author info, engagement metrics and a pagination cursor. product='Latest' gives chronological results; 'Top' (the default) is engagement-ranked. Example queries: 'AI agents min_faves:100', 'from:openai filter:links since:2024-01-01', '#buildinpublic -filter:replies lang:en'.",
+      "Searches recent tweets with X's advanced-search operators: from:, to:, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, -filter:replies, lang:en, and free text. Returns tweet text, author info, engagement metrics and a pagination cursor. product='Latest' (the default when omitted) gives chronological results; 'Top' is engagement-ranked. Example queries: 'AI agents min_faves:100', 'from:openai filter:links since:2024-01-01', '#buildinpublic -filter:replies lang:en'.",
     args: [
       { name: "query",
         describe:
           "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'." },
       { name: "product", enum: ["Top","Latest","Media","People"],
         describe:
-          "Result ranking mode. 'Latest' = reverse-chronological. 'Top' = engagement-ranked (default when omitted). 'Media' = tweets with images/video. 'People' = matching user accounts." },
+          "Result ranking mode. 'Latest' = reverse-chronological (default when omitted). 'Top' = engagement-ranked. 'Media' = tweets with images/video. 'People' = matching user accounts." },
       "@PAGINATION",
       "@PROJECTION",
       "@PAID_PROMOTION",
@@ -232,9 +232,12 @@ export const TOOL_OVERRIDES = [
     description:
       "Reports whether a Twitter/X account is alive, suspended, or deleted. Returns a status field that is one of 'alive', 'suspended', 'not_found' or 'unavailable', plus the numeric id when the account is alive and X's own reason when it gives one. It distinguishes a suspended or deleted account from a handle that does not exist, which a profile read answers the same way. Every outcome is a successful response: the answer is in the status field, and a suspension is not an error. A protected (private) account counts as alive, since protection is a visibility setting and not an account state.",
     args: [
+      { name: "username",
+        describe:
+          "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama'). Pass username or userName." },
       { name: "userName",
         describe:
-          "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama')." },
+          "Older spelling of username, still accepted. Pass one of the two." },
       "@PROJECTION",
     ],
   },
@@ -892,7 +895,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_trends",
     endpoint: "/trends",
     description:
-      "Returns the current top trends for a location, or for one of X's Explore topic tabs. With no parameter, returns Worldwide (WOEID 1, X's own default). country takes an ISO code or country name (e.g. 'US' or 'Japan'); woeid takes a numeric WOEID and wins when both are given. category reads an X Explore tab instead (trending, news, sports, entertainment or for_you), or business_and_finance for only the ranked trends X labels Business and finance, read from the Trending and News tabs. category cannot be combined with country or woeid (400). business_and_finance returns no story items and can return an empty list when X labels nothing Business and finance at that moment. Category results reflect the Explore view of the account the API reads with. Returns the as_of timestamp and the ranked trends; a location call also returns the resolved location and created_at. A category response echoes category and has location and created_at null. An Explore tab response lists X's ranked trends first, then the tab's story items: AI-written headlines X marks, each with the headline as query, an x.com/i/trending/<id> url and the post count as tweet_volume. Story items carry is_ai_story true, but so can a ranked trend X flags as AI-written; the x.com/i/trending url is what marks a story item. A tab may hold only story items. count truncates the list. A location X does not serve returns a 400.",
+      "Returns the current top trends for a location, or for one of X's Explore topic tabs. With no parameter, returns Worldwide (WOEID 1, X's own default). country takes an ISO code or country name (e.g. 'US' or 'Japan'); woeid takes a numeric WOEID and wins when both are given. category reads an X Explore tab instead (trending, news, sports, entertainment or for_you), or business_and_finance for only the ranked trends X labels Business and finance, read from the Trending and News tabs. category cannot be combined with country or woeid (400). business_and_finance returns no story items and can return an empty list when X labels nothing Business and finance at that moment. Category results reflect the Explore view of the account the API reads with. Returns the as_of timestamp and the ranked trends; a location call also returns the resolved location, created_at and list_age_seconds. created_at is when X generated that location's trend list, which X refreshes on its own schedule and can be a day old; as_of is when this API read it, and list_age_seconds is the gap between the two in seconds. A category response echoes category and has location and created_at null. An Explore tab response lists X's ranked trends first, then the tab's story items: AI-written headlines X marks, each with the headline as query, an x.com/i/trending/<id> url and the post count as tweet_volume. Story items carry is_ai_story true, but so can a ranked trend X flags as AI-written; the x.com/i/trending url is what marks a story item. A tab may hold only story items. count truncates the list. A location X does not serve returns a 400.",
     args: [
       { name: "category", enum: ["trending", "news", "sports", "entertainment", "for_you", "business_and_finance"],
         describe:

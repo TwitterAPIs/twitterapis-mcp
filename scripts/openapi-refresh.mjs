@@ -83,16 +83,34 @@ const routeSet = (spec) => {
   return s;
 };
 
-const res = await fetch(SPEC_URL, { signal: AbortSignal.timeout(30000) }).catch((e) =>
-  die(`cannot reach ${SPEC_URL}: ${e.message}`),
-);
-if (!res.ok) die(`${SPEC_URL} returned HTTP ${res.status}`);
+// OPENAPI_FILE reads the spec from a local file instead of the live docs site, so a
+// cross-repo batch (docs spec change + MCP release) can be built and reviewed in ONE
+// pass from the docs branch, rather than waiting for the docs deploy before the MCP
+// can even be built (2026-11-09: that wait serialized a 4-repo batch). The same
+// fail-closed checks below apply to either source. Publish only after the docs PR
+// that produced the file has merged, so the live spec matches what was vendored.
+const SPEC_FILE = process.env.OPENAPI_FILE || "";
+const SOURCE = SPEC_FILE || SPEC_URL;
+let raw;
+if (SPEC_FILE) {
+  try {
+    raw = readFileSync(SPEC_FILE, "utf8");
+  } catch (e) {
+    die(`cannot read ${SPEC_FILE}: ${e.message}`);
+  }
+} else {
+  const res = await fetch(SPEC_URL, { signal: AbortSignal.timeout(30000) }).catch((e) =>
+    die(`cannot reach ${SPEC_URL}: ${e.message}`),
+  );
+  if (!res.ok) die(`${SPEC_URL} returned HTTP ${res.status}`);
+  raw = await res.text();
+}
 
 let next;
 try {
-  next = JSON.parse(await res.text());
+  next = JSON.parse(raw);
 } catch (e) {
-  die(`${SPEC_URL} did not return JSON: ${e.message}`);
+  die(`${SOURCE} did not return JSON: ${e.message}`);
 }
 if (!next.openapi || !next.paths) die("payload has no openapi/paths keys, refusing to vendor it");
 

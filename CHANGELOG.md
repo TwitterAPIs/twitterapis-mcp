@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.28.1 (2026-11-09)
+
+No new tools, so a patch release. Still 120 tools: 71 reads and 49 writes.
+
+### Changed
+
+- **`twitter_user_status` takes `username`**, the name every other handle tool takes, and still accepts `userName`. An agent chaining `twitter_user_status` into `twitter_user_tweets` no longer gets one of the two names wrong.
+- **`twitter_advanced_search` states the real default.** With `product` omitted the search is `Latest`, which is what the API has always done; the description used to say `Top`.
+- **`twitter_trends` says what `created_at` means.** It is when X generated the location's trend list (X refreshes it on its own schedule, so it can be a day old), `as_of` is when the API read it, and the new `list_age_seconds` field is the gap between the two.
+
+### Changed (tests)
+
+- The vendored snapshot is refreshed from the docs spec, which now lists `username` on `/user/status` and the trends freshness fields.
+
 ## 0.28.0 (2026-11-05)
 
 Two new write tools, so a minor release. 120 tools: 71 reads and 49 writes.
