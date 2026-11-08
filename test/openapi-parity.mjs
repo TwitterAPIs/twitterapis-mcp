@@ -56,6 +56,9 @@ const key = (method, path) => `${method.toUpperCase()} ${path}`;
 const templateParams = (p) => [...p.matchAll(/\{([^}]+)\}/g)].map((m) => m[1]);
 
 async function loadOpenapi() {
+  // OPENAPI_FILE: check against a docs BRANCH's spec, so a cross-repo batch is built
+  // and tested before the docs deploy (same override as scripts/openapi-refresh.mjs).
+  if (process.env.OPENAPI_FILE) return JSON.parse(readFileSync(process.env.OPENAPI_FILE, "utf8"));
   try {
     const res = await fetch(OPENAPI_URL, { signal: AbortSignal.timeout(15000) });
     if (res.ok) return await res.json();
