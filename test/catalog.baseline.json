@@ -171,7 +171,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -232,7 +232,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -273,7 +273,7 @@
             "description": "Twitter/X handle WITHOUT the leading @ (e.g. 'elonmusk', 'openai', 'sama')."
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -314,7 +314,7 @@
             "description": "Numeric Twitter/X user id (e.g. '44196397' for @elonmusk), as it appears in API responses under user_id or author_id."
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -358,7 +358,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -399,7 +399,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -440,7 +440,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -498,7 +498,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -549,7 +549,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -620,7 +620,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -718,7 +718,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -780,7 +780,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -839,7 +839,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -904,7 +904,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -963,7 +963,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1025,7 +1025,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1089,7 +1089,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1142,7 +1142,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1195,7 +1195,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1248,7 +1248,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1301,7 +1301,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1371,7 +1371,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1415,7 +1415,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1472,7 +1472,7 @@
             ]
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1544,7 +1544,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1594,7 +1594,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1655,7 +1655,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1723,7 +1723,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1781,7 +1781,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1834,7 +1834,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1912,7 +1912,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -1974,7 +1974,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2033,7 +2033,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2079,7 +2079,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2120,7 +2120,7 @@
             "description": "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'. Digits only. This is NOT a Space id (those are base-62 tokens) and NOT a user id."
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2161,7 +2161,7 @@
             "description": "Numeric X community id, the digits in a x.com/i/communities/<id> URL, e.g. '1493446837214187523'."
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2214,7 +2214,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2267,7 +2267,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2330,7 +2330,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2391,7 +2391,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2461,7 +2461,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2521,7 +2521,7 @@
             "type": "string"
           },
           "mode": {
-            "description": "Which Grok answers: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports which model actually answered, which can differ from the mode requested.",
+            "description": "Which Grok answers: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports which model actually answered. When the requested mode is not offered to the account (Auto and Expert are often unavailable), the chat runs on the mode that is (Fast today) and the reply carries mode_fallback {requested, reason}.",
             "type": "string"
           },
           "image_count": {
@@ -2592,7 +2592,7 @@
             "type": "string"
           },
           "mode": {
-            "description": "Which Grok answers: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports which model actually answered, which can differ from the mode requested.",
+            "description": "Which Grok answers: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports which model actually answered. When the requested mode is not offered to the account (Auto and Expert are often unavailable), the chat runs on the mode that is (Fast today) and the reply carries mode_fallback {requested, reason}.",
             "type": "string"
           },
           "image_count": {
@@ -2643,7 +2643,7 @@
             "description": "The job_id the submit call returned, a UUID."
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           }
         },
@@ -2689,7 +2689,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2750,7 +2750,7 @@
             "maximum": 9007199254740991
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -2781,7 +2781,7 @@
         "type": "object",
         "properties": {
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -3022,7 +3022,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -3094,7 +3094,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -3165,7 +3165,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -3228,7 +3228,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -3299,7 +3299,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -3361,7 +3361,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -3425,7 +3425,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -3487,7 +3487,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -3550,7 +3550,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -4105,7 +4105,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -4280,7 +4280,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -5238,7 +5238,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -5625,7 +5625,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -5697,7 +5697,7 @@
             "type": "string"
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {
@@ -5981,7 +5981,7 @@
             "maximum": 200
           },
           "fields": {
-            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped.",
+            "description": "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
             "type": "string"
           },
           "compact": {

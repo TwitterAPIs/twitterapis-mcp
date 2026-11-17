@@ -64,7 +64,7 @@ export const ARG_GROUPS = {
         "Conversation id returned by a previous call. Absent on the first turn, in which case a new conversation is opened and its id returned." },
     { name: "mode", required: false,
       describe:
-        "Which Grok answers: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports which model actually answered, which can differ from the mode requested." },
+        "Which Grok answers: 'auto' (default, balanced), 'fast' (quicker, less thorough) or 'expert' (slowest, most thorough). The response reports which model actually answered. When the requested mode is not offered to the account (Auto and Expert are often unavailable), the chat runs on the mode that is (Fast today) and the reply carries mode_fallback {requested, reason}." },
     { name: "image_count", required: false,
       describe:
         "Forwarded to X as its image-generation count, clamped to 0 through 4 (default 4, the value X's own client sends); 0 asks for a text-only answer. The reply has no image field, so a generated image is not returned." },
@@ -77,7 +77,7 @@ export const ARG_GROUPS = {
   PROJECTION: [
     { name: "fields",
       describe:
-        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped." },
+        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped." },
     { name: "compact", enum: ["1", "true"],
       describe:
         "Optional. \"1\" applies the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. It trims only what it recognises and on its own does not reduce a body to {}. Combined with fields, the named paths are added on top of the preset, so pass fields without compact for a narrow result." },
@@ -87,7 +87,7 @@ export const ARG_GROUPS = {
   FIELDS_ONLY: [
     { name: "fields",
       describe:
-        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination and envelope keys (next_cursor, cursor, has_more, count, partial, error, message, reason) are kept regardless; every other top-level key not named is dropped." },
+        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped." },
   ],
   // Paid partnership filter (API 2026-09-30, docs components.parameters
   // paid_promotion). Only on tools whose endpoint returns a top-level tweets
