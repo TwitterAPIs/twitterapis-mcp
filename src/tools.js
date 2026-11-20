@@ -1269,13 +1269,13 @@ export const TOOLS = [
       "Reads one X Trending story (the AI-written page at x.com/i/trending/<id>) by its id, including after it has rotated out of the Explore tabs: headline, summary, topics, last update time, X's disclaimer and the story's top or latest posts. The id is the number at the end of an x.com/i/trending/ url, as a trends category result or a shared story link shows it. X shows no post count or volume on a story page, so none is returned. An unknown id returns 404 and is not billed. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/trends/trends-story",
     shape: {
       id: z.string().describe(
-        "Story id: the number at the end of an x.com/i/trending/ url (5 to 25 digits).",
+        "Story id: the number at the end of an x.com/i/trending/ url (5 to 19 digits).",
       ),
       posts: z.enum(["top","latest"]).optional().describe(
         "Optional. Which of the story's post tabs to return: top (default) or latest.",
       ),
       count: z.number().int().min(0).max(100).optional().describe(
-        "Optional. Posts to return, 0 to 100 (default 20). 0 returns the story alone.",
+        "Optional. Posts to return, 0 to 100 (default 20); a larger value is clamped to 100. 0 returns the story alone.",
       ),
       cursor: z.string().optional().describe(
         "Optional. next_cursor from a previous call, for the next page of the same post tab.",

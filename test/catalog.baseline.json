@@ -2821,7 +2821,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Story id: the number at the end of an x.com/i/trending/ url (5 to 25 digits)."
+            "description": "Story id: the number at the end of an x.com/i/trending/ url (5 to 19 digits)."
           },
           "posts": {
             "description": "Optional. Which of the story's post tabs to return: top (default) or latest.",
@@ -2832,7 +2832,7 @@
             ]
           },
           "count": {
-            "description": "Optional. Posts to return, 0 to 100 (default 20). 0 returns the story alone.",
+            "description": "Optional. Posts to return, 0 to 100 (default 20); a larger value is clamped to 100. 0 returns the story alone.",
             "type": "integer",
             "minimum": 0,
             "maximum": 100

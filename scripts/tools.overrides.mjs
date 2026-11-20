@@ -926,11 +926,11 @@ export const TOOL_OVERRIDES = [
       "Reads one X Trending story (the AI-written page at x.com/i/trending/<id>) by its id, including after it has rotated out of the Explore tabs: headline, summary, topics, last update time, X's disclaimer and the story's top or latest posts. The id is the number at the end of an x.com/i/trending/ url, as a trends category result or a shared story link shows it. X shows no post count or volume on a story page, so none is returned. An unknown id returns 404 and is not billed.",
     args: [
       { name: "id", required: true,
-        describe: "Story id: the number at the end of an x.com/i/trending/ url (5 to 25 digits)." },
+        describe: "Story id: the number at the end of an x.com/i/trending/ url (5 to 19 digits)." },
       { name: "posts", enum: ["top", "latest"],
         describe: "Optional. Which of the story's post tabs to return: top (default) or latest." },
       { name: "count", type: "int", min: 0, max: 100,
-        describe: "Optional. Posts to return, 0 to 100 (default 20). 0 returns the story alone." },
+        describe: "Optional. Posts to return, 0 to 100 (default 20); a larger value is clamped to 100. 0 returns the story alone." },
       { name: "cursor",
         describe: "Optional. next_cursor from a previous call, for the next page of the same post tab." },
       "@PAID_PROMOTION",

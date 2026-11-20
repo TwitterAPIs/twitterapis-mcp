@@ -13589,10 +13589,10 @@
             "name": "id",
             "in": "query",
             "required": true,
-            "description": "Story id: the number at the end of an x.com/i/trending/ url, 5 to 25 digits.",
+            "description": "Story id: the number at the end of an x.com/i/trending/ url, 5 to 19 digits.",
             "schema": {
               "type": "string",
-              "description": "Story id: the number at the end of an x.com/i/trending/ url, 5 to 25 digits.",
+              "description": "Story id: the number at the end of an x.com/i/trending/ url, 5 to 19 digits.",
               "example": "2123125469000204663"
             },
             "example": "2123125469000204663"
@@ -13613,10 +13613,10 @@
             "name": "count",
             "in": "query",
             "required": false,
-            "description": "Posts to return, 0 to 100 (default 20). 0 returns the story alone.",
+            "description": "Posts to return, 0 to 100 (default 20); a larger value is clamped to 100. 0 returns the story alone.",
             "schema": {
               "type": "integer",
-              "description": "Posts to return, 0 to 100 (default 20). 0 returns the story alone.",
+              "description": "Posts to return, 0 to 100 (default 20); a larger value is clamped to 100. 0 returns the story alone.",
               "example": "20"
             },
             "example": "20"
