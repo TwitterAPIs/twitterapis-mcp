@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "twitterapis-mcp",
   "display_name": "TwitterAPIs",
-  "version": "0.28.3",
+  "version": "0.29.0",
   "icon": "icon.png",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
   "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
@@ -234,6 +234,10 @@
     {
       "name": "twitter_trends_locations",
       "description": "Lists every location X publishes trends for, each with its name and numeric WOEID. Takes no required parameters. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/trends/trends-locations"
+    },
+    {
+      "name": "twitter_trend_story",
+      "description": "Reads one X Trending story (the AI-written page at x.com/i/trending/<id>) by its id, including after it has rotated out of the Explore tabs: headline, summary, topics, last update time, X's disclaimer and the story's top or latest posts. The id is the number at the end of an x.com/i/trending/ url, as a trends category result or a shared story link shows it. X shows no post count or volume on a story page, so none is returned. An unknown id returns 404 and is not billed. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/trends/trends-story"
     },
     {
       "name": "twitter_account_me",

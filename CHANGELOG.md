@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.29.0 (2026-11-20)
+
+One new read tool, so a minor release. 121 tools: 72 reads and 49 writes.
+
+### Added
+
+- **`twitter_trend_story`** reads one X Trending story (the AI-written page at x.com/i/trending/<id>) by its id, including after it has rotated out of the Explore tabs: headline, summary, topics, last update time, X's disclaimer and the story's top or latest posts (`posts`, `count` 0 to 100, `cursor`). X shows no post count or volume on a story page, so none is returned. An unknown id returns 404 and is not billed. Backed by `GET /twitter/trends/story`.
+
 ## 0.28.3 (2026-11-20)
 
 No new tools, so a patch release. Still 120 tools.

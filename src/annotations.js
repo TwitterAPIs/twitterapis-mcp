@@ -76,6 +76,7 @@ const ROWS = {
   twitter_creator_commentary_video: READ_X("Rank Video Creators by Topic"),
   twitter_trends: READ_X("Get Trends"),
   twitter_trends_locations: READ_X("List Trend Locations"),
+  twitter_trend_story: READ_X("Get Trend Story"),
 
   // X's built-in AI assistant. A chat starts a conversation on the account, so
   // it is a non-idempotent write; the eligibility check is a plain read.

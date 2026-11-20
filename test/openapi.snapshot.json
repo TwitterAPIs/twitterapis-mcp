@@ -2041,7 +2041,7 @@
             }
           },
           "400": {
-            "description": "Bad request",
+            "description": "bad_request: a missing or malformed parameter. reason query_too_long: query is 512 UTF-8 bytes or more (the limit is 511). Nothing is sent to X and the call is not billed. query_bytes is the size you sent and max_query_bytes the limit. Split a long OR list into several shorter queries.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2049,7 +2049,10 @@
                 },
                 "example": {
                   "error": "bad_request",
-                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                  "reason": "query_too_long",
+                  "message": "`query` is 538 bytes; the limit is 511. X returns an empty page for a longer search instead of an error, so it is refused here. Split it into several shorter queries (for example, fewer OR terms per query).",
+                  "query_bytes": 538,
+                  "max_query_bytes": 511
                 }
               }
             }
@@ -2175,10 +2178,10 @@
             "name": "query",
             "in": "query",
             "required": true,
-            "description": "Search query using Twitter operator syntax.",
+            "description": "Search query using Twitter operator syntax. At most 511 bytes (UTF-8). A longer query answers 400 query_too_long and is not billed, because X returns an empty page for it.",
             "schema": {
               "type": "string",
-              "description": "Search query using Twitter operator syntax.",
+              "description": "Search query using Twitter operator syntax. At most 511 bytes (UTF-8). A longer query answers 400 query_too_long and is not billed, because X returns an empty page for it.",
               "example": "from:naval min_faves:1000"
             },
             "example": "from:naval min_faves:1000"
@@ -2306,7 +2309,7 @@
             }
           },
           "400": {
-            "description": "Bad request",
+            "description": "bad_request: a missing or malformed parameter. reason query_too_long: query is 512 UTF-8 bytes or more (the limit is 511). Nothing is sent to X and the call is not billed. query_bytes is the size you sent and max_query_bytes the limit. Split a long OR list into several shorter queries.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2314,7 +2317,10 @@
                 },
                 "example": {
                   "error": "bad_request",
-                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                  "reason": "query_too_long",
+                  "message": "`query` is 538 bytes; the limit is 511. X returns an empty page for a longer search instead of an error, so it is refused here. Split it into several shorter queries (for example, fewer OR terms per query).",
+                  "query_bytes": 538,
+                  "max_query_bytes": 511
                 }
               }
             }
@@ -2410,10 +2416,10 @@
             "name": "query",
             "in": "query",
             "required": true,
-            "description": "Name, keyword or partial handle to search for. Matched against display name and handle, not bio.",
+            "description": "Name, keyword or partial handle to search for. Matched against display name and handle, not bio. At most 511 bytes (UTF-8). A longer query answers 400 query_too_long and is not billed, because X returns an empty page for it.",
             "schema": {
               "type": "string",
-              "description": "Name, keyword or partial handle to search for. Matched against display name and handle, not bio.",
+              "description": "Name, keyword or partial handle to search for. Matched against display name and handle, not bio. At most 511 bytes (UTF-8). A longer query answers 400 query_too_long and is not billed, because X returns an empty page for it.",
               "example": "machine learning"
             },
             "example": "machine learning"
@@ -13375,6 +13381,264 @@
           },
           {
             "$ref": "#/components/parameters/compact"
+          }
+        ]
+      }
+    },
+    "/trends/story": {
+      "get": {
+        "operationId": "trends-story",
+        "summary": "Trend Story",
+        "description": "Fetch one X Trending story (the AI-written page at x.com/i/trending/<id>) by its id, including after it has rotated out of the Explore tabs: headline, summary, topics, last update, X's disclaimer and the story's top or latest posts. Cost: $0.0008 per call.",
+        "tags": [
+          "Trends"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-cost-usd": 0.0008,
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl \"https://api.twitterapis.com/twitter/trends/story?id=2123125469000204663&posts=top&count=20\" \\\n  -H \"Authorization: Bearer $TWITTERAPIS_KEY\""
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import os\nimport requests\n\nresp = requests.get(\n    \"https://api.twitterapis.com/twitter/trends/story\",\n    headers={\"Authorization\": f\"Bearer {os.environ['TWITTERAPIS_KEY']}\"},\n    params={\"id\": \"2123125469000204663\", \"posts\": \"top\", \"count\": 20},\n)\nresp.raise_for_status()\ndata = resp.json()\nprint(data)"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const url = new URL(\"https://api.twitterapis.com/twitter/trends/story\");\nurl.search = new URLSearchParams({ id: \"2123125469000204663\", posts: \"top\", count: 20 }).toString();\nconst resp = await fetch(url, {\n  headers: { Authorization: `Bearer ${process.env.TWITTERAPIS_KEY}` },\n});\nconst data = await resp.json();\nconsole.log(data);"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read one X Trending story by its id, with its posts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "story": {
+                      "type": "object",
+                      "description": "id, url, title, summary, topics (array of strings), last_updated_at (ISO 8601), disclaimer, post_timelines { top, latest } (X's own timeline ids for the two tabs).",
+                      "additionalProperties": true
+                    },
+                    "posts_tab": {
+                      "type": "string",
+                      "description": "top or latest, echoing the request."
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of posts returned."
+                    },
+                    "posts": {
+                      "type": "array",
+                      "description": "The story's posts, the same tweet objects tweet/detail returns.",
+                      "items": {
+                        "$ref": "#/components/schemas/Tweet"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": "string",
+                      "description": "Pass as cursor for the next page of the same tab; null when there is none.",
+                      "nullable": true
+                    }
+                  }
+                },
+                "example": {
+                  "story": {
+                    "id": "2123125469000204663",
+                    "url": "https://x.com/i/trending/2123125469000204663",
+                    "title": "Serial founder shares lessons from building a startup in a 79-minute dinner conversation",
+                    "summary": "On a podcast episode, a serial entrepreneur described early layoffs, a credit card debt and ...",
+                    "topics": [
+                      "Business & Finance",
+                      "Entrepreneurship"
+                    ],
+                    "last_updated_at": "2026-11-19T10:41:20.532Z",
+                    "disclaimer": "This story is a summary of posts on X and may evolve over time. Grok can make mistakes, verify its outputs.",
+                    "post_timelines": {
+                      "top": "VGltZWxpbmU6CgCaHXbbXYFXgXcA",
+                      "latest": "VGltZWxpbmU6CgCeHXbbXYFXgXcA"
+                    }
+                  },
+                  "posts_tab": "top",
+                  "count": 20,
+                  "posts": [
+                    {
+                      "id": "2123088231112003961",
+                      "text": "...",
+                      "author": {
+                        "screen_name": "..."
+                      }
+                    }
+                  ],
+                  "next_cursor": "DAABCgABG..."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Missing or malformed parameter. Fix the request before retrying."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "unauthorized",
+                  "message": "The API key is missing, malformed, or revoked. Check the Authorization header."
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "insufficient_credits",
+                  "message": "Your balance is exhausted. Top up your credits to continue.",
+                  "top_up_url": "https://www.twitterapis.com/dashboard/buy-credits?utm_source=api&utm_medium=402"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "forbidden",
+                  "message": "X refused this resource for the acting account: on a read, the account is not a participant in the DM thread, the target is protected or has blocked it, or the session was attestation-blocked for calling from a datacenter or rotating IP; on a write, the account is not authorized for the action or has no logged-in session. The credentials are still valid, so do not re-register."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "The resource does not exist, for example a deleted tweet or a private account."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "rate_limited",
+                  "message": "Too many requests. Back off and retry with exponential backoff."
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something failed on our side. Retry with backoff; if it persists, contact support."
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "description": "Story id: the number at the end of an x.com/i/trending/ url, 5 to 25 digits.",
+            "schema": {
+              "type": "string",
+              "description": "Story id: the number at the end of an x.com/i/trending/ url, 5 to 25 digits.",
+              "example": "2123125469000204663"
+            },
+            "example": "2123125469000204663"
+          },
+          {
+            "name": "posts",
+            "in": "query",
+            "required": false,
+            "description": "Which post tab to return: top (default) or latest.",
+            "schema": {
+              "type": "string",
+              "description": "Which post tab to return: top (default) or latest.",
+              "example": "latest"
+            },
+            "example": "latest"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "description": "Posts to return, 0 to 100 (default 20). 0 returns the story alone.",
+            "schema": {
+              "type": "integer",
+              "description": "Posts to return, 0 to 100 (default 20). 0 returns the story alone.",
+              "example": "20"
+            },
+            "example": "20"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "next_cursor from a previous call, for the next page of the same post tab.",
+            "schema": {
+              "type": "string",
+              "description": "next_cursor from a previous call, for the next page of the same post tab."
+            }
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/compact"
+          },
+          {
+            "$ref": "#/components/parameters/paid_promotion"
           }
         ]
       }
