@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.28.3 (2026-11-20)
+
+No new tools, so a patch release. Still 120 tools.
+
+### Changed
+
+- **`twitter_advanced_search` and `twitter_user_search` state the query limit.** The `query` description now says it is at most 511 bytes (UTF-8, every operator counts) and that a longer query returns a 400 with `reason: "query_too_long"`, which is not billed. X answers a longer search with an empty page and no error, so the API refuses it instead. Split a long OR list into several calls.
+
 ## 0.28.1 (2026-11-09)
 
 No new tools, so a patch release. Still 120 tools: 71 reads and 49 writes.

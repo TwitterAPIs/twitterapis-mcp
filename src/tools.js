@@ -38,7 +38,7 @@ export const TOOLS = [
       "Searches recent tweets with X's advanced-search operators: from:, to:, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, -filter:replies, lang:en, and free text. Returns tweet text, author info, engagement metrics and a pagination cursor. product='Latest' (the default when omitted) gives chronological results; 'Top' is engagement-ranked. Example queries: 'AI agents min_faves:100', 'from:openai filter:links since:2024-01-01', '#buildinpublic -filter:replies lang:en'. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/search/tweet-advanced-search",
     shape: {
       query: z.string().describe(
-        "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'.",
+        "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'. At most 511 bytes (UTF-8, every operator counts); a longer query returns 400 query_too_long. Split a long OR list into several calls.",
       ),
       product: z.enum(["Top","Latest","Media","People"]).optional().describe(
         "Result ranking mode. 'Latest' = reverse-chronological (default when omitted). 'Top' = engagement-ranked. 'Media' = tweets with images/video. 'People' = matching user accounts.",
@@ -67,7 +67,7 @@ export const TOOLS = [
       "Searches Twitter/X user accounts by display name or handle (X's People search). Bio text is not searched, so a word that appears only in a bio returns no match. Returns matching profiles (username, display name, bio, follower count, verification status) with a pagination cursor. Covers brand handles, partial handles, and people known only by name. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/search/user-search",
     shape: {
       query: z.string().describe(
-        "Name, brand, or partial handle to search accounts for, matched against display name and handle. Examples: 'OpenAI', 'Sam Altman', 'stablecoin'.",
+        "Name, brand, or partial handle to search accounts for, matched against display name and handle. Examples: 'OpenAI', 'Sam Altman', 'stablecoin'. At most 511 bytes (UTF-8, every operator counts); a longer query returns 400 query_too_long. Split a long OR list into several calls.",
       ),
       count: z.number().int().min(1).max(200).optional().describe(
         "Requested page size, capped at 200. Advisory on this endpoint: X's own search backend typically returns around 13 to 20 tweets per page regardless of the value requested, an upstream limit this API does not control. More results come from paging with next_cursor, not from a larger count.",

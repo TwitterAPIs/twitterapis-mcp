@@ -180,7 +180,7 @@ export const TOOL_OVERRIDES = [
     args: [
       { name: "query",
         describe:
-          "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'." },
+          "Full advanced-search query string. Supports X operators: from:handle, to:handle, since:YYYY-MM-DD, until:YYYY-MM-DD, min_faves:N, min_retweets:N, filter:links, filter:images, filter:videos, -filter:replies, lang:en, #hashtag, \"exact phrase\". Example: 'from:openai min_faves:500 since:2024-01-01'. At most 511 bytes (UTF-8, every operator counts); a longer query returns 400 query_too_long. Split a long OR list into several calls." },
       { name: "product", enum: ["Top","Latest","Media","People"],
         describe:
           "Result ranking mode. 'Latest' = reverse-chronological (default when omitted). 'Top' = engagement-ranked. 'Media' = tweets with images/video. 'People' = matching user accounts." },
@@ -197,7 +197,7 @@ export const TOOL_OVERRIDES = [
     args: [
       { name: "query",
         describe:
-          "Name, brand, or partial handle to search accounts for, matched against display name and handle. Examples: 'OpenAI', 'Sam Altman', 'stablecoin'." },
+          "Name, brand, or partial handle to search accounts for, matched against display name and handle. Examples: 'OpenAI', 'Sam Altman', 'stablecoin'. At most 511 bytes (UTF-8, every operator counts); a longer query returns 400 query_too_long. Split a long OR list into several calls." },
       "@PAGINATION",
       "@PROJECTION",
     ],
