@@ -79,8 +79,9 @@ const writes = TOOLS.filter((t) => t.write);
 // 2026-10-20 (#206, backend #667): twitter_creator_commentary_video, a read, and
 // twitter_community_join / twitter_community_leave, two writes. 116, 70, 46.
 // 2026-11-05: twitter_pin_tweet and twitter_unpin_tweet, two writes. 120, 71, 49.
-const EXPECTED_TOOLS = 120;
-const EXPECTED_READS = 71;
+// 2026-11-20: twitter_trend_story, one read (trends/story). 121, 72, 49.
+const EXPECTED_TOOLS = 121;
+const EXPECTED_READS = 72;
 const EXPECTED_WRITES = 49;
 check(`${EXPECTED_TOOLS} tools (got ${TOOLS.length})`, TOOLS.length === EXPECTED_TOOLS);
 check(`${EXPECTED_READS} reads (got ${reads.length})`, reads.length === EXPECTED_READS);

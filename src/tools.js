@@ -8,7 +8,7 @@
 // file in memory and fails if it does not match what is committed, so a hand edit
 // here is caught rather than shipped.
 //
-// Catalog: 120 tools (71 reads, 49 writes).
+// Catalog: 121 tools (72 reads, 49 writes).
 //
 // Each tool maps 1:1 to a REST endpoint at https://api.twitterapis.com. Tool arg
 // names map 1:1 to endpoint query params (every endpoint, including the POST
@@ -1254,6 +1254,35 @@ export const TOOLS = [
     description:
       "Lists every location X publishes trends for, each with its name and numeric WOEID. Takes no required parameters. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/trends/trends-locations",
     shape: {
+      fields: z.string().optional().describe(
+        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
+      ),
+      compact: z.enum(["1","true"]).optional().describe(
+        "Optional. \"1\" applies the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. It trims only what it recognises and on its own does not reduce a body to {}. Combined with fields, the named paths are added on top of the preset, so pass fields without compact for a narrow result.",
+      ),
+    },
+  },
+  {
+    name: "twitter_trend_story",
+    path: "/twitter/trends/story",
+    description:
+      "Reads one X Trending story (the AI-written page at x.com/i/trending/<id>) by its id, including after it has rotated out of the Explore tabs: headline, summary, topics, last update time, X's disclaimer and the story's top or latest posts. The id is the number at the end of an x.com/i/trending/ url, as a trends category result or a shared story link shows it. X shows no post count or volume on a story page, so none is returned. An unknown id returns 404 and is not billed. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/trends/trends-story",
+    shape: {
+      id: z.string().describe(
+        "Story id: the number at the end of an x.com/i/trending/ url (5 to 19 digits).",
+      ),
+      posts: z.enum(["top","latest"]).optional().describe(
+        "Optional. Which of the story's post tabs to return: top (default) or latest.",
+      ),
+      count: z.number().int().min(0).max(100).optional().describe(
+        "Optional. Posts to return, 0 to 100 (default 20); a larger value is clamped to 100. 0 returns the story alone.",
+      ),
+      cursor: z.string().optional().describe(
+        "Optional. next_cursor from a previous call, for the next page of the same post tab.",
+      ),
+      paid_promotion: z.enum(["only","exclude"]).optional().describe(
+        "Optional. Filters this page's tweets by X's Paid partnership label: \"only\" keeps tweets whose is_paid_promotion is true, \"exclude\" keeps the rest. It filters the page X returned and fetches no more, so a page can hold fewer tweets than requested, or none, while next_cursor still pages on; the response carries paid_promotion_filter { mode, kept, removed }. A retweet is judged by its own flag, not the retweeted post's. Same cost as without it.",
+      ),
       fields: z.string().optional().describe(
         "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped.",
       ),
