@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "twitterapis-mcp",
   "display_name": "TwitterAPIs",
-  "version": "0.29.0",
+  "version": "0.29.1",
   "icon": "icon.png",
   "description": "Official MCP server for twitterapis.com. Read and write Twitter/X: search, users, tweets, DMs.",
   "long_description": "Exposes the Twitter / X API at api.twitterapis.com as native MCP tools. Reads cover search, users, followers and following, tweets, threads, lists, mentions, likes, bookmarks, DMs and the home timeline. Write actions cover posting and deleting tweets, likes, retweets, bookmarks, follows and their inverses. The server holds no state and forwards your API key on every call, so usage is billed per call against that key.",
@@ -89,7 +89,7 @@
     },
     {
       "name": "twitter_user_tweets",
-      "description": "Returns a user's recent posting timeline, cursor-paginated further back. The endpoint does not filter server-side, so the response routinely includes retweets and replies alongside original posts. Every item carries is_retweet, is_reply and is_quote booleans, and author.username names who wrote it (a retweet's retweeted_tweet holds the original author). Returns tweet text, id, timestamp and engagement metrics. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets"
+      "description": "Returns a user's recent posting timeline, cursor-paginated further back. The endpoint does not filter server-side, so the response routinely includes retweets and replies alongside original posts. Every item carries is_retweet, is_reply and is_quote booleans, and author.username names who wrote it (a retweet's retweeted_tweet holds the original author). Returns tweet text, id, timestamp and engagement metrics. X's profile timeline serves roughly the newest 800 to 900 posts, so when it ends short of the account's own post total the last page may carry coverage \"unknown\", coverage_hint (an advanced search query that reaches the older posts) and timeline_end. Cost: $0.0008 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets"
     },
     {
       "name": "twitter_user_tweets_and_replies",
@@ -97,7 +97,7 @@
     },
     {
       "name": "twitter_user_tweets_complete",
-      "description": "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed flat per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets-complete"
+      "description": "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor, not count, says whether this endpoint has more. A non-null next_cursor means more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means this endpoint returned no more posts (has_more is the same signal as a boolean), which is the whole history only for a small account. X's profile timeline serves roughly the newest 800 to 900 posts. When the account's own post total is larger, the response may carry coverage \"unknown\", coverage_hint and timeline_end { reason, author_total_posts, returned }; the older posts are reachable through advanced search with the query in coverage_hint (from:<handle> until:<day after the oldest post returned>). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed flat per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones. Cost: $0.0024 per call. Docs: https://docs.twitterapis.com/docs/reference/user-reads/user-tweets-complete"
     },
     {
       "name": "twitter_user_media",

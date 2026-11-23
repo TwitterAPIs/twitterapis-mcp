@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.29.1 (2026-11-23)
+
+No new tools, so a patch release. Still 121 tools.
+
+### Changed
+
+- **`twitter_user_tweets_complete` and `twitter_user_tweets` describe where X ends a profile timeline.** The old text promised a history ceiling of about 3200 posts and said a null `next_cursor` means the history is complete. X's profile timeline serves roughly the newest 800 to 900 posts, so a null `next_cursor` means this endpoint returned no more posts, which is the whole history only for a small account. When the account's own post total is larger, the response may carry `coverage: "unknown"`, `coverage_hint` (a `twitter_advanced_search` query, `from:<handle> until:<day after the oldest post returned>`, that reads the older posts) and `timeline_end { reason, author_total_posts, returned }`. The `max` text no longer cites the 3200 figure.
+- **`fields` keeps `timeline_end`.** It is added to the envelope keys that every read tool's `fields` projection always keeps.
+
 ## 0.29.0 (2026-11-20)
 
 One new read tool, so a minor release. 121 tools: 72 reads and 49 writes.

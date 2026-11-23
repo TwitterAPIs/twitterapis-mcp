@@ -77,7 +77,7 @@ export const ARG_GROUPS = {
   PROJECTION: [
     { name: "fields",
       describe:
-        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped." },
+        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, timeline_end, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped." },
     { name: "compact", enum: ["1", "true"],
       describe:
         "Optional. \"1\" applies the built-in compact preset: ids, url, text, created_at, lang, engagement counts, the is_retweet/is_reply/is_quote flags, conversation ids, the author's id/username/name/followers_count/verification, and the quoted or retweeted tweet's id/url/author username. It trims only what it recognises and on its own does not reduce a body to {}. Combined with fields, the named paths are added on top of the preset, so pass fields without compact for a narrow result." },
@@ -87,7 +87,7 @@ export const ARG_GROUPS = {
   FIELDS_ONLY: [
     { name: "fields",
       describe:
-        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped." },
+        "Optional. Comma-separated dotted field paths to keep in the response, applied to every object in the returned lists and to nested objects (e.g. \"id,text,author.username\"; a list name may prefix a path, \"tweets.id\"; a prefix that lands on an array applies to each element). Pagination, envelope and completeness keys are kept regardless (next_cursor, cursor, has_more, count, partial, error, message, reason, paid_promotion_filter, incomplete, incomplete_reason, upstream_limit, coverage, coverage_hint, timeline_end, quote_count, quote_matched, source, search_query, product_used, top_fallback, requested_count, effective_count), so a short or cut-off page still says so; every other top-level key not named is dropped." },
   ],
   // Paid partnership filter (API 2026-09-30, docs components.parameters
   // paid_promotion). Only on tools whose endpoint returns a top-level tweets
@@ -336,7 +336,7 @@ export const TOOL_OVERRIDES = [
     name: "twitter_user_tweets",
     endpoint: "/user/tweets",
     description:
-      "Returns a user's recent posting timeline, cursor-paginated further back. The endpoint does not filter server-side, so the response routinely includes retweets and replies alongside original posts. Every item carries is_retweet, is_reply and is_quote booleans, and author.username names who wrote it (a retweet's retweeted_tweet holds the original author). Returns tweet text, id, timestamp and engagement metrics.",
+      "Returns a user's recent posting timeline, cursor-paginated further back. The endpoint does not filter server-side, so the response routinely includes retweets and replies alongside original posts. Every item carries is_retweet, is_reply and is_quote booleans, and author.username names who wrote it (a retweet's retweeted_tweet holds the original author). Returns tweet text, id, timestamp and engagement metrics. X's profile timeline serves roughly the newest 800 to 900 posts, so when it ends short of the account's own post total the last page may carry coverage \"unknown\", coverage_hint (an advanced search query that reaches the older posts) and timeline_end.",
     args: [
       "@USER_REF",
       "@PAGINATION",
@@ -360,14 +360,14 @@ export const TOOL_OVERRIDES = [
     name: "twitter_user_tweets_complete",
     endpoint: "/user/tweets/complete",
     description:
-      "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor is the completion signal, not count. A non-null next_cursor means the history is truncated and more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means the history is complete (has_more is the same signal as a boolean). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed flat per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones.",
+      "Returns a large batch of a user's tweet history in one call, auto-paginating server-side across upstream pages: { count, next_cursor, has_more, tweets }. One call does not guarantee the whole history: next_cursor, not count, says whether this endpoint has more. A non-null next_cursor means more remains, and passing it back as cursor continues from where the call stopped; a null next_cursor means this endpoint returned no more posts (has_more is the same signal as a boolean), which is the whole history only for a small account. X's profile timeline serves roughly the newest 800 to 900 posts. When the account's own post total is larger, the response may carry coverage \"unknown\", coverage_hint and timeline_end { reason, author_total_posts, returned }; the older posts are reachable through advanced search with the query in coverage_hint (from:<handle> until:<day after the oldest post returned>). Each call is bounded by both max and a server-side wall-clock budget, so a response can be truncated even when it holds fewer tweets than max, which is why count is not a completion signal. Takes the numeric user_id only. Billed flat per call regardless of how many tweets come back, so fewer, larger calls cost less than many small ones.",
     args: [
       { name: "user_id",
         describe:
           "Numeric Twitter/X user id. Required: this endpoint does not accept a username." },
       { name: "max", type: "int", min: 1, max: 3200,
         describe:
-          "Target number of tweets to collect in this call. Defaults to 200 when omitted. This is a minimum target, not a hard cap: pages arrive in whole chunks, so a response may contain up to one page (<=100) more than requested (measured live 2026-09-05: max=10 returned 20), and count can differ from max. Twitter's ~3200-per-user history ceiling applies overall." },
+          "Target number of tweets to collect in this call. Defaults to 200 when omitted. This is a minimum target, not a hard cap: pages arrive in whole chunks, so a response may contain up to one page (<=100) more than requested (measured live 2026-09-05: max=10 returned 20), and count can differ from max. X's profile timeline serves roughly the newest 800 to 900 posts, so a larger max does not reach further back; coverage_hint gives the advanced search query for older posts." },
       { name: "cursor",
         describe:
           "Resume point from a previous response's next_cursor. Absent on the first request; with it, collection continues where the last call stopped, for as long as next_cursor is non-null." },
